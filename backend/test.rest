@@ -1,0 +1,64 @@
+###REGISTER
+POST http://localhost:5000/api/finance/expense
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZWEwZTRlMzQ4OWUyNWI2MDY1MDZmMSIsImlhdCI6MTc3Njk0OTAxNCwiZXhwIjoxNzc3NTUzODE0fQ.Vefdm1qgh7SOLobN1YEGSKm2nFFKC6BruzjxrN1_FXM
+
+
+{
+"purpose":"Fund Raising",
+"amount":20000,
+"date":"2026-05-15"
+}
+
+
+
+
+
+###
+
+GET http://localhost:5000/api/finance/balance-sheet
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZWEwZTRlMzQ4OWUyNWI2MDY1MDZmMSIsImlhdCI6MTc3Njk0OTAxNCwiZXhwIjoxNzc3NTUzODE0fQ.Vefdm1qgh7SOLobN1YEGSKm2nFFKC6BruzjxrN1_FXM
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "surname": "John",
+  "firstname": "David",
+  "othername": "Paul",
+  "email": "john@test.com",
+  "phone": "08012345678",
+  "dob": "2000-05-20",
+  "address": "Abuja",
+  "occupation": "Student",
+  "bornAgain": "Yes",
+  "password": "123456"
+}
+
+
+### login
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+ "identifier": "john@test.com",
+ "password": "123456"
+}
+
+
+
+
