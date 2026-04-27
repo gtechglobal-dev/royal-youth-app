@@ -48,6 +48,22 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    if (!phone || !/^0\d{10}$/.test(phone)) {
+      return res.status(400).json({ message: "Phone number must be 11 digits starting with 0" });
+    }
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    if (!surname || !/^[a-zA-Z]+$/.test(surname.trim().replace(/['-]/g, ""))) {
+      return res.status(400).json({ message: "Surname must contain letters only, no spaces or special characters" });
+    }
+    
+    if (!firstname || !/^[a-zA-Z]+$/.test(firstname.trim().replace(/['-]/g, ""))) {
+      return res.status(400).json({ message: "First name must contain letters only, no spaces or special characters" });
+    }
+
     const existingPhone = await User.findOne({ phone, isDeleted: false });
     if (existingPhone) {
       return res.status(400).json({ message: "Phone number already registered" });
@@ -66,9 +82,8 @@ export const registerUser = async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
     let imagePath = "";
-
-    if (req.file) {
-      imagePath = req.file.path;
+    if (req.file && req.file.buffer && req.file.buffer.length > 0) {
+      imagePath = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     }
 
     const newUser = new User({
@@ -98,7 +113,14 @@ export const registerUser = async (req, res) => {
       userId: newUser._id,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Registration error:", error);
+    let msg = "Registration failed. Please try again.";
+    if (typeof error.message === 'string') {
+      msg = error.message;
+    } else if (error.name === 'MongoServerError' && error.code === 11000) {
+      msg = "Phone number or email already registered";
+    }
+    res.status(500).json({ message: msg });
   }
 };
 
@@ -119,6 +141,18 @@ export const loginUser = async (req, res) => {
       return res.status(403).json({ 
         message: "Account Deleted: No longer a member of Royal Youth Community.",
         accountDeleted: true 
+      });
+    }
+
+    if (user.registrationStatus === "Pending") {
+      return res.status(403).json({ 
+        message: "Your registration is pending approval. You will be able to login after admin approves your registration." 
+      });
+    }
+
+    if (user.registrationStatus === "Rejected") {
+      return res.status(403).json({ 
+        message: "Your registration was rejected. Please contact admin for assistance." 
       });
     }
 
@@ -146,7 +180,7 @@ export const loginUser = async (req, res) => {
 
 export const getAllMembers = async (req, res) => {
   try {
-    const members = await User.find({ isDeleted: false }).select("-password");
+    const members = await User.find({ isDeleted: false, registrationStatus: "Approved" }).select("-password");
 
     res.status(200).json(members);
   } catch (error) {
@@ -333,8 +367,8 @@ export const updateProfile = async (req, res) => {
     if (hobbies) updateData.hobbies = hobbies;
     if (address !== undefined) updateData.address = address;
 
-    if (req.file) {
-      updateData.profileImage = req.file.path;
+    if (req.file && req.file.buffer && req.file.buffer.length > 0) {
+      updateData.profileImage = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     }
 
     const user = await User.findByIdAndUpdate(

@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        adminBlue: "#1e3a8a",
-        adminYellow: "#fbbf24",
+        adminBlue: "#3b82f6",
+        adminOrange: "#f97316",
         memberBlue: "#1e40af",
         memberOrange: "#f97316",
       },

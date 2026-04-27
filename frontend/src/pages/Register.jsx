@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import Notification from "../components/Notification";
+import { OverlayLoader, PageLoader } from "../components/Loaders";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
@@ -51,13 +52,19 @@ const lgaByState = {
 
 const serviceUnits = [
   "Choir", "Sanctuary", "Protocol", "Ushers", "Lighthouse", "Security", 
-  "Pastoral", "Prayer Unit", "Altar Ministrations", "Media", "Children Ministry", "None"
+  "Pastoral", "Prayer Unit", "Altar Ministrations", "Media", "Children Ministry", "Evangelism/Follow Up", "None"
+];
+
+const churchServiceUnits = [
+  "Choir", "Sanctuary", "Protocol", "Ushers", "Lighthouse", "Security", 
+  "Pastoral", "Prayer Unit", "Altar Ministrations", "Media", "Children Ministry", "Evangelism/Follow Up"
 ];
 
 function Register() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState({ open: false, type: "", message: "" });
-  
   const [formData, setFormData] = useState({
     surname: "",
     firstname: "",
@@ -76,11 +83,9 @@ function Register() {
     password: "",
     confirmPassword: "",
   });
-
   const [selectedState, setSelectedState] = useState("");
   const [image, setImage] = useState(null);
   const [terms, setTerms] = useState(false);
-
   const calculateAge = (dob) => {
     const birthDate = new Date(dob);
     const today = new Date();
@@ -91,9 +96,80 @@ function Register() {
     }
     return age;
   };
-
+  
+  const [errors, setErrors] = useState({});
+  
+  const sanitize = (str) => str.replace(/[<>'"&]/g, "").trim();
+  
+  const validate = () => {
+    const errs = {};
+    
+    if (!formData.surname.trim()) {
+      errs.surname = "Surname is required";
+    } else if (!/^[a-zA-Z]+$/.test(formData.surname.trim())) {
+      errs.surname = "Surname must be letters only, one word";
+    }
+    
+    if (!formData.firstname.trim()) {
+      errs.firstname = "First name is required";
+    } else if (!/^[a-zA-Z]+$/.test(formData.firstname.trim())) {
+      errs.firstname = "First name must be letters only, one word";
+    }
+    
+    if (!formData.email.trim()) {
+      errs.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errs.email = "Enter a valid email address";
+    }
+    
+    if (!formData.phone.trim()) {
+      errs.phone = "Phone number is required";
+    } else if (!/^0\d{10}$/.test(formData.phone.trim())) {
+      errs.phone = "Enter 11-digit phone starting with 0";
+    }
+    
+    if (!formData.dob) {
+      errs.dob = "Date of birth is required";
+    } else {
+      const age = calculateAge(formData.dob);
+      if (age < 18) {
+        errs.dob = "You must be at least 18 years old";
+      } else if (age > 45) {
+        errs.dob = "You must be 45 years or younger";
+      }
+    }
+    
+    if (!formData.password) {
+      errs.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      errs.password = "Password must be at least 6 characters";
+    }
+    
+    if (!formData.address.trim()) {
+      errs.address = "Address is required";
+    }
+    
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (loading) return <PageLoader />;
+  
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    
+    if (name === "phone") {
+      value = value.replace(/\D/g, "").slice(0, 11);
+    }
+    
+    if (name === "surname" || name === "firstname" || name === "othername") {
+      value = value.toUpperCase();
+    }
     
     if (name === "stateOfOrigin") {
       setSelectedState(value);
@@ -108,67 +184,77 @@ function Register() {
         [name]: value,
       });
     }
+    
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    if (!validate()) return;
+    
     if (formData.password !== formData.confirmPassword) {
       setNotification({ open: true, type: "error", message: "Passwords do not match" });
       return;
     }
-
+    
     if (!terms) {
       setNotification({ open: true, type: "error", message: "You must accept the terms" });
       return;
     }
-
-    if (formData.dob) {
-      const age = calculateAge(formData.dob);
-      if (age < 18 || age > 45) {
-        setNotification({ 
-          open: true, 
-          type: "error", 
-          message: "You must be between 18 and 45 years old to register in the Royal Youth Community." 
-        });
-        return;
-      }
-    }
-
-    try {
-      const data = new FormData();
-
-      data.append("surname", formData.surname);
-      data.append("firstname", formData.firstname);
-      data.append("othername", formData.othername);
-      data.append("email", formData.email);
-      data.append("phone", formData.phone);
-      data.append("dob", formData.dob);
-      data.append("address", formData.address);
-      data.append("stateOfOrigin", formData.stateOfOrigin);
-      data.append("lga", formData.lga);
-      data.append("occupation", formData.occupation);
-      data.append("hobbies", formData.hobbies);
-      data.append("serviceUnit", formData.serviceUnit);
-      data.append("serviceUnitLove", formData.serviceUnitLove);
-      data.append("bornAgain", formData.bornAgain);
-      data.append("password", formData.password);
+    
+try {
+      setSubmitting(true);
+      const fd = new FormData();
+      
+      fd.append("surname", sanitize(formData.surname));
+      fd.append("firstname", sanitize(formData.firstname));
+      fd.append("othername", sanitize(formData.othername) || "");
+      fd.append("email", sanitize(formData.email));
+      fd.append("phone", sanitize(formData.phone));
+      fd.append("dob", formData.dob);
+      fd.append("address", sanitize(formData.address));
+      fd.append("stateOfOrigin", formData.stateOfOrigin || "");
+      fd.append("lga", formData.lga || "");
+      fd.append("occupation", sanitize(formData.occupation) || "");
+      fd.append("hobbies", formData.hobbies || "");
+      fd.append("serviceUnit", formData.serviceUnit || "");
+      fd.append("serviceUnitLove", formData.serviceUnitLove || "");
+      fd.append("bornAgain", formData.bornAgain || "Yes");
+      fd.append("password", formData.password);
 
       if (image) {
-        data.append("profileImage", image);
+        fd.append("profileImage", image, image.name);
       }
 
-      await API.post("/auth/register", data);
-
-      navigate("/registration-success");
+      const response = await API.post("/auth/register", fd);
+      
+      if (response.data?.message) {
+        navigate("/registration-success");
+      } else {
+        throw new Error("Registration failed. Please try again.");
+      }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Registration failed";
-      setNotification({ open: true, type: "error", message: errorMsg });
+      setSubmitting(false);
+      let msg = "Registration failed. Please try again.";
+      
+      if (error.response?.data?.message) {
+        msg = String(error.response.data.message);
+      } else if (error.response?.status === 413) {
+        msg = "Image file is too large. Please use a smaller image.";
+      } else if (error.message) {
+        msg = String(error.message);
+      }
+      
+      setNotification({ open: true, type: "error", message: msg });
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-4">
+      {submitting && <OverlayLoader />}
       <div className="max-w-xl mx-auto">
         <form
           onSubmit={handleSubmit}
@@ -182,67 +268,95 @@ function Register() {
           </p>
 
           <div className="space-y-4">
-            <input
-              type="text"
-              name="surname"
-              placeholder="Surname *"
-              required
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
-              onChange={handleChange}
-            />
+            <div>
+              <input
+                type="text"
+                name="surname"
+                placeholder="SURNAME *"
+                required
+                value={formData.surname}
+                style={{ textTransform: "uppercase" }}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none ${errors.surname ? "border-red-500" : ""}`}
+                onChange={handleChange}
+              />
+              {errors.surname && <p className="text-red-500 text-sm mt-1">{errors.surname}</p>}
+            </div>
 
-            <input
-              type="text"
-              name="firstname"
-              placeholder="First Name *"
-              required
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
-              onChange={handleChange}
-            />
+            <div>
+              <input
+                type="text"
+                name="firstname"
+                placeholder="FIRST NAME *"
+                required
+                value={formData.firstname}
+                style={{ textTransform: "uppercase" }}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none ${errors.firstname ? "border-red-500" : ""}`}
+                onChange={handleChange}
+              />
+              {errors.firstname && <p className="text-red-500 text-sm mt-1">{errors.firstname}</p>}
+            </div>
 
             <input
               type="text"
               name="othername"
-              placeholder="Other Name (Optional)"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
-              onChange={handleChange}
-            />
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Email (Optional)"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
-              onChange={handleChange}
-            />
-
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone Number *"
-              required
+              placeholder="OTHER NAME (OPTIONAL)"
+              value={formData.othername}
+              style={{ textTransform: "uppercase" }}
               className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
               onChange={handleChange}
             />
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Date of Birth *</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email *"
+                required
+                value={formData.email}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none ${errors.email ? "border-red-500" : ""}`}
+                onChange={handleChange}
+              />
+              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+            </div>
+
+            <div>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number (11 digits, starts with 0) *"
+                required
+                value={formData.phone}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none ${errors.phone ? "border-red-500" : ""}`}
+                onChange={handleChange}
+              />
+              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Date of Birth (Age 18-45) *</label>
               <input
                 type="date"
                 name="dob"
                 required
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
+                value={formData.dob}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none ${errors.dob ? "border-red-500" : ""}`}
                 onChange={handleChange}
               />
+              {errors.dob && <p className="text-red-500 text-sm mt-1">{errors.dob}</p>}
             </div>
 
-            <input
-              type="text"
-              name="address"
-              placeholder="Address (Optional)"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
-              onChange={handleChange}
-            />
+            <div>
+              <input
+                type="text"
+                name="address"
+                placeholder="Address *"
+                required
+                value={formData.address}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none ${errors.address ? "border-red-500" : ""}`}
+                onChange={handleChange}
+              />
+              {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+            </div>
 
             <select
               name="stateOfOrigin"
@@ -289,23 +403,29 @@ function Register() {
             <select
               name="serviceUnit"
               required
+              value={formData.serviceUnit}
               className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
               onChange={handleChange}
             >
-              <option value="">What service Unit(s) do you belong to in Royal Youth? *</option>
+              <option value="">Service Unit(s) in Soulwinners Int'l Church? *</option>
               {serviceUnits.map((unit) => (
                 <option key={unit} value={unit}>{unit}</option>
               ))}
             </select>
 
             {formData.serviceUnit === "None" && (
-              <input
-                type="text"
+              <select
                 name="serviceUnitLove"
-                placeholder="What service unit would you love to join in Royal Youth Department?"
+                value={formData.serviceUnitLove}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
                 onChange={handleChange}
-              />
+              >
+                <option value="">Select Service Unit to Join *</option>
+                {churchServiceUnits.map((unit) => (
+                  <option key={unit} value={unit}>{unit}</option>
+                ))}
+                <option value="None">None</option>
+              </select>
             )}
 
             <select
@@ -324,26 +444,33 @@ function Register() {
               <label className="block text-sm text-gray-600 mb-1">Profile Image (Optional)</label>
               <input
                 type="file"
+                name="profileImage"
                 accept="image/*"
                 className="w-full p-2 border rounded-lg"
-                onChange={(e) => setImage(e.target.files[0])}
+                onChange={(e) => setImage(e.target.files[0] || null)}
               />
+              {image && <p className="text-sm text-gray-500 mt-1">{image.name} ({(image.size / 1024).toFixed(1)} KB)</p>}
             </div>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Password *"
-              required
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
-              onChange={handleChange}
-            />
+            <div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password *"
+                required
+                value={formData.password}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none ${errors.password ? "border-red-500" : ""}`}
+                onChange={handleChange}
+              />
+              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            </div>
 
             <input
               type="password"
               name="confirmPassword"
               placeholder="Confirm Password *"
               required
+              value={formData.confirmPassword}
               className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
               onChange={handleChange}
             />

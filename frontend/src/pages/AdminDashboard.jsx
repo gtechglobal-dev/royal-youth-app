@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import Notification from "../components/Notification";
+import Logo from "../assets/gdev logo.svg";
+import { OverlayLoader } from "../components/Loaders";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -25,6 +27,24 @@ function AdminDashboard() {
 
   const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpenses: 0, balance: 0, duesMonthly: {} });
   const [incomeRecords, setIncomeRecords] = useState([]);
+  const [bannerTitle, setBannerTitle] = useState("");
+  const [bannerLink, setBannerLink] = useState("");
+  const [bannerImg, setBannerImg] = useState(null);
+  const [banners, setBanners] = useState([]);
+  const [editingBanner, setEditingBanner] = useState(null);
+  const [deletingBanner, setDeletingBanner] = useState(null);
+  const [contacts, setContacts] = useState([]);
+  const [deletingContact, setDeletingContact] = useState(null);
+  const [pendingMembers, setPendingMembers] = useState([]);
+  const [counts, setCounts] = useState({
+    members: 0,
+    pending: 0,
+    prayer: 0,
+    testimony: 0,
+    complaint: 0,
+    income: 0,
+    expense: 0,
+  });
 
   const months = [
     "April", "May", "June", "July", "August", "September", 
@@ -43,28 +63,80 @@ function AdminDashboard() {
     fetchData();
   }, [navigate]);
 
+  useEffect(() => {
+    if (["prayer", "testimony", "complaint"].includes(activeTab)) {
+      API.get("/contact/all").then(r => {
+        setContacts(r.data);
+        const c = r.data;
+        setCounts(prev => ({
+          ...prev,
+          prayer: c.filter(x => x.type === "prayer").length,
+          testimony: c.filter(x => x.type === "testimony").length,
+          complaint: c.filter(x => x.type === "complaint").length,
+        }));
+      });
+    }
+    if (activeTab === "pending") {
+      API.get("/auth/pending").then(r => {
+        setPendingMembers(r.data);
+        setCounts(prev => ({ ...prev, pending: r.data.length }));
+      });
+    }
+  }, [activeTab]);
+
+  const handleApproveMember = async (id) => {
+    try {
+      await API.put(`/auth/approve-member/${id}`);
+      setNotification({ open: true, type: "success", message: "Member approved" });
+      const res = await API.get("/auth/pending");
+      setPendingMembers(res.data);
+      setCounts(prev => ({ ...prev, pending: res.data.length }));
+    } catch {
+      setNotification({ open: true, type: "error", message: "Approval failed" });
+    }
+  };
+
+  const handleRejectMember = async (id) => {
+    try {
+      await API.put(`/auth/reject-member/${id}`);
+      setNotification({ open: true, type: "success", message: "Member rejected" });
+      const res = await API.get("/auth/pending");
+      setPendingMembers(res.data);
+      setCounts(prev => ({ ...prev, pending: res.data.length }));
+    } catch {
+      setNotification({ open: true, type: "error", message: "Rejection failed" });
+    }
+  };
+
   const fetchData = async () => {
     try {
-      const membersRes = await API.get("/auth/members");
+      setLoading(true);
+      const [membersRes, pendingRes, meetingsRes, balanceRes, bannersRes] = await Promise.all([
+        API.get("/auth/members"),
+        API.get("/auth/pending"),
+        API.get("/attendance/meetings"),
+        API.get("/finance/balance-sheet"),
+        API.get("/banners/all"),
+      ]);
+      
       setMembers(membersRes.data);
-
-      const meetingsRes = await API.get("/attendance/meetings");
+      setCounts(prev => ({ ...prev, members: membersRes.data.length }));
+      setPendingMembers(pendingRes.data);
+      setCounts(prev => ({ ...prev, pending: pendingRes.data.length }));
       setMeetings(meetingsRes.data);
-
-      const balanceRes = await API.get("/finance/balance-sheet");
       setBalance(balanceRes.data);
+      setBanners(bannersRes.data);
 
-      const duesIncomeRes = await API.get("/payment/income");
-      if (duesIncomeRes.data) {
-        setBalance(prev => ({
-          ...prev,
-          totalDues: duesIncomeRes.data.totalIncome,
-          duesMonthly: duesIncomeRes.data.monthlyIncome,
-        }));
-        setIncomeRecords(duesIncomeRes.data.monthlyIncome);
-      }
+      const contactsRes = await API.get("/contact/all").catch(() => ({ data: [] }));
+      setContacts(contactsRes.data);
+      setCounts(prev => ({
+        ...prev,
+        prayer: contactsRes.data.filter(x => x.type === "prayer").length,
+        testimony: contactsRes.data.filter(x => x.type === "testimony").length,
+        complaint: contactsRes.data.filter(x => x.type === "complaint").length,
+      }));
     } catch (error) {
-      console.error(error);
+      console.error("Dashboard fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -123,6 +195,71 @@ function AdminDashboard() {
       fetchData();
     } catch (error) {
       setNotification({ open: true, type: "error", message: "Error adding income" });
+    }
+  };
+
+  const handleBannerUpload = async (e) => {
+    e.preventDefault();
+    if (!bannerImg) {
+      setNotification({ open: true, type: "error", message: "Select an image" });
+      return;
+    }
+    const fd = new FormData();
+    fd.append("title", bannerTitle);
+    fd.append("link", bannerLink);
+    fd.append("image", bannerImg);
+    fd.append("isActive", "true");
+    try {
+      await API.post("/banners", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setNotification({ open: true, type: "success", message: "Banner uploaded!" });
+      setBannerTitle(""); setBannerLink(""); setBannerImg(null);
+      fetchData();
+    } catch (err) {
+      setNotification({ open: true, type: "error", message: "Upload failed" });
+    }
+  };
+
+  const handleDeleteBanner = async (id) => {
+    setDeletingBanner(null);
+    try {
+      await API.delete(`/banners/${id}`);
+      setNotification({ open: true, type: "success", message: "Banner deleted" });
+      fetchData();
+    } catch (err) {
+      setNotification({ open: true, type: "error", message: "Delete failed" });
+    }
+  };
+
+  const handleUpdateBanner = async (e) => {
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append("title", editingBanner.title);
+    fd.append("link", editingBanner.link || "");
+    fd.append("isActive", editingBanner.isActive);
+    if (bannerImg) fd.append("image", bannerImg);
+    try {
+      await API.put(`/banners/${editingBanner._id}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setNotification({ open: true, type: "success", message: "Banner updated" });
+      setEditingBanner(null);
+      setBannerImg(null);
+      fetchData();
+    } catch (err) {
+      setNotification({ open: true, type: "error", message: "Update failed" });
+    }
+  };
+
+  const handleDeleteContact = async (id) => {
+    const contact = contacts.find(c => c._id === id);
+    setDeletingContact(null);
+    try {
+      await API.delete(`/contact/${id}`);
+      setContacts(prev => prev.filter(c => c._id !== id));
+      if (contact) {
+        setCounts(prev => ({ ...prev, [contact.type]: Math.max(0, prev[contact.type] - 1) }));
+      }
+      setNotification({ open: true, type: "success", message: "Deleted" });
+    } catch {
+      setNotification({ open: true, type: "error", message: "Delete failed" });
     }
   };
 
@@ -217,23 +354,24 @@ function AdminDashboard() {
 
   const tabs = [
     { id: "members", label: "View Members" },
+    { id: "pending", label: "Pending Registration" },
     { id: "dues", label: "Mark Dues" },
     { id: "attendance", label: "Attendance" },
     { id: "income", label: "Income" },
     { id: "expense", label: "Expenses" },
     { id: "balance", label: "Balance Sheet" },
+    { id: "banners", label: "Banners" },
+    { id: "prayer", label: "Prayer" },
+    { id: "testimony", label: "Testimony" },
+    { id: "complaint", label: "Complaints" },
   ];
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p>Loading...</p>
-      </div>
-    );
+    return <OverlayLoader />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 pb-16">
       <header className="bg-adminBlue text-white p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -245,11 +383,14 @@ function AdminDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <h1 className="text-xl md:text-2xl font-bold">Royal Youth Admin</h1>
+            <div className="flex items-center gap-2">
+              <img src={Logo} alt="Logo" className="h-8 w-8" />
+              <h1 className="text-xl md:text-2xl font-bold">Royal Youth Admin</h1>
+            </div>
           </div>
           <button
             onClick={handleLogout}
-            className="bg-adminYellow text-black px-3 md:px-4 py-2 rounded hover:bg-yellow-400 text-sm md:text-base"
+            className="bg-adminOrange text-white px-3 md:px-4 py-2 rounded hover:bg-orange-600 text-sm md:text-base"
           >
             Logout
           </button>
@@ -257,23 +398,49 @@ function AdminDashboard() {
       </header>
 
 <div className="container mx-auto p-4 md:p-6">
-        <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6">
-          <div className="flex flex-wrap gap-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 md:px-4 py-2 rounded text-sm md:text-base ${
-                  activeTab === tab.id
-                    ? "bg-adminBlue text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        {activeTab ? (
+          <div className="flex items-center gap-3 mb-4">
+            <button onClick={() => setActiveTab(null)} className="flex items-center gap-2 text-adminBlue hover:text-blue-700 font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {tabs.map((tab, i) => {
+                const colors = [
+                  "bg-blue-500 hover:bg-blue-600",
+                  "bg-orange-500 hover:bg-orange-600",
+                  "bg-emerald-500 hover:bg-emerald-600",
+                  "bg-purple-500 hover:bg-purple-600",
+                  "bg-rose-500 hover:bg-rose-600",
+                  "bg-cyan-500 hover:bg-cyan-600",
+                  "bg-amber-500 hover:bg-amber-600",
+                  "bg-teal-500 hover:bg-teal-600",
+                ];
+                const countKey = tab.id === "pending" ? "pending" : tab.id;
+                const count = counts[countKey];
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative px-3 py-3 rounded-lg text-white font-semibold text-sm md:text-base shadow-sm transition-all ${colors[i % colors.length]}`}
+                  >
+                    {tab.label}
+                    {count > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        {count > 99 ? "99+" : count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {activeTab === "members" && (
           <div className="overflow-x-auto">
@@ -327,7 +494,7 @@ function AdminDashboard() {
           </div>
         )}
 
-        {selectedAttendanceMember && (
+{selectedMember && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedMember(null)} />
             <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
@@ -342,30 +509,67 @@ function AdminDashboard() {
               <h3 className="text-lg font-bold mb-4 text-adminBlue">Member Profile</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  {selectedMember.profileImage && (
-                    <img
-                      src={selectedMember.profileImage?.startsWith('http') ? selectedMember.profileImage : `http://localhost:5000/uploads/${selectedMember.profileImage}`}
-                      alt="Profile"
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
-                  )}
+                  <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                    {selectedMember.profileImage && (selectedMember.profileImage.startsWith('data:') || selectedMember.profileImage.startsWith('http')) && (
+                      <img
+                        src={selectedMember.profileImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    )}
+                    {!selectedMember.profileImage || (!selectedMember.profileImage.startsWith('data:') && !selectedMember.profileImage.startsWith('http')) ? (
+                      <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    ) : null}
+                  </div>
                   <div>
                     <p className="font-semibold">{selectedMember.firstname} {selectedMember.surname} {selectedMember.othername}</p>
                     <p className="text-sm text-gray-500">{selectedMember.occupation || 'No occupation'}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div><span className="font-semibold">Phone:</span> {selectedAttendanceMember.phone}</div>
-                  <div><span className="font-semibold">Email:</span> {selectedAttendanceMember.email || '-'}</div>
-                  <div><span className="font-semibold">DOB:</span> {selectedAttendanceMember.dob ? new Date(selectedAttendanceMember.dob).toLocaleDateString() : '-'}</div>
-                  <div><span className="font-semibold">Age:</span> {selectedAttendanceMember.dob ? calculateAge(selectedAttendanceMember.dob) : '-'} years</div>
-                  <div><span className="font-semibold">Address:</span> {selectedAttendanceMember.address || '-'}</div>
-                  <div><span className="font-semibold">Born Again:</span> {selectedAttendanceMember.bornAgain}</div>
-                  <div><span className="font-semibold">Status:</span> {selectedAttendanceMember.membershipStatus}</div>
-                  <div><span className="font-semibold">Last Login:</span> {selectedAttendanceMember.lastLogin ? new Date(selectedAttendanceMember.lastLogin).toLocaleDateString() : 'Never'}</div>
+<div className="grid grid-cols-2 gap-2 text-sm">
+                  <div><span className="font-semibold">Phone:</span> {selectedMember.phone}</div>
+                  <div><span className="font-semibold">Email:</span> {selectedMember.email || '-'}</div>
+                  <div><span className="font-semibold">DOB:</span> {selectedMember.dob ? new Date(selectedMember.dob).toLocaleDateString() : '-'}</div>
+                  <div><span className="font-semibold">Age:</span> {selectedMember.dob ? calculateAge(selectedMember.dob) : '-'} years</div>
+                  <div><span className="font-semibold">Address:</span> {selectedMember.address || '-'}</div>
+                  <div><span className="font-semibold">Born Again:</span> {selectedMember.bornAgain}</div>
+                  <div><span className="font-semibold">Status:</span> {selectedMember.membershipStatus}</div>
+                  <div><span className="font-semibold">Last Login:</span> {selectedMember.lastLogin ? new Date(selectedMember.lastLogin).toLocaleDateString() : 'Never'}</div>
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === "pending" && (
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+            <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">Pending Registrations ({pendingMembers.length})</h2>
+            {pendingMembers.length === 0 ? (
+              <p className="text-gray-500">No pending registrations.</p>
+            ) : (
+              <div className="space-y-4">
+                {pendingMembers.map(m => (
+                  <div key={m._id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-semibold">{m.firstname} {m.surname} {m.othername}</p>
+                        <p className="text-sm text-gray-500">{m.phone}</p>
+                        <p className="text-sm text-gray-500">{m.email}</p>
+                        <p className="text-sm mt-1"><span className="font-medium">Occupation:</span> {m.occupation}</p>
+                        <p className="text-sm"><span className="font-medium">Address:</span> {m.address}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleApproveMember(m._id)} className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">Approve</button>
+                        <button onClick={() => handleRejectMember(m._id)} className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Reject</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -706,6 +910,66 @@ function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === "banners" && (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-4 text-adminBlue">Upload Banner</h2>
+            <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm">
+              <p className="font-semibold">Specifications:</p>
+              <p>Size: 1200 x 400px (recommended)</p>
+              <p>Formats: JPEG, PNG, WebP</p>
+              <p>Max size: 5MB</p>
+            </div>
+            <form onSubmit={handleBannerUpload} className="space-y-4">
+              <input type="text" placeholder="Banner Title" className="border p-2 w-full rounded" value={bannerTitle} onChange={e => setBannerTitle(e.target.value)} required />
+              <input type="url" placeholder="Link (optional)" className="border p-2 w-full rounded" value={bannerLink} onChange={e => setBannerLink(e.target.value)} />
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setBannerImg(e.target.files[0])} className="border p-2 w-full rounded" required />
+              <button type="submit" className="bg-adminBlue text-white px-6 py-2 rounded">Upload</button>
+            </form>
+            <div className="mt-8">
+              <h3 className="font-bold mb-4">Existing Banners ({banners.length})</h3>
+              {banners.map(b => (
+                <div key={b._id} className="flex items-center gap-3 p-2 border rounded mb-2">
+                  <img src={b.image.startsWith("http") ? b.image : `http://localhost:5000${b.image}`} className="w-16 h-10 object-cover rounded" />
+                  <span className="flex-1">{b.title}</span>
+                  <button onClick={() => setEditingBanner(b)} className="text-blue-500 mr-2">Edit</button>
+                  <button onClick={() => setDeletingBanner(b)} className="text-red-500">Delete</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {deletingBanner && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+              <h3 className="font-bold mb-4">Confirm Delete</h3>
+              <p className="mb-4">Delete "{deletingBanner.title}"?</p>
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setDeletingBanner(null)} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                <button onClick={() => handleDeleteBanner(deletingBanner._id)} className="px-4 py-2 bg-red-500 text-white rounded">Delete</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingBanner && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+              <h3 className="font-bold mb-4">Edit Banner</h3>
+              <form onSubmit={handleUpdateBanner} className="space-y-3">
+                <input type="text" defaultValue={editingBanner.title} onChange={e => setEditingBanner({...editingBanner, title: e.target.value})} className="border p-2 w-full rounded" required />
+                <input type="url" defaultValue={editingBanner.link} onChange={e => setEditingBanner({...editingBanner, link: e.target.value})} className="border p-2 w-full rounded" placeholder="Link" />
+                <label className="flex items-center gap-2"><input type="checkbox" defaultChecked={editingBanner.isActive} onChange={e => setEditingBanner({...editingBanner, isActive: e.target.checked})} /> <span>Active</span></label>
+                <input type="file" accept="image/*" onChange={e => setBannerImg(e.target.files[0])} className="border p-2 w-full rounded" />
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setEditingBanner(null)} className="flex-1 px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                  <button type="submit" className="flex-1 px-4 py-2 bg-adminBlue text-white rounded">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {activeTab === "balance" && (
           <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">Balance Sheet</h2>
@@ -722,15 +986,62 @@ function AdminDashboard() {
                 <p className="text-gray-600 text-sm md:text-base">Total Expenses</p>
                 <p className="text-xl md:text-2xl font-bold text-red-700">N{balance.totalExpenses}</p>
               </div>
-              <div className="bg-adminYellow p-4 rounded-lg">
+              <div className="bg-adminOrange p-4 rounded-lg">
                 <p className="text-gray-600 text-sm md:text-base">Final Balance</p>
                 <p className="text-xl md:text-2xl font-bold text-black">N{balance.balance}</p>
               </div>
             </div>
           </div>
         )}
-      </div>
 
+        {["prayer", "testimony", "complaint"].includes(activeTab) && (
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg md:text-xl font-bold text-adminBlue">
+                {activeTab === "prayer" ? "Prayer Requests" : activeTab === "testimony" ? "Testimonies" : "Complaints & Suggestions"}
+              </h2>
+              <button onClick={() => { API.get("/contact/all").then(r => setContacts(r.data)); }} className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200">Refresh</button>
+            </div>
+            <div className="space-y-3">
+              {contacts.filter(c => c.type === activeTab).length === 0 ? (
+                <p className="text-gray-500">No submissions yet.</p>
+              ) : (
+                contacts.filter(c => c.type === activeTab).map(c => (
+                  <div key={c._id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-semibold">{c.name}</p>
+                        {c.phone && <p className="text-sm text-gray-500">{c.phone}</p>}
+                        {c.email && <p className="text-sm text-gray-500">{c.email}</p>}
+                        <p className="mt-2 text-gray-700">{c.message}</p>
+                        <p className="text-xs text-gray-400 mt-2">{new Date(c.createdAt).toLocaleString()}</p>
+                      </div>
+                      <button onClick={() => setDeletingContact(c)} className="text-red-500 hover:text-red-700 ml-4">Delete</button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {deletingContact && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+              <h3 className="font-bold mb-4">Confirm Delete</h3>
+              <p className="mb-4">Delete this submission?</p>
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setDeletingContact(null)} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                <button onClick={() => handleDeleteContact(deletingContact._id)} className="px-4 py-2 bg-red-500 text-white rounded">Delete</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <footer className="fixed bottom-0 left-0 right-0 bg-adminBlue text-white text-center py-3 text-sm z-40">
+        <p>Royal Youth Portal Admin Dashboard</p>
+        <p className="text-blue-200 mt-1">2026 All Rights Reserved</p>
+      </footer>
       <Notification
         type={notification.type}
         message={notification.message}

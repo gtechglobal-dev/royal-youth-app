@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import Notification from "../components/Notification";
+import { OverlayLoader, PageLoader } from "../components/Loaders";
 
 function Login() {
   const navigate = useNavigate();
@@ -11,6 +12,15 @@ function Login() {
   });
   const [notification, setNotification] = useState({ open: false, type: "", message: "" });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) return <PageLoader />;
 
   const handleChange = (e) => {
     setLoginData({
@@ -21,6 +31,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
     try {
       const res = await API.post("/auth/login", loginData);
@@ -34,6 +45,7 @@ function Login() {
         navigate("/dashboard");
       }, 2000);
     } catch (error) {
+      setSubmitting(false);
       const errorMsg = error.response?.data?.message || "Invalid login credentials";
       const isDeleted = error.response?.data?.accountDeleted;
       
@@ -49,6 +61,7 @@ function Login() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8">
+      {submitting && <OverlayLoader />}
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" />

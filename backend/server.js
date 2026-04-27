@@ -10,6 +10,8 @@ import attendanceRoutes from "./routes/attendanceRoutes.js";
 import financeRoutes from "./routes/financeRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import clearDataRoutes from "./routes/clearDataRoutes.js";
+import bannerRoutes from "./routes/bannerRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +31,15 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/finance", financeRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/admin", clearDataRoutes);
+app.use("/api/banners", bannerRoutes);
+app.use("/api/contact", contactRoutes);
+
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal server error";
+  res.status(status).json({ message });
+});
 
 app.get("/", (req, res) => {
   res.send("Royal Youth API running...");

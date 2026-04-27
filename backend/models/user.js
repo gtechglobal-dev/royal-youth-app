@@ -107,6 +107,12 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    registrationStatus: {
+      type: String,
+      enum: ["Pending", "Approved", "Rejected"],
+      default: "Pending",
+    },
+
     dues: {
       January: {
         status: { type: String, default: "Unpaid" },
