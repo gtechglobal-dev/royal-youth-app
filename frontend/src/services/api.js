@@ -1,11 +1,15 @@
 import axios from "axios";
 
 const API = axios.create({
+<<<<<<< HEAD
   baseURL: "http://localhost:5000/api",
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
+=======
+  baseURL: "http://royal-youth-app-backend.onrender.com",
+>>>>>>> 9709aeb3ec7cd2e896e70aa5bd2bd1eea5e79288
 });
 
 API.interceptors.request.use((config) => {
