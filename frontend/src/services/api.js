@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://royal-youth-app-backend.onrender.com",
+  baseURL: "http://royal-youth-app-backend.onrender.com/api",
 });
 
 API.interceptors.request.use((config) => {
