@@ -1,0 +1,317 @@
+import User from "../models/user.js";
+import Income from "../models/income.js";
+
+const initializePayment = async (req, res) => {
+  try {
+    const { month, amount } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const reference = `DUE_${month}_${Date.now()}_${user._id}`;
+
+    const response = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      },
+      body: JSON.stringify({
+        email: "royalyouthsc4c5@gmail.com",
+        amount: amount * 100,
+        reference,
+        metadata: {
+          userId: user._id.toString(),
+          month,
+          type: "dues",
+        },
+        callback_url: `${process.env.FRONTEND_URL}/dashboard`,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.status) {
+      user.dues[month].status = "Pending";
+      user.dues[month].amount = amount;
+      user.dues[month].reference = reference;
+      await user.save();
+
+      res.status(200).json({
+        authorization_url: data.data.authorization_url,
+        reference: data.data.reference,
+        key: process.env.PAYSTACK_PUBLIC_KEY,
+      });
+    } else {
+      console.error("Paystack error:", data);
+      res.status(400).json({ message: data.message || "Failed to initialize payment" });
+    }
+  } catch (error) {
+    console.error("Payment initialization error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const initializeSupportPayment = async (req, res) => {
+  try {
+    const { amount, name, email, phone } = req.body;
+
+    if (!amount || amount < 100) {
+      return res.status(400).json({ message: "Minimum donation is ₦100" });
+    }
+
+    const reference = `SUP_${Date.now()}`;
+
+    const response = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      },
+      body: JSON.stringify({
+        email: email || "royalyouthsc4c5@gmail.com",
+        amount: amount * 100,
+        reference,
+        metadata: {
+          name: name || "Anonymous",
+          phone: phone || "",
+          type: "support",
+        },
+        callback_url: `${process.env.FRONTEND_URL}/?support=success`,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.status) {
+      res.status(200).json({
+        authorization_url: data.data.authorization_url,
+        reference: data.data.reference,
+        publicKey: process.env.PAYSTACK_PUBLIC_KEY,
+      });
+    } else {
+      console.error("Paystack error:", data);
+      res.status(400).json({ message: data.message || "Failed to initialize payment" });
+    }
+  } catch (error) {
+    console.error("Support payment error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const verifyPayment = async (req, res) => {
+  try {
+    const { reference } = req.body;
+
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.status && data.data.status === "success") {
+      const user = await User.findOne({
+        $or: [
+          { "dues.April.reference": reference },
+          { "dues.May.reference": reference },
+          { "dues.June.reference": reference },
+          { "dues.July.reference": reference },
+          { "dues.August.reference": reference },
+          { "dues.September.reference": reference },
+          { "dues.October.reference": reference },
+          { "dues.November.reference": reference },
+          { "dues.December.reference": reference },
+        ]
+      });
+
+      if (user) {
+        for (const month of Object.keys(user.dues)) {
+          if (user.dues[month].reference === reference) {
+            const amountPaid = user.dues[month].amount;
+            user.dues[month].status = "Paid";
+            user.dues[month].date = new Date();
+            user.dues[month].reference = undefined;
+            await user.save();
+
+            const income = new Income({
+              purpose: `2026 Dues - ${month} (${user.firstname} ${user.surname})`,
+              amount: amountPaid,
+              date: new Date(),
+              memberId: user._id,
+            });
+            await income.save();
+            break;
+          }
+        }
+      }
+
+      res.status(200).json({ message: "Payment verified successfully" });
+    } else {
+      res.status(400).json({ message: "Payment not successful" });
+    }
+  } catch (error) {
+    console.error("Payment verification error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const handlePaystackWebhook = async (req, res) => {
+  try {
+    const event = req.body;
+
+    if (event.event === "charge.success") {
+      const { reference, metadata, amount } = event.data;
+
+      if (metadata) {
+        if (metadata.type === "dues" && metadata.userId && metadata.month) {
+          const user = await User.findById(metadata.userId);
+
+          if (user) {
+            user.dues[metadata.month].status = "Paid";
+            user.dues[metadata.month].date = new Date();
+            user.dues[metadata.month].amount = amount / 100;
+            await user.save();
+
+            const income = new Income({
+              purpose: `2026 Dues - ${metadata.month} (${user.firstname} ${user.surname})`,
+              amount: amount / 100,
+              date: new Date(),
+              memberId: user._id,
+            });
+            await income.save();
+          }
+        } else if (metadata.type === "special" && metadata.userId && metadata.purpose) {
+          const user = await User.findById(metadata.userId);
+
+          if (user) {
+            const income = new Income({
+              purpose: metadata.purpose,
+              amount: amount / 100,
+              date: new Date(),
+              memberId: user._id,
+            });
+            await income.save();
+          }
+        }
+      }
+    }
+
+    res.status(200).json({ received: true });
+  } catch (error) {
+    console.error("Webhook error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getDuesIncome = async (req, res) => {
+  try {
+    const members = await User.find({ isDeleted: false });
+
+    let totalIncome = 0;
+    const monthlyIncome = {
+      April: 0,
+      May: 0,
+      June: 0,
+      July: 0,
+      August: 0,
+      September: 0,
+      October: 0,
+      November: 0,
+      December: 0,
+    };
+
+    members.forEach((member) => {
+      Object.keys(monthlyIncome).forEach((month) => {
+        if (member.dues[month]?.status === "Paid") {
+          monthlyIncome[month] += member.dues[month]?.amount || 2000;
+        }
+      });
+    });
+
+    totalIncome = Object.values(monthlyIncome).reduce((a, b) => a + b, 0);
+
+    res.status(200).json({
+      totalIncome,
+      monthlyIncome,
+      memberCount: members.length,
+    });
+  } catch (error) {
+    console.error("Error getting dues income:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const initializeSupportPayment = async (req, res) => {
+  try {
+    const { amount, name, email, phone } = req.body;
+
+    if (!amount || amount < 100) {
+      return res.status(400).json({ message: "Minimum donation is ₦100" });
+    }
+
+    const reference = `SUP_${Date.now()}`;
+
+    const response = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      },
+      body: JSON.stringify({
+        email: email || "royalyouthsc4c5@gmail.com",
+        amount: amount * 100,
+        reference,
+        metadata: {
+          name: name || "Anonymous",
+          phone: phone || "",
+          type: "support",
+        },
+        callback_url: `${process.env.FRONTEND_URL}/?support=success`,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.status) {
+      res.status(200).json({
+        authorization_url: data.data.authorization_url,
+        reference: data.data.reference,
+        publicKey: process.env.PAYSTACK_PUBLIC_KEY,
+      });
+    } else {
+      console.error("Paystack error:", data);
+      res.status(400).json({ message: data.message || "Failed to initialize payment" });
+    }
+  } catch (error) {
+    console.error("Support payment error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getAllSpecialDonations = async (req, res) => {
+  try {
+    const incomes = await Income.find({
+      memberId: { $exists: true },
+      memberId: { $ne: null }
+    }).populate("memberId", "firstname surname").sort({ createdAt: -1 });
+    
+    const months2026 = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
+    const specialDonations = incomes.filter(income => {
+      const isDuesPayment = income.purpose.includes("2026 Dues") || income.purpose.includes("Dues -");
+      return !isDuesPayment;
+    });
+    
+    res.status(200).json(specialDonations);
+  } catch (error) {
+    console.error("Error getting all special donations:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export { initializePayment, verifyPayment, handlePaystackWebhook, getDuesIncome, initializeSpecialPayment, verifySpecialPayment, getSpecialPayments };
