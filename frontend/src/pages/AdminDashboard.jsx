@@ -49,6 +49,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   const [contacts, setContacts] = useState([]);
   const [deletingContact, setDeletingContact] = useState(null);
   const [pendingMembers, setPendingMembers] = useState([]);
+  const [loadingAction, setLoadingAction] = useState({ id: null, type: null });
   const [counts, setCounts] = useState({
     members: 0,
     pending: 0,
@@ -170,6 +171,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
 
   const handleApproveMember = async (id) => {
     try {
+      setLoadingAction({ id, type: "approve" });
       await API.put(`/auth/approve-member/${id}`);
       setNotification({ open: true, type: "success", message: "Member Approved" });
       const res = await API.get("/auth/pending");
@@ -177,11 +179,14 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       setCounts(prev => ({ ...prev, pending: res.data.length }));
     } catch {
       setNotification({ open: true, type: "error", message: "Approval failed" });
+    } finally {
+      setLoadingAction({ id: null, type: null });
     }
   };
 
   const handleRejectMember = async (id) => {
     try {
+      setLoadingAction({ id, type: "reject" });
       await API.put(`/auth/reject-member/${id}`);
       setNotification({ open: true, type: "success", message: "Member rejected" });
       const res = await API.get("/auth/pending");
@@ -189,6 +194,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       setCounts(prev => ({ ...prev, pending: res.data.length }));
     } catch {
       setNotification({ open: true, type: "error", message: "Rejection failed" });
+    } finally {
+      setLoadingAction({ id: null, type: null });
     }
   };
 
@@ -671,8 +678,26 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                         <p className="text-sm"><span className="font-medium">Address:</span> {m.address}</p>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => handleApproveMember(m._id)} className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">Approve</button>
-                        <button onClick={() => handleRejectMember(m._id)} className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Reject</button>
+                        <button
+                          onClick={() => handleApproveMember(m._id)}
+                          disabled={loadingAction.id === m._id}
+                          className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          {loadingAction.id === m._id && loadingAction.type === "approve" ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                          ) : null}
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectMember(m._id)}
+                          disabled={loadingAction.id === m._id}
+                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          {loadingAction.id === m._id && loadingAction.type === "reject" ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                          ) : null}
+                          Reject
+                        </button>
                       </div>
                     </div>
                   </div>
