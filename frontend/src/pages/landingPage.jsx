@@ -91,9 +91,11 @@ function LandingPage() {
             </div>
           </div>
         </div>
-</header>
+      </header>
 
-      <BannerGallery />
+      <div className="pt-16 md:pt-20">
+        <BannerGallery />
+      </div>
 
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-1.5 md:py-2 overflow-hidden shadow-lg">
         <div className="flex whitespace-nowrap" style={{ animation: "marquee 20s linear infinite" }}>
@@ -112,13 +114,13 @@ function LandingPage() {
               BUILDING COMMUNITY
             </span>
           </div>
-<h2 className="text-5xl md:text-7xl font-bold mb-6 leading-none tracking-[-0.08em] md:tracking-[-0.05em]">
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
-                ROYAL YOUTH
-              </span>
-              <br />
-              <span className="text-gray-800">HUB</span>
-            </h2>
+          <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-none tracking-[-0.08em] md:tracking-[-0.05em]">
+            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
+              ROYAL YOUTH
+            </span>
+            <br />
+            <span className="text-gray-800">HUB</span>
+          </h2>
           <p className="text-gray-600 mb-10 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
             Building a community of faith, purpose, and excellence. Join us in making a difference.
           </p>
@@ -218,7 +220,7 @@ function LandingPage() {
             </p>
           </div>
         </div>
-</footer>
+      </footer>
     </div>
   );
 }

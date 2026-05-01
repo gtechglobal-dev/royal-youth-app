@@ -360,19 +360,14 @@ export const getCurrentUser = async (req, res) => {
   }
 };
 
-// DELETE MEMBER
+// DELETE MEMBER (Hard delete from database)
 export const deleteMember = async (req, res) => {
   try {
-    const member = await User.findById(req.params.id);
+    const member = await User.findByIdAndDelete(req.params.id);
 
     if (!member) {
       return res.status(404).json({ message: "Member not found" });
     }
-
-    member.isDeleted = true;
-    member.phone = `${member.phone}_deleted_${Date.now()}`;
-    member.email = member.email ? `${member.email}_deleted_${Date.now()}` : null;
-    await member.save();
 
     res.status(200).json({ message: "Member account deleted successfully" });
   } catch (error) {
