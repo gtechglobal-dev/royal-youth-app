@@ -1,0 +1,3 @@
+# Render Static Site SPA fallback
+# This file needs to be in the root of the publish directory
+/* /index.html 200
