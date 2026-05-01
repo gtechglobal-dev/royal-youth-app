@@ -97,7 +97,7 @@ function BannerGallery() {
           <img
             src={banner.image.startsWith("http") ? banner.image : `${import.meta.env.VITE_API_URL}${banner.image}`}
             alt={banner.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain bg-gray-900"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
         </div>

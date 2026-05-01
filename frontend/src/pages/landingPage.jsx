@@ -93,9 +93,7 @@ function LandingPage() {
         </div>
       </header>
 
-      <div className="pt-16 md:pt-20">
-        <BannerGallery />
-      </div>
+      <BannerGallery />
 
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-1.5 md:py-2 overflow-hidden shadow-lg">
         <div className="flex whitespace-nowrap" style={{ animation: "marquee 20s linear infinite" }}>
