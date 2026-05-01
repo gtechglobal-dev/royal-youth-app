@@ -51,7 +51,7 @@ function UserDashboard() {
     );
   }
 
-  const months2026 = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const months2026 = ["May", "June", "July", "August", "September", "October", "November", "December"];
 
   return (
     <div style={{ padding: "40px", maxWidth: "900px", margin: "0 auto" }}>

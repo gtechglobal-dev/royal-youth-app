@@ -170,22 +170,10 @@ function MemberDashboard() {
     );
   }
 
-   const allMonths = [
+   const months = [
     "May", "June", "July", "August", "September", 
     "October", "November", "December"
   ];
-
-  const getMonthsFromRegistration = () => {
-    if (!user.createdAt) return allMonths;
-    const regDate = new Date(user.createdAt);
-    const regMonth = regDate.getMonth() + 1;
-    const regYear = regDate.getFullYear();
-    
-    const startIndex = regMonth >= 4 ? regMonth - 4 : 0;
-    return allMonths.slice(startIndex);
-  };
-
-  const months = getMonthsFromRegistration();
 
   return (
     <div className="min-h-screen bg-gray-100">
