@@ -82,11 +82,11 @@ function LandingPage() {
               )}
 
               {!isLoggedIn && (
-                <a href="/admin-login" target="_blank" rel="noopener noreferrer">
+                <Link to="/admin-login">
                   <button className="border-2 border-indigo-200 text-indigo-600 px-4 py-2 md:px-6 rounded-xl font-semibold hover:bg-indigo-50 hover:border-indigo-300 transition-all text-sm md:text-base">
                     Admin
                   </button>
-                </a>
+                </Link>
               )}
             </div>
           </div>
@@ -207,9 +207,9 @@ function LandingPage() {
               <Link to="/register" className="text-indigo-200 hover:text-white transition-colors font-medium">
                 Join Us
               </Link>
-              <a href="/admin-login" target="_blank" rel="noopener noreferrer" className="text-indigo-200 hover:text-white transition-colors font-medium">
+              <Link to="/admin-login" className="text-indigo-200 hover:text-white transition-colors font-medium">
                 Admin
-              </a>
+              </Link>
             </div>
           </div>
           <div className="border-t border-indigo-800/50 pt-8 text-center">
