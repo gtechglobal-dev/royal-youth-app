@@ -3,8 +3,11 @@ node_modules
 
 # environment variables
 .env
+.env.*
 backend/.env
+backend/.env.*
 frontend/.env
+frontend/.env.*
 
 # logs
 logs
