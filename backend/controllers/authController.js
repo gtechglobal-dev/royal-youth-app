@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { uploadToCloudinary } from "../config/cloudinary.js";
 
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
 // Helper function to sanitize input against NoSQL injection
 const sanitizeInput = (input) => {
   if (typeof input !== 'string') return '';
