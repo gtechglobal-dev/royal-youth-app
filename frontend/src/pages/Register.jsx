@@ -90,9 +90,9 @@ function Register() {
   const validate = () => {
     const errs = {};
     if (!formData.surname.trim()) errs.surname = "Surname is required";
-    else if (!/^[a-zA-Z]+$/.test(formData.surname.trim())) errs.surname = "Surname must be letters only";
+    else if (!/^[a-zA-Z'-]+$/.test(formData.surname.trim().replace(/ /g, ""))) errs.surname = "Surname must contain letters only";
     if (!formData.firstname.trim()) errs.firstname = "First name is required";
-    else if (!/^[a-zA-Z]+$/.test(formData.firstname.trim())) errs.firstname = "First name must be letters only";
+    else if (!/^[a-zA-Z'-]+$/.test(formData.firstname.trim().replace(/ /g, ""))) errs.firstname = "First name must contain letters only";
     if (!formData.email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = "Enter a valid email";
     if (!formData.phone.trim()) errs.phone = "Phone number is required";
@@ -105,6 +105,11 @@ function Register() {
     if (!formData.password) errs.password = "Password is required";
     else if (formData.password.length < 6) errs.password = "Password must be at least 6 characters";
     if (!formData.address.trim()) errs.address = "Address is required";
+    if (!formData.stateOfOrigin) errs.stateOfOrigin = "State of Origin is required";
+    if (!formData.lga) errs.lga = "Local Government Area is required";
+    if (!formData.occupation.trim()) errs.occupation = "Occupation is required";
+    if (!formData.serviceUnit) errs.serviceUnit = "Service Unit is required";
+    if (formData.serviceUnit === "None" && !formData.serviceUnitLove) errs.serviceUnitLove = "Please select a service unit to join";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -167,8 +172,10 @@ function Register() {
 
       const response = await API.post("/auth/register", fd);
       console.log("Registration response:", response.data);
-      if (response.data?.message) navigate("/registration-success");
-      else throw new Error("Registration failed");
+      if (response.data?.message) {
+        setSubmitting(false);
+        navigate("/registration-success");
+      } else throw new Error("Registration failed");
     } catch (error) {
       console.error("Registration error:", error);
       console.error("Error response:", error.response?.data);

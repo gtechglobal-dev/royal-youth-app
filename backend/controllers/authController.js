@@ -74,6 +74,39 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "First name must contain letters only, no spaces or special characters" });
     }
 
+    if (!address || !address.trim()) {
+      return res.status(400).json({ message: "Address is required" });
+    }
+
+    if (!stateOfOrigin || !stateOfOrigin.trim()) {
+      return res.status(400).json({ message: "State of Origin is required" });
+    }
+
+    if (!lga || !lga.trim()) {
+      return res.status(400).json({ message: "Local Government Area is required" });
+    }
+
+    if (!occupation || !occupation.trim()) {
+      return res.status(400).json({ message: "Occupation is required" });
+    }
+
+    if (!serviceUnit || !serviceUnit.trim()) {
+      return res.status(400).json({ message: "Service Unit is required" });
+    }
+
+    const validServiceUnits = [
+      "Choir", "Sanctuary", "Protocol", "Ushers", "Lighthouse", "Security",
+      "Pastoral", "Prayer Unit", "Altar Ministrations", "Media", "Children Ministry", "Evangelism/Follow Up", "None"
+    ];
+
+    if (!validServiceUnits.includes(serviceUnit)) {
+      return res.status(400).json({ message: "Invalid service unit selected" });
+    }
+
+    if (serviceUnit === "None" && (!serviceUnitLove || !serviceUnitLove.trim())) {
+      return res.status(400).json({ message: "Please select a service unit you'd like to join" });
+    }
+
     console.log("Checking existing phone:", phone);
     const existingPhone = await User.findOne({ phone, isDeleted: false });
     if (existingPhone) {
