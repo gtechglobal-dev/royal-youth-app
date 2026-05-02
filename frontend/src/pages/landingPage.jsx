@@ -126,7 +126,7 @@ function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-8">
               <Link to="/register" className="w-full max-w-xs sm:w-auto">
                 <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 md:px-10 md:py-4 rounded-2xl font-bold text-base md:text-lg transition-all shadow-xl shadow-indigo-600/30 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]">
-                  Register
+                  Create An Account
                 </button>
               </Link>
               <Link to="/login" className="w-full max-w-xs sm:w-auto">

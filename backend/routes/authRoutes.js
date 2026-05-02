@@ -51,7 +51,11 @@ router.put("/approve-member/:id", protect, async (req, res) => {
     member.registrationStatus = "Approved";
     await member.save();
     if (member.email) {
-      await sendApprovalEmail(member.email, member.firstname);
+      try {
+        await sendApprovalEmail(member.email, member.firstname);
+      } catch (emailErr) {
+        console.error("Failed to send approval email:", emailErr);
+      }
     }
     res.json({ message: "Member Approved successfully" });
   } catch (err) {
@@ -68,7 +72,11 @@ router.put("/reject-member/:id", protect, async (req, res) => {
     member.registrationStatus = "Rejected";
     await member.save();
     if (member.email) {
-      await sendRejectionEmail(member.email, member.firstname);
+      try {
+        await sendRejectionEmail(member.email, member.firstname);
+      } catch (emailErr) {
+        console.error("Failed to send rejection email:", emailErr);
+      }
     }
     res.json({ message: "Member rejected" });
   } catch (err) {
