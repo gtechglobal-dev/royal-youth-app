@@ -688,19 +688,33 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               </div>
 
               <div>
-                <h2 className="text-lg md:text-xl font-bold mb-2 text-adminBlue">UPCOMING BIRTHDAYS</h2>
-                <hr className="mb-4 border-gray-300" />
-                {getUpcomingBirthdays().length === 0 ? (
-                  <p className="text-gray-500">No existing Birthday in the month of {new Date().toLocaleString('default', { month: 'long' })}</p>
-                ) : (
-                  <div className="space-y-1">
-                    {getUpcomingBirthdays().map((member) => (
-                      <p key={member._id} className="text-gray-700">
-                        {member.firstname} {member.surname} - {formatDateWithOrdinal(member.day, member.month)}
-                      </p>
-                    ))}
-                  </div>
-                )}
+                <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">UPCOMING BIRTHDAYS</h2>
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  {getUpcomingBirthdays().length === 0 ? (
+                    <p className="p-4 text-gray-500 text-center">No existing Birthday in the month of {new Date().toLocaleString('default', { month: 'long' })}</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse text-sm md:text-base">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border p-2 md:p-3 text-left">Registered Name</th>
+                            <th className="border p-2 md:p-3 text-left">Birthday</th>
+                            <th className="border p-2 md:p-3 text-left">Phone Number</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {getUpcomingBirthdays().map((member) => (
+                            <tr key={member._id}>
+                              <td className="border p-2 md:p-3">{member.firstname} {member.surname}</td>
+                              <td className="border p-2 md:p-3">{formatDateWithOrdinal(member.day, member.month)}</td>
+                              <td className="border p-2 md:p-3">{member.phone}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}
