@@ -39,6 +39,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   const [specialDonations, setSpecialDonations] = useState([]);
   const [editingOtherIncome, setEditingOtherIncome] = useState(null);
   const [editingSpecialDonation, setEditingSpecialDonation] = useState(null);
+  const [deletingOtherIncomeId, setDeletingOtherIncomeId] = useState(null);
+  const [deletingSpecialDonationId, setDeletingSpecialDonationId] = useState(null);
   const months2026 = ["May", "June", "July", "August", "September", "October", "November", "December"];
   const [bannerTitle, setBannerTitle] = useState("");
   const [bannerLink, setBannerLink] = useState("");
@@ -330,10 +332,14 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   };
 
   const handleDeleteOtherIncome = async (id) => {
-    if (!confirm("Are you sure you want to delete this income record?")) return;
+    setDeletingOtherIncomeId(id);
+  };
+
+  const confirmDeleteOtherIncome = async () => {
     try {
-      await API.delete(`/finance/income/${id}`);
+      await API.delete(`/finance/income/${deletingOtherIncomeId}`);
       setNotification({ open: true, type: "success", message: "Income deleted" });
+      setDeletingOtherIncomeId(null);
       // Refresh income data
       const [incomeRes, donationsRes, balanceRes] = await Promise.all([
         API.get("/finance/income/all"),
@@ -345,6 +351,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       setBalance(balanceRes.data);
     } catch (error) {
       setNotification({ open: true, type: "error", message: "Error deleting income" });
+      setDeletingOtherIncomeId(null);
     }
   };
 
@@ -369,10 +376,14 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   };
 
   const handleDeleteSpecialDonation = async (id) => {
-    if (!confirm("Are you sure you want to delete this donation?")) return;
+    setDeletingSpecialDonationId(id);
+  };
+
+  const confirmDeleteSpecialDonation = async () => {
     try {
-      await API.delete(`/payment/special-donation/${id}`);
+      await API.delete(`/payment/special-donation/${deletingSpecialDonationId}`);
       setNotification({ open: true, type: "success", message: "Special donation deleted" });
+      setDeletingSpecialDonationId(null);
       // Refresh data
       const [incomeRes, donationsRes, balanceRes] = await Promise.all([
         API.get("/finance/income/all"),
@@ -384,6 +395,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       setBalance(balanceRes.data);
     } catch (error) {
       setNotification({ open: true, type: "error", message: "Error deleting donation" });
+      setDeletingSpecialDonationId(null);
     }
   };
 
@@ -914,62 +926,64 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   value={duesSearch}
                   onChange={(e) => setDuesSearch(e.target.value)}
                 />
-                <table className="w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border p-2 text-left">Member</th>
-                      <th className="border p-2 text-left">Amount</th>
-                      <th className="border p-2 text-left">Date Paid</th>
-                      <th className="border p-2 text-left">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {members.filter(m => 
-                      m.registrationStatus === "Approved" && 
-                      `${m.firstname} ${m.surname}`.toLowerCase().includes(duesSearch.toLowerCase())
-                    ).map((member) => (
-                      <tr key={member._id}>
-                        <td className="border p-2">{member.firstname} {member.surname}</td>
-                        <td className="border p-2">
-                          <input
-                            type="number"
-                            className="border p-1 rounded w-20"
-                            defaultValue={member.dues?.[selectedMonth]?.amount || 1000}
-                            onBlur={(e) => {
-                              const amount = parseInt(e.target.value) || 0;
-                              if (amount > 0) {
-                                updateDues(member._id, selectedMonth, "Paid", amount);
-                              }
-                            }}
-                          />
-                        </td>
-                        <td className="border p-2 text-sm">
-                          {member.dues?.[selectedMonth]?.date
-                            ? new Date(member.dues[selectedMonth].date).toLocaleDateString('en-GB')
-                            : '-'}
-                        </td>
-                        <td className="border p-2">
-                          <button
-                            onClick={() => {
-                              const currentAmount = member.dues?.[selectedMonth]?.amount || 0;
-                              const currentStatus = member.dues?.[selectedMonth]?.status || "Unpaid";
-                              const newStatus = currentStatus === "Paid" ? "Unpaid" : "Paid";
-                              const amount = newStatus === "Paid" ? (currentAmount || 1000) : 0;
-                              updateDues(member._id, selectedMonth, newStatus, amount);
-                            }}
-                            className={`px-2 py-1 rounded text-sm ${
-                              member.dues?.[selectedMonth]?.status === "Paid"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {member.dues?.[selectedMonth]?.status || "Unpaid"}
-                          </button>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm md:text-base min-w-[500px]">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border p-2 md:p-3 text-left">Member</th>
+                        <th className="border p-2 md:p-3 text-left">Amount</th>
+                        <th className="border p-2 md:p-3 text-left">Date Paid</th>
+                        <th className="border p-2 md:p-3 text-left">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {members.filter(m => 
+                        m.registrationStatus === "Approved" && 
+                        `${m.firstname} ${m.surname}`.toLowerCase().includes(duesSearch.toLowerCase())
+                      ).map((member) => (
+                        <tr key={member._id}>
+                          <td className="border p-2 md:p-3">{member.firstname} {member.surname}</td>
+                          <td className="border p-2 md:p-3">
+                            <input
+                              type="number"
+                              className="border p-1 rounded w-20"
+                              defaultValue={member.dues?.[selectedMonth]?.amount || 1000}
+                              onBlur={(e) => {
+                                const amount = parseInt(e.target.value) || 0;
+                                if (amount > 0) {
+                                  updateDues(member._id, selectedMonth, "Paid", amount);
+                                }
+                              }}
+                            />
+                          </td>
+                          <td className="border p-2 md:p-3 text-sm">
+                            {member.dues?.[selectedMonth]?.date
+                              ? new Date(member.dues[selectedMonth].date).toLocaleDateString('en-GB')
+                              : '-'}
+                          </td>
+                          <td className="border p-2 md:p-3">
+                            <button
+                              onClick={() => {
+                                const currentAmount = member.dues?.[selectedMonth]?.amount || 0;
+                                const currentStatus = member.dues?.[selectedMonth]?.status || "Unpaid";
+                                const newStatus = currentStatus === "Paid" ? "Unpaid" : "Paid";
+                                const amount = newStatus === "Paid" ? (currentAmount || 1000) : 0;
+                                updateDues(member._id, selectedMonth, newStatus, amount);
+                              }}
+                              className={`px-2 py-1 rounded text-sm ${
+                                member.dues?.[selectedMonth]?.status === "Paid"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {member.dues?.[selectedMonth]?.status || "Unpaid"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
@@ -1605,18 +1619,65 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
             </div>
           </div>
         )}
+</div>
+        <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-sky-500 to-blue-600 text-white text-center py-3 text-sm z-40 shadow-lg">
+          <p className="font-semibold">Royal Youth Portal Admin Dashboard</p>
+          <p className="text-sky-100 mt-1">2026 All Rights Reserved</p>
+        </footer>
+
+        {deletingOtherIncomeId && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+              <h3 className="text-lg font-bold mb-4">Confirm Delete</h3>
+              <p className="mb-6 text-gray-600">Are you sure you want to delete this income record? This action cannot be undone.</p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setDeletingOtherIncomeId(null)}
+                  className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteOtherIncome}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {deletingSpecialDonationId && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+              <h3 className="text-lg font-bold mb-4">Confirm Delete</h3>
+              <p className="mb-6 text-gray-600">Are you sure you want to delete this special donation? This action cannot be undone.</p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setDeletingSpecialDonationId(null)}
+                  className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteSpecialDonation}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          isOpen={notification.open}
+          onClose={() => setNotification({ ...notification, open: false })}
+        />
       </div>
-       <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-sky-500 to-blue-600 text-white text-center py-3 text-sm z-40 shadow-lg">
-         <p className="font-semibold">Royal Youth Portal Admin Dashboard</p>
-         <p className="text-sky-100 mt-1">2026 All Rights Reserved</p>
-       </footer>
-      <Notification
-        type={notification.type}
-        message={notification.message}
-        isOpen={notification.open}
-        onClose={() => setNotification({ ...notification, open: false })}
-      />
-    </div>
   );
 }
 
