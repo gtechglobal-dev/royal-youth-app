@@ -7,11 +7,17 @@ import {
   getAllIncome,
   getAllExpenses,
   resetFinanceData,
+  updateIncome,
+  deleteIncome,
 } from "../controllers/financeController.js";
 
 const router = express.Router();
 
 router.post("/income", protect, addIncome);
+
+router.put("/income/:id", protect, updateIncome);
+
+router.delete("/income/:id", protect, deleteIncome);
 
 router.post("/expense", protect, addExpense);
 

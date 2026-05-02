@@ -325,4 +325,48 @@ export const addSpecialDonation = async (req, res) => {
   }
 };
 
+// UPDATE SPECIAL DONATION
+export const updateSpecialDonation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { purpose, amount, memberId, date } = req.body;
+
+    const donation = await Income.findById(id);
+    if (!donation) {
+      return res.status(404).json({ message: "Special donation not found" });
+    }
+
+    donation.purpose = purpose || donation.purpose;
+    donation.amount = amount || donation.amount;
+    donation.memberId = memberId || donation.memberId;
+    donation.date = date || donation.date;
+
+    await donation.save();
+
+    res.status(200).json({ message: "Special donation updated successfully", donation });
+  } catch (error) {
+    console.error("Error updating special donation:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// DELETE SPECIAL DONATION
+export const deleteSpecialDonation = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const donation = await Income.findById(id);
+    if (!donation) {
+      return res.status(404).json({ message: "Special donation not found" });
+    }
+
+    await donation.deleteOne();
+
+    res.status(200).json({ message: "Special donation deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting special donation:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export { initializePayment, verifyPayment, handlePaystackWebhook, getDuesIncome };

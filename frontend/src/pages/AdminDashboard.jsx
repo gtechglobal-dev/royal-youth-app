@@ -37,8 +37,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   const [incomeRecords, setIncomeRecords] = useState({});
   const [otherIncome, setOtherIncome] = useState([]);
   const [specialDonations, setSpecialDonations] = useState([]);
-  const totalOtherIncome = otherIncome.reduce((sum, inc) => sum + (inc.amount || 0), 0);
-  const totalSpecialDonations = specialDonations.reduce((sum, d) => sum + parseInt(d.amount || 0), 0);
+  const [editingOtherIncome, setEditingOtherIncome] = useState(null);
+  const [editingSpecialDonation, setEditingSpecialDonation] = useState(null);
   const months2026 = ["May", "June", "July", "August", "September", "October", "November", "December"];
   const [bannerTitle, setBannerTitle] = useState("");
   const [bannerLink, setBannerLink] = useState("");
@@ -64,6 +64,9 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     "May", "June", "July", "August", "September", 
     "October", "November", "December"
   ];
+
+  const totalOtherIncome = otherIncome.reduce((sum, inc) => sum + (inc.amount || 0), 0);
+  const totalSpecialDonations = specialDonations.reduce((sum, d) => sum + parseInt(d.amount || 0), 0);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -306,6 +309,84 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     }
   };
 
+  const handleUpdateOtherIncome = async (e) => {
+    e.preventDefault();
+    try {
+      await API.put(`/finance/income/${editingOtherIncome._id}`, editingOtherIncome);
+      setNotification({ open: true, type: "success", message: "Income updated" });
+      setEditingOtherIncome(null);
+      // Refresh income data
+      const [incomeRes, donationsRes, balanceRes] = await Promise.all([
+        API.get("/finance/income/all"),
+        API.get("/payment/all-special-donations"),
+        API.get("/finance/balance-sheet")
+      ]);
+      setOtherIncome(incomeRes.data);
+      setSpecialDonations(donationsRes.data || []);
+      setBalance(balanceRes.data);
+    } catch (error) {
+      setNotification({ open: true, type: "error", message: "Error updating income" });
+    }
+  };
+
+  const handleDeleteOtherIncome = async (id) => {
+    if (!confirm("Are you sure you want to delete this income record?")) return;
+    try {
+      await API.delete(`/finance/income/${id}`);
+      setNotification({ open: true, type: "success", message: "Income deleted" });
+      // Refresh income data
+      const [incomeRes, donationsRes, balanceRes] = await Promise.all([
+        API.get("/finance/income/all"),
+        API.get("/payment/all-special-donations"),
+        API.get("/finance/balance-sheet")
+      ]);
+      setOtherIncome(incomeRes.data);
+      setSpecialDonations(donationsRes.data || []);
+      setBalance(balanceRes.data);
+    } catch (error) {
+      setNotification({ open: true, type: "error", message: "Error deleting income" });
+    }
+  };
+
+  const handleUpdateSpecialDonation = async (e) => {
+    e.preventDefault();
+    try {
+      await API.put(`/payment/special-donation/${editingSpecialDonation._id}`, editingSpecialDonation);
+      setNotification({ open: true, type: "success", message: "Special donation updated" });
+      setEditingSpecialDonation(null);
+      // Refresh data
+      const [incomeRes, donationsRes, balanceRes] = await Promise.all([
+        API.get("/finance/income/all"),
+        API.get("/payment/all-special-donations"),
+        API.get("/finance/balance-sheet")
+      ]);
+      setOtherIncome(incomeRes.data);
+      setSpecialDonations(donationsRes.data || []);
+      setBalance(balanceRes.data);
+    } catch (error) {
+      setNotification({ open: true, type: "error", message: "Error updating donation" });
+    }
+  };
+
+  const handleDeleteSpecialDonation = async (id) => {
+    if (!confirm("Are you sure you want to delete this donation?")) return;
+    try {
+      await API.delete(`/payment/special-donation/${id}`);
+      setNotification({ open: true, type: "success", message: "Special donation deleted" });
+      // Refresh data
+      const [incomeRes, donationsRes, balanceRes] = await Promise.all([
+        API.get("/finance/income/all"),
+        API.get("/payment/all-special-donations"),
+        API.get("/finance/balance-sheet")
+      ]);
+      setOtherIncome(incomeRes.data);
+      setSpecialDonations(donationsRes.data || []);
+      setBalance(balanceRes.data);
+    } catch (error) {
+      setNotification({ open: true, type: "error", message: "Error deleting donation" });
+    }
+  };
+
   const handleBannerUpload = async (e) => {
     e.preventDefault();
     if (!bannerImg) {
@@ -469,6 +550,53 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     return age;
   };
 
+  const getUpcomingBirthdays = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfYear = new Date(today.getFullYear(), 11, 31); // Dec 31 of current year
+    
+    return members.filter(member => {
+      if (!member.dob) return false;
+      if (member.registrationStatus !== "Approved") return false;
+      
+      const birthDate = new Date(member.dob);
+      const birthMonth = birthDate.getMonth();
+      const birthDay = birthDate.getDate();
+      
+      // Create date for this year's birthday
+      const thisYearBirthday = new Date(today.getFullYear(), birthMonth, birthDay);
+      
+      // Must be from today until end of year
+      if (thisYearBirthday < today) return false;
+      if (thisYearBirthday > endOfYear) return false;
+      
+      return true;
+    }).map(member => {
+      const birthDate = new Date(member.dob);
+      const birthdayThisYear = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+      
+      return {
+        ...member,
+        birthdayDate: birthdayThisYear,
+        day: birthDate.getDate(),
+        month: birthDate.getMonth()
+      };
+    }).sort((a, b) => a.birthdayDate - b.birthdayDate); // Sort by soonest birthday
+  };
+
+  const formatDateWithOrdinal = (day, month) => {
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+                       "July", "August", "September", "October", "November", "December"];
+    
+    // Add ordinal suffix
+    let suffix = "th";
+    if (day === 1 || day === 21 || day === 31) suffix = "st";
+    else if (day === 2 || day === 22) suffix = "nd";
+    else if (day === 3 || day === 23) suffix = "rd";
+    
+    return `${day}${suffix} ${monthNames[month]}`;
+  };
+
   const tabs = [
     { id: "members", label: "View Members" },
     { id: "pending", label: "Pending Registration" },
@@ -515,49 +643,67 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
        </header>
 
 <div className="container mx-auto p-4 md:p-6">
-        {activeTab ? (
-          <div className="flex items-center gap-3 mb-4">
-            <button onClick={() => setActiveTab(null)} className="flex items-center gap-2 text-adminBlue hover:text-blue-700 font-semibold">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {tabs.map((tab, i) => {
-                const colors = [
-                  "bg-blue-500 hover:bg-blue-600",
-                  "bg-orange-500 hover:bg-orange-600",
-                  "bg-emerald-500 hover:bg-emerald-600",
-                  "bg-purple-500 hover:bg-purple-600",
-                  "bg-rose-500 hover:bg-rose-600",
-                  "bg-cyan-500 hover:bg-cyan-600",
-                  "bg-amber-500 hover:bg-amber-600",
-                  "bg-teal-500 hover:bg-teal-600",
-                ];
-                const countKey = tab.id === "pending" ? "pending" : tab.id;
-                const count = counts[countKey];
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`relative px-3 py-3 rounded-lg text-white font-semibold text-sm md:text-base shadow-sm transition-all ${colors[i % colors.length]}`}
-                  >
-                    {tab.label}
-                    {count > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                        {count > 99 ? "99+" : count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+         {activeTab ? (
+           <div className="flex items-center gap-3 mb-4">
+             <button onClick={() => setActiveTab(null)} className="flex items-center gap-2 text-adminBlue hover:text-blue-700 font-semibold">
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+               </svg>
+               Back
+             </button>
+           </div>
+) : (
+            <>
+              <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {tabs.map((tab, i) => {
+                    const colors = [
+                      "bg-blue-500 hover:bg-blue-600",
+                      "bg-orange-500 hover:bg-orange-600",
+                      "bg-emerald-500 hover:bg-emerald-600",
+                      "bg-purple-500 hover:bg-purple-600",
+                      "bg-rose-500 hover:bg-rose-600",
+                      "bg-cyan-500 hover:bg-cyan-600",
+                      "bg-amber-500 hover:bg-amber-600",
+                      "bg-teal-500 hover:bg-teal-600",
+                    ];
+                    const countKey = tab.id === "pending" ? "pending" : tab.id;
+                    const count = counts[countKey];
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`relative px-3 py-3 rounded-lg text-white font-semibold text-sm md:text-base shadow-sm transition-all ${colors[i % colors.length]}`}
+                      >
+                        {tab.label}
+                        {count > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                            {count > 99 ? "99+" : count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-lg md:text-xl font-bold mb-2 text-adminBlue">UPCOMING BIRTHDAYS</h2>
+                <hr className="mb-4 border-gray-300" />
+                {getUpcomingBirthdays().length === 0 ? (
+                  <p className="text-gray-500">No existing Birthday in the month of {new Date().toLocaleString('default', { month: 'long' })}</p>
+                ) : (
+                  <div className="space-y-1">
+                    {getUpcomingBirthdays().map((member) => (
+                      <p key={member._id} className="text-gray-700">
+                        {member.firstname} {member.surname} - {formatDateWithOrdinal(member.day, member.month)}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
         {activeTab === "members" && (
           <div className="overflow-x-auto">
@@ -1075,6 +1221,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                       <th className="border p-2 md:p-3 text-left">Purpose</th>
                       <th className="border p-2 md:p-3 text-left">Amount</th>
                       <th className="border p-2 md:p-3 text-left">Date</th>
+                      <th className="border p-2 md:p-3 text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1083,6 +1230,20 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                         <td className="border p-2 md:p-3">{inc.purpose}</td>
                         <td className="border p-2 md:p-3">N{inc.amount?.toLocaleString()}</td>
                         <td className="border p-2 md:p-3">{new Date(inc.date).toLocaleDateString('en-GB')}</td>
+                        <td className="border p-2 md:p-3">
+                          <button
+                            onClick={() => setEditingOtherIncome({ ...inc })}
+                            className="text-yellow-500 hover:underline mr-2"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteOtherIncome(inc._id)}
+                            className="text-red-500 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     <tr className="bg-green-100 font-bold">
@@ -1105,6 +1266,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                       <th className="border p-2 md:p-3 text-left">Purpose</th>
                       <th className="border p-2 md:p-3 text-left">Amount</th>
                       <th className="border p-2 md:p-3 text-left">Date</th>
+                      <th className="border p-2 md:p-3 text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1114,6 +1276,20 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                         <td className="border p-2 md:p-3">{donation.purpose}</td>
                         <td className="border p-2 md:p-3">N{parseInt(donation.amount || 0).toLocaleString()}</td>
                         <td className="border p-2 md:p-3">{donation.date ? new Date(donation.date).toLocaleDateString('en-GB') : '-'}</td>
+                        <td className="border p-2 md:p-3">
+                          <button
+                            onClick={() => setEditingSpecialDonation({ ...donation, memberId: donation.memberId?._id || donation.memberId })}
+                            className="text-yellow-500 hover:underline mr-2"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSpecialDonation(donation._id)}
+                            className="text-red-500 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     <tr className="bg-green-100 font-bold">
@@ -1121,12 +1297,103 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                       <td className="border p-2 md:p-3">N{specialDonations.reduce((sum, d) => sum + parseInt(d.amount || 0), 0).toLocaleString()}</td>
                       <td className="border p-2 md:p-3"></td>
                     </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
+</tbody>
+                 </table>
+               </div>
+             </div>
+
+             {editingOtherIncome && (
+               <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+                 <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">Edit Other Income</h2>
+                 <form onSubmit={handleUpdateOtherIncome} className="space-y-3 md:space-y-4">
+                   <input
+                     type="text"
+                     placeholder="Purpose"
+                     className="border p-2 w-full"
+                     value={editingOtherIncome.purpose}
+                     onChange={(e) => setEditingOtherIncome({ ...editingOtherIncome, purpose: e.target.value })}
+                     required
+                   />
+                   <input
+                     type="number"
+                     placeholder="Amount"
+                     className="border p-2 w-full"
+                     value={editingOtherIncome.amount}
+                     onChange={(e) => setEditingOtherIncome({ ...editingOtherIncome, amount: e.target.value })}
+                     required
+                   />
+                   <input
+                     type="date"
+                     className="border p-2 w-full"
+                     value={editingOtherIncome.date?.split('T')[0]}
+                     onChange={(e) => setEditingOtherIncome({ ...editingOtherIncome, date: e.target.value })}
+                     required
+                   />
+                   <div className="flex gap-2">
+                     <button type="submit" className="bg-yellow-500 text-white px-4 md:px-6 py-2 rounded">
+                       Update
+                     </button>
+                     <button type="button" onClick={() => setEditingOtherIncome(null)} className="bg-gray-400 text-white px-4 md:px-6 py-2 rounded">
+                       Cancel
+                     </button>
+                   </div>
+                 </form>
+               </div>
+             )}
+
+             {editingSpecialDonation && (
+               <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+                 <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">Edit Special Donation</h2>
+                 <form onSubmit={handleUpdateSpecialDonation} className="space-y-3 md:space-y-4">
+                   <select
+                     className="border p-2 w-full"
+                     value={editingSpecialDonation.memberId}
+                     onChange={(e) => setEditingSpecialDonation({ ...editingSpecialDonation, memberId: e.target.value })}
+                     required
+                   >
+                     <option value="">Select Member</option>
+                     {members.filter(m => m.registrationStatus === "Approved").map((member) => (
+                       <option key={member._id} value={member._id}>
+                         {member.firstname} {member.surname}
+                       </option>
+                     ))}
+                   </select>
+                   <input
+                     type="text"
+                     placeholder="Purpose"
+                     className="border p-2 w-full"
+                     value={editingSpecialDonation.purpose}
+                     onChange={(e) => setEditingSpecialDonation({ ...editingSpecialDonation, purpose: e.target.value })}
+                     required
+                   />
+                   <input
+                     type="number"
+                     placeholder="Amount"
+                     className="border p-2 w-full"
+                     value={editingSpecialDonation.amount}
+                     onChange={(e) => setEditingSpecialDonation({ ...editingSpecialDonation, amount: e.target.value })}
+                     required
+                   />
+                   <input
+                     type="date"
+                     className="border p-2 w-full"
+                     value={editingSpecialDonation.date?.split('T')[0]}
+                     onChange={(e) => setEditingSpecialDonation({ ...editingSpecialDonation, date: e.target.value })}
+                     required
+                   />
+                   <div className="flex gap-2">
+                     <button type="submit" className="bg-yellow-500 text-white px-4 md:px-6 py-2 rounded">
+                       Update
+                     </button>
+                     <button type="button" onClick={() => setEditingSpecialDonation(null)} className="bg-gray-400 text-white px-4 md:px-6 py-2 rounded">
+                       Cancel
+                     </button>
+                   </div>
+                 </form>
+               </div>
+             )}
+           </div>
+         )}
 
         {activeTab === "expense" && (
           <div className="space-y-4">
@@ -1257,10 +1524,10 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
           <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">Balance Sheet</h2>
             <div className="grid md:grid-cols-2 gap-3 md:gap-4">
-              <div className="bg-green-100 p-4 rounded-lg">
-                <p className="text-gray-600 text-sm md:text-base">2026 Dues Income (Apr-Dec)</p>
-                <p className="text-xl md:text-2xl font-bold text-green-700">N{Object.values(incomeRecords).reduce((a, b) => a + b, 0).toLocaleString()}</p>
-              </div>
+<div className="bg-green-100 p-4 rounded-lg">
+                 <p className="text-gray-600 text-sm md:text-base">2026 Dues Income (May-Dec)</p>
+                 <p className="text-xl md:text-2xl font-bold text-green-700">N{Object.values(incomeRecords).reduce((a, b) => a + b, 0).toLocaleString()}</p>
+               </div>
               <div className="bg-blue-100 p-4 rounded-lg">
                 <p className="text-gray-600 text-sm md:text-base">Other Income</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-700">N{totalOtherIncome.toLocaleString()}</p>

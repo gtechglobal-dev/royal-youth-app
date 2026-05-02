@@ -1,5 +1,5 @@
 import express from "express";
-import { getDuesIncome, getAllSpecialDonations, getSpecialPayments, addSpecialDonation } from "../controllers/paymentController.js";
+import { getDuesIncome, getAllSpecialDonations, getSpecialPayments, addSpecialDonation, updateSpecialDonation, deleteSpecialDonation } from "../controllers/paymentController.js";
 import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -15,5 +15,7 @@ router.get("/income", protect, getDuesIncome);
 router.get("/all-special-donations", protect, getAllSpecialDonations);
 router.get("/special-payments", protect, getSpecialPayments);
 router.post("/add-special-donation", protect, addSpecialDonation);
+router.put("/special-donation/:id", protect, updateSpecialDonation);
+router.delete("/special-donation/:id", protect, deleteSpecialDonation);
 
 export default router;
