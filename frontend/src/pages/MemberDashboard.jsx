@@ -47,6 +47,9 @@ function MemberDashboard() {
             verifyData.purpose = purpose;
             verifyData.amount = amount;
             await API.post("/payment/special-verify", verifyData);
+            // Refresh special payments
+            const specialRes = await API.get("/payment/special-payments");
+            setSpecialPayments(specialRes.data || []);
           } else {
             // Dues payment - verify via backend
             await API.post("/payment/verify", verifyData);
@@ -144,6 +147,15 @@ function MemberDashboard() {
     }
     setShowSpecialModal(false);
     setShowOfflineModal(true);
+  };
+
+  const refreshSpecialPayments = async () => {
+    try {
+      const specialRes = await API.get("/payment/special-payments");
+      setSpecialPayments(specialRes.data || []);
+    } catch (e) {
+      console.error("Error refreshing special payments:", e);
+    }
   };
 
   if (loading) {
@@ -391,7 +403,15 @@ function MemberDashboard() {
         </div>
 
         <div className="mt-4 md:mt-6 bg-white p-4 md:p-6 rounded-lg shadow-md">
-            <h2 className="text-lg md:text-xl font-bold mb-4 text-sky-600">Special Payments/Donations</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg md:text-xl font-bold text-sky-600">Special Payments/Donations</h2>
+              <button
+                onClick={refreshSpecialPayments}
+                className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200"
+              >
+                Refresh
+              </button>
+            </div>
           {specialPayments.length === 0 ? (
             <p className="text-gray-600">No special payments yet.</p>
           ) : (
@@ -406,7 +426,7 @@ function MemberDashboard() {
                 </thead>
                 <tbody>
                   {specialPayments.map((payment, index) => (
-                    <tr key={index}>
+                    <tr key={payment._id || index}>
                       <td className="border p-2 md:p-3">{payment.purpose}</td>
                       <td className="border p-2 md:p-3">N{payment.amount?.toLocaleString()}</td>
                       <td className="border p-2 md:p-3">{new Date(payment.date).toLocaleDateString()}</td>
