@@ -145,6 +145,7 @@ function Register() {
       setNotification({ open: true, type: "error", message: "You must accept the terms" });
       return;
     }
+    if (submitting) return;
     try {
       setSubmitting(true);
       const fd = new FormData();
@@ -253,7 +254,7 @@ function Register() {
                 <option value="">State of Origin *</option>
                 {nigerianStates.map((state) => (<option key={state} value={state}>{state}</option>))}
               </select>
-              <select name="lga" required disabled={!selectedState} className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all disabled:opacity-50">
+              <select name="lga" required disabled={!selectedState} value={formData.lga} className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all disabled:opacity-50" onChange={handleChange}>
                 <option value="">Local Government Area *</option>
                 {selectedState && lgaByState[selectedState]?.map((lga) => (<option key={lga} value={lga}>{lga}</option>))}
               </select>
@@ -283,11 +284,20 @@ function Register() {
               <option value="Not sure">Not Sure</option>
             </select>
 
-            <div>
-              <label className="block text-sm text-gray-600 mb-1 font-medium">Profile Image (Optional)</label>
-              <input type="file" name="profileImage" accept="image/*" className="w-full p-3 rounded-xl border-2 border-gray-200" onChange={(e) => setImage(e.target.files[0] || null)} />
-              {image && <p className="text-sm text-gray-500 mt-1">{image.name} ({(image.size / 1024).toFixed(1)} KB)</p>}
-            </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1 font-medium">Profile Image (Optional - Max 3MB)</label>
+                <input type="file" name="profileImage" accept="image/*" className="w-full p-3 rounded-xl border-2 border-gray-200" onChange={(e) => {
+                  const file = e.target.files[0] || null;
+                  if (file && file.size > 3 * 1024 * 1024) {
+                    setNotification({ open: true, type: "error", message: "Image must be less than 3MB" });
+                    e.target.value = "";
+                    setImage(null);
+                  } else {
+                    setImage(file);
+                  }
+                }} />
+                {image && <p className="text-sm text-gray-500 mt-1">{image.name} ({(image.size / 1024).toFixed(1)} KB)</p>}
+              </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
@@ -302,8 +312,8 @@ function Register() {
               <label className="text-sm text-gray-600">I agree to abide by the Terms and Conditions of the Royal Youth Community</label>
             </div>
 
-            <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-xl font-bold text-lg hover:shadow-xl hover:shadow-indigo-600/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
-              Create Account
+            <button type="submit" disabled={submitting} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-xl font-bold text-lg hover:shadow-xl hover:shadow-indigo-600/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+              {submitting ? "Creating Account..." : "Create Account"}
             </button>
           </form>
         </div>

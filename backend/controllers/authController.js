@@ -129,15 +129,15 @@ export const registerUser = async (req, res) => {
     let imagePath = "";
     if (req.file && req.file.buffer && req.file.buffer.length > 0) {
       try {
-        console.log("Uploading image to Cloudinary...");
+        console.log("Uploading image to Cloudinary... Size:", req.file.size, "bytes");
         const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
         if (result && result.secure_url) {
           imagePath = result.secure_url;
           console.log("Image uploaded:", imagePath);
         }
       } catch (cloudErr) {
-        console.error("Cloudinary upload failed:", cloudErr.message);
-        imagePath = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+        console.error("Cloudinary upload failed, continuing without image:", cloudErr.message);
+        imagePath = "";
       }
     }
 
@@ -170,7 +170,8 @@ export const registerUser = async (req, res) => {
       userId: newUser._id,
     });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Registration error:", error.message);
+    console.error("Error stack:", error.stack);
     let msg = "Registration failed. Please try again.";
     if (typeof error.message === 'string') {
       msg = error.message;

@@ -17,7 +17,7 @@ if (hasCloudinary) {
 
 const uploadMiddleware = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 3 * 1024 * 1024 }
 });
 
 const uploadToCloudinary = async (fileBuffer, mimeType) => {
@@ -29,10 +29,15 @@ const uploadToCloudinary = async (fileBuffer, mimeType) => {
   const dataUri = `data:${mimeType};base64,${base64Data}`;
   
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Cloudinary upload timeout"));
+    }, 10000);
+    
     cloudinary.uploader.upload(
       dataUri,
-      { folder: "royal-youth" },
+      { folder: "royal-youth", timeout: 10000 },
       (error, result) => {
+        clearTimeout(timeout);
         if (error) {
           reject(error);
         } else {
