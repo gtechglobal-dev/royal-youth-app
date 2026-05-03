@@ -12,6 +12,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import clearDataRoutes from "./routes/clearDataRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
+import meetingResponseRoutes from "./routes/meetingResponseRoutes.js";
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/admin", clearDataRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/meeting-responses", meetingResponseRoutes);
 
 // ✅ Error handler
 app.use((err, req, res, next) => {

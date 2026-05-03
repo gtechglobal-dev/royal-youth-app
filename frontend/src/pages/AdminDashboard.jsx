@@ -20,7 +20,6 @@ function AdminDashboard() {
   const [activeMeeting, setActiveMeeting] = useState(null);
   const [selectedAttendanceMember, setSelectedAttendanceMember] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notification, setNotification] = useState({ open: false, type: "", message: "" });
   const [deletingMemberId, setDeletingMemberId] = useState(null);
 
@@ -51,6 +50,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   const [contacts, setContacts] = useState([]);
   const [deletingContact, setDeletingContact] = useState(null);
   const [pendingMembers, setPendingMembers] = useState([]);
+  const [meetingResponses, setMeetingResponses] = useState([]);
   const [loadingAction, setLoadingAction] = useState({ id: null, type: null });
   const [counts, setCounts] = useState({
     members: 0,
@@ -60,6 +60,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     complaint: 0,
     income: 0,
     expense: 0,
+    meetingResponses: 0,
   });
 
   const months = [
@@ -93,6 +94,10 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     API.get("/auth/me")
       .then(() => {
         fetchData();
+        // Fetch meeting responses count for notification badge
+        API.get("/meeting-responses/all").then(r => {
+          setCounts(prev => ({ ...prev, meetingResponses: r.data.length }));
+        }).catch(() => {});
       })
       .catch(() => {
         localStorage.removeItem("token");
@@ -142,12 +147,18 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       setExpenses(r.data);
     });
   }
-  if (activeTab === "balance") {
-    API.get("/finance/balance-sheet").then(r => {
-      setBalance(r.data);
-    });
-  }
-}, [activeTab]);
+   if (activeTab === "balance") {
+     API.get("/finance/balance-sheet").then(r => {
+       setBalance(r.data);
+     });
+   }
+   if (activeTab === "meeting-responses") {
+     API.get("/meeting-responses/all").then(r => {
+       setMeetingResponses(r.data);
+       setCounts(prev => ({ ...prev, meetingResponses: r.data.length }));
+     });
+   }
+ }, [activeTab]);
 
   useEffect(() => {
     const duesIncome = {};
@@ -621,29 +632,20 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     { id: "prayer", label: "Prayer Request" },
     { id: "testimony", label: "Testimony" },
     { id: "complaint", label: "Complaints" },
+    { id: "meeting-responses", label: "Meeting Responses" },
   ];
 
   if (loading) {
     return <OverlayLoader />;
   }
 
-  return (
-    <div className="min-h-screen bg-gray-100 pb-16">
+   return (
+    <div className="min-h-screen bg-gray-100 pb-16 overflow-x-hidden">
        <header className="bg-gradient-to-r from-sky-500 to-blue-600 text-white p-4 shadow-lg">
          <div className="container mx-auto flex justify-between items-center">
-           <div className="flex items-center gap-4">
-             <button
-               onClick={() => setSidebarOpen(!sidebarOpen)}
-               className="md:hidden hover:bg-white/20 p-2 rounded-lg transition"
-             >
-               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-               </svg>
-             </button>
-             <div className="flex items-center gap-2">
-               <img src={Logo} alt="Logo" className="h-8 w-8 md:h-10 md:w-10" />
-               <h1 className="text-xl md:text-2xl font-bold">Royal Youth Admin</h1>
-             </div>
+           <div className="flex items-center gap-2">
+             <img src={Logo} alt="Logo" className="h-8 w-8 md:h-10 md:w-10" />
+             <h1 className="text-xl md:text-2xl font-bold">Royal Youth Admin</h1>
            </div>
            <button
              onClick={handleLogout}
@@ -654,7 +656,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
          </div>
        </header>
 
-<div className="container mx-auto p-4 md:p-6">
+<div className="container mx-auto p-4 md:p-6 max-w-full overflow-x-hidden">
          {activeTab ? (
            <div className="flex items-center gap-3 mb-4">
              <button onClick={() => setActiveTab(null)} className="flex items-center gap-2 text-adminBlue hover:text-blue-700 font-semibold">
@@ -833,27 +835,27 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
         )}
 
         {activeTab === "pending" && (
-          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md overflow-hidden">
             <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">Pending Registrations ({pendingMembers.length})</h2>
             {pendingMembers.length === 0 ? (
               <p className="text-gray-500">No pending registrations.</p>
             ) : (
               <div className="space-y-4">
                 {pendingMembers.map(m => (
-                  <div key={m._id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold">{m.firstname} {m.surname} {m.othername}</p>
-                        <p className="text-sm text-gray-500">{m.phone}</p>
-                        <p className="text-sm text-gray-500">{m.email}</p>
-                        <p className="text-sm mt-1"><span className="font-medium">Occupation:</span> {m.occupation}</p>
-                        <p className="text-sm"><span className="font-medium">Address:</span> {m.address}</p>
+                  <div key={m._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex flex-col gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold truncate">{m.firstname} {m.surname} {m.othername}</p>
+                        <p className="text-sm text-gray-500 truncate">{m.phone}</p>
+                        <p className="text-sm text-gray-500 truncate">{m.email}</p>
+                        <p className="text-sm mt-1 break-words"><span className="font-medium">Occupation:</span> {m.occupation}</p>
+                        <p className="text-sm break-words"><span className="font-medium">Address:</span> {m.address}</p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 w-full">
                         <button
                           onClick={() => handleApproveMember(m._id)}
                           disabled={loadingAction.id === m._id}
-                          className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          className="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 flex-1"
                         >
                           {loadingAction.id === m._id && loadingAction.type === "approve" ? (
                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
@@ -863,7 +865,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                         <button
                           onClick={() => handleRejectMember(m._id)}
                           disabled={loadingAction.id === m._id}
-                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          className="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 flex-1"
                         >
                           {loadingAction.id === m._id && loadingAction.type === "reject" ? (
                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
@@ -1514,6 +1516,80 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {activeTab === "meeting-responses" && (
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md overflow-hidden">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg md:text-xl font-bold text-adminBlue">Meeting Responses</h2>
+              <button 
+                onClick={() => {
+                  API.get("/meeting-responses/all").then(r => {
+                    setMeetingResponses(r.data);
+                  });
+                }}
+                className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200"
+              >
+                Refresh
+              </button>
+            </div>
+            {meetingResponses.length === 0 ? (
+              <p className="text-gray-500">No meeting responses yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm md:text-base">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border p-2 md:p-3 text-left">Name</th>
+                      <th className="border p-2 md:p-3 text-left">Phone</th>
+                      <th className="border p-2 md:p-3 text-left">Meeting</th>
+                      <th className="border p-2 md:p-3 text-left">Response</th>
+                      <th className="border p-2 md:p-3 text-left">Date</th>
+                    </tr>
+                  </thead>
+                      <tbody>
+                        {meetingResponses.map((response) => (
+                          <tr key={response._id}>
+                            <td className="border p-2 md:p-3">{response.user?.firstname} {response.user?.surname}</td>
+                            <td className="border p-2 md:p-3">{response.user?.phone}</td>
+                            <td className="border p-2 md:p-3">{response.meetingTitle}</td>
+                            <td className="border p-2 md:p-3">
+                              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                response.response === "I will be there" ? "bg-green-100 text-green-700" :
+                                response.response === "I will try my best" ? "bg-yellow-100 text-yellow-700" :
+                                response.response === "I wont be able to make it" ? "bg-red-100 text-red-700" :
+                                "bg-gray-100 text-gray-700"
+                              }`}>
+                                {response.response}
+                              </span>
+                            </td>
+                            <td className="border p-2 md:p-3 text-xs">{new Date(response.createdAt).toLocaleString()}</td>
+                            <td className="border p-2 md:p-3">
+                              <button
+                                onClick={async () => {
+                                  if (window.confirm("Delete this response?")) {
+                                    try {
+                                      await API.delete(`/meeting-responses/${response._id}`);
+                                      setMeetingResponses(prev => prev.filter(r => r._id !== response._id));
+                                      setCounts(prev => ({ ...prev, meetingResponses: prev.meetingResponses - 1 }));
+                                      setNotification({ open: true, type: "success", message: "Response deleted" });
+                                    } catch (error) {
+                                      setNotification({ open: true, type: "error", message: "Delete failed" });
+                                    }
+                                  }
+                                }}
+                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

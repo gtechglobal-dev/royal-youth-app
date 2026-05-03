@@ -10,6 +10,10 @@ function MemberDashboard() {
   const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [showSpecialModal, setShowSpecialModal] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [selectedResponse, setSelectedResponse] = useState("");
+  const [pendingResponse, setPendingResponse] = useState("");
+  const [responseSubmitted, setResponseSubmitted] = useState(false);
   const [specialPayments, setSpecialPayments] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
@@ -21,7 +25,7 @@ function MemberDashboard() {
     const fetchData = async () => {
       const token = localStorage.getItem("token");
       console.log("Dashboard loading - token exists:", !!token);
-      
+
       if (!token) {
         console.log("No token, redirecting to login");
         navigate("/login");
@@ -62,6 +66,29 @@ function MemberDashboard() {
         const userRes = await API.get("/auth/me");
         console.log("User data received:", userRes.data?.firstname, userRes.data?._id);
         setUser(userRes.data || { firstname: "", surname: "", profileImage: "" });
+
+        // Check if reminder should be shown - shows every login until cutoff date
+        // Use local timezone: May 4th, 2026 at 5pm (month is 0-indexed, so 4 = May)
+        const cutoffDate = new Date(2026, 4, 4, 17, 0, 0);
+        const now = new Date();
+
+        if (now < cutoffDate) {
+          setShowReminderModal(true);
+          // Prevent background scrolling when popup is open
+          document.body.style.overflow = 'hidden';
+
+          // Check if user already responded
+          try {
+            const responsesRes = await API.get("/meeting-responses/meeting?title=" + encodeURIComponent("Family Meeting - 4th May 2026 by 5pm"));
+            const userResponse = responsesRes.data?.find(r => r.user?._id === userRes.data?._id);
+            if (userResponse) {
+              setSelectedResponse(userResponse.response);
+              setResponseSubmitted(true);
+            }
+          } catch (e) {
+            console.error("Error checking previous response:", e);
+          }
+        }
 
         // Fetch attendance
         try {
@@ -117,6 +144,19 @@ function MemberDashboard() {
       setSpecialPayments([]);
     }
   }, [loading, user]);
+
+  // Scroll lock when reminder modal is open
+  useEffect(() => {
+    if (showReminderModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showReminderModal]);
 
   const calculateAge = (dob) => {
     const birthDate = new Date(dob);
@@ -261,6 +301,120 @@ function MemberDashboard() {
           </div>
         </div>
       )}
+
+      {showReminderModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fadeIn overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/70 to-pink-900/70 backdrop-blur-sm" onClick={() => { setShowReminderModal(false); }} />
+          <div className="relative bg-gradient-to-br from-yellow-50 via-pink-50 to-purple-50 rounded-3xl shadow-2xl w-full max-w-sm max-h-[85vh] overflow-y-scroll p-5 animate-slideUp border-4 border-yellow-300 scrollbar-thin">
+
+            <button
+              onClick={() => { setShowReminderModal(false); }}
+              className="absolute top-4 right-4 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-all hover:scale-110 z-10"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="text-center mb-4">
+              <div className="text-5xl mb-3 animate-bounce">💬</div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-yellow-600 bg-clip-text text-transparent animate-pulse">
+                Family Reminder
+              </h2>
+            </div>
+
+            <div className="bg-white/70 rounded-2xl p-4 mb-4 shadow-inner">
+              <p className="text-gray-800 text-base leading-relaxed text-center">
+                Hi <span className="font-bold text-purple-600">{user?.firstname}</span>, from the <span className="font-bold text-pink-600">Royal Youth family</span> we wish to remind you of our family meeting{" "}
+                {new Date().toDateString() === new Date(2026, 4, 4).toDateString() ? (
+                  <span className="font-bold text-yellow-600">TODAY by 5pm</span>
+                ) : (
+                  <span className="font-bold text-yellow-600">on Mon 4th May by 5pm</span>
+                )}
+                , your presence is of great value to this department, please be present.
+              </p>
+              <p className="text-gray-800 text-base mt-3 font-semibold text-center">
+                God bless you!
+              </p>
+            </div>
+
+            {responseSubmitted ? (
+              <div className="text-center bg-white/80 rounded-xl p-3">
+                <div className="text-3xl mb-2">✅</div>
+                <p className="font-bold text-purple-600 text-sm mb-2">You Already Selected: {selectedResponse}</p>
+                {selectedResponse === "I will be there" && (
+                  <p className="font-semibold text-gray-800 text-sm">Great! We look forward to seeing you there! 🎉</p>
+                )}
+                {selectedResponse === "I will try my best" && (
+                  <p className="font-semibold text-gray-800 text-sm">Thanks! We hope you can make it! 🙏</p>
+                )}
+                {selectedResponse === "I wont be able to make it" && (
+                  <p className="font-semibold text-gray-800 text-sm">We'll miss you! Hope to see you next time. 😔</p>
+                )}
+                {selectedResponse === "I am so busy" && (
+                  <p className="font-semibold text-gray-800 text-sm">No worries! We understand. God bless you! 🙏</p>
+                )}
+                <p className="text-xs text-gray-600 mt-1">Closing...</p>
+              </div>
+            ) : !pendingResponse ? (
+              <div>
+                <p className="text-center font-semibold text-gray-700 mb-3 text-base">Will you be attending?</p>
+                <div className="space-y-2">
+                  {["I will be there", "I will try my best", "I wont be able to make it", "I am so busy"].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setPendingResponse(option)}
+                      className={`w-full p-3 rounded-lg font-semibold text-white transition-all hover:scale-105 shadow-md text-base ${
+                        option === "I will be there" ? "bg-green-500 hover:bg-green-600" :
+                        option === "I will try my best" ? "bg-yellow-500 hover:bg-yellow-600" :
+                        option === "I wont be able to make it" ? "bg-red-500 hover:bg-red-600" :
+                        "bg-gray-500 hover:bg-gray-600"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white/80 rounded-xl p-4">
+                <p className="text-center font-semibold text-gray-800 mb-4">Confirm: "{pendingResponse}"?</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        await API.post("/meeting-responses", {
+                          userId: user?._id,
+                          meetingTitle: "Family Meeting - 4th May 2026 by 5pm",
+                          response: pendingResponse
+                        });
+                      setSelectedResponse(pendingResponse);
+                      setPendingResponse("");
+                      setResponseSubmitted(true);
+                      setTimeout(() => {
+                        setShowReminderModal(false);
+                      }, 2000);
+                    } catch (error) {
+                      console.error("Error submitting response:", error);
+                    }
+                  }}
+                    className="flex-1 bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600"
+                  >
+                    OK
+                  </button>
+                  <button
+                    onClick={() => setPendingResponse("")}
+                    className="flex-1 bg-gray-500 text-white p-3 rounded-lg font-semibold hover:bg-gray-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
 
       <header className="bg-sky-600 text-white p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
