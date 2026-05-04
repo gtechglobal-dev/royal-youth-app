@@ -218,15 +218,32 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [membersRes, pendingRes, meetingsRes, balanceRes, bannersRes] = await Promise.all([
+      const [membersRes, pendingRes, meetingsRes, balanceRes, bannersRes, attendanceRes] = await Promise.all([
         API.get("/auth/members"),
         API.get("/auth/pending"),
         API.get("/attendance/meetings"),
         API.get("/finance/balance-sheet"),
         API.get("/banners/all"),
+        API.get("/attendance/all"),
       ]);
       
-      setMembers(membersRes.data);
+      const attendanceRecords = attendanceRes.data;
+      const membersWithAttendance = membersRes.data.map(member => {
+        const attendance = {};
+        attendanceRecords.forEach(record => {
+          if (record.user === member._id) {
+            const matchingMeeting = meetingsRes.data.find(
+              m => m.meetingTitle === record.meetingTitle && new Date(m.meetingDate).toDateString() === new Date(record.meetingDate).toDateString()
+            );
+            if (matchingMeeting) {
+              attendance[matchingMeeting._id] = { status: record.status, date: record.updatedAt || record.createdAt };
+            }
+          }
+        });
+        return { ...member, attendance };
+      });
+      
+      setMembers(membersWithAttendance);
       setCounts(prev => ({ ...prev, members: membersRes.data.length }));
       setPendingMembers(pendingRes.data);
       setCounts(prev => ({ ...prev, pending: pendingRes.data.length }));

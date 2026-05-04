@@ -128,6 +128,16 @@ export const markAttendance = async (req, res) => {
   }
 };
 
+// GET ALL ATTENDANCE RECORDS
+export const getAllAttendance = async (req, res) => {
+  try {
+    const records = await Attendance.find({ isMeeting: false }).select("_id user meetingTitle meetingDate status");
+    res.json(records);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // MEMBER VIEW ATTENDANCE
 
 export const getUserAttendance = async (req, res) => {

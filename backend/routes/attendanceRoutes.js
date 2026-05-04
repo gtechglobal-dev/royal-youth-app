@@ -3,6 +3,7 @@ import protect from "../middleware/authMiddleware.js";
 import {
   markAttendance,
   getUserAttendance,
+  getAllAttendance,
   createMeeting,
   getAllMeetings,
   deleteMeeting,
@@ -19,5 +20,7 @@ router.delete("/meeting/:id", protect, deleteMeeting);
 router.post("/mark", protect, markAttendance);
 
 router.get("/my-attendance", protect, getUserAttendance);
+
+router.get("/all", protect, getAllAttendance);
 
 export default router;
