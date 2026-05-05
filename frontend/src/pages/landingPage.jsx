@@ -19,6 +19,80 @@ function ScrollSection({ children, className = "", delay = 0 }) {
   );
 }
 
+function TypeWriter({ className = "" }) {
+  const [welcomeChar, setWelcomeChar] = useState(0);
+  const [royalChar, setRoyalChar] = useState(0);
+  const [hubChar, setHubChar] = useState(0);
+  const [phase, setPhase] = useState(0);
+
+  useEffect(() => {
+    let speed;
+    if (phase === 0) speed = welcomeChar < 10 ? 140 : 800;
+    else if (phase === 1) speed = welcomeChar > 0 ? 70 : 300;
+    else if (phase === 2) speed = royalChar < 11 ? 140 : 600;
+    else if (phase === 3) speed = hubChar < 3 ? 140 : 1200;
+    else if (phase === 4) speed = hubChar > 0 ? 70 : 300;
+    else if (phase === 5) speed = royalChar > 0 ? 70 : 300;
+
+    const id = setTimeout(() => {
+      if (phase === 0) {
+        if (welcomeChar < 10) setWelcomeChar((c) => c + 1);
+        else setPhase(1);
+      } else if (phase === 1) {
+        if (welcomeChar > 0) setWelcomeChar((c) => c - 1);
+        else { setPhase(2); setWelcomeChar(0); }
+      } else if (phase === 2) {
+        if (royalChar < 11) setRoyalChar((c) => c + 1);
+        else setPhase(3);
+      } else if (phase === 3) {
+        if (hubChar < 3) setHubChar((c) => c + 1);
+        else setPhase(4);
+      } else if (phase === 4) {
+        if (hubChar > 0) setHubChar((c) => c - 1);
+        else setPhase(5);
+      } else if (phase === 5) {
+        if (royalChar > 0) setRoyalChar((c) => c - 1);
+        else { setPhase(0); setRoyalChar(0); setHubChar(0); }
+      }
+    }, speed);
+    return () => clearTimeout(id);
+  }, [phase, welcomeChar, royalChar, hubChar]);
+
+  const welcomeVisible = "WELCOME TO".slice(0, welcomeChar);
+  const royalVisible = "ROYAL YOUTH".slice(0, royalChar);
+  const hubVisible = "HUB".slice(0, hubChar);
+
+  const showRoyal = phase >= 2;
+  const showHub = phase >= 3 && phase <= 4;
+
+  const cursorPhase = phase !== 1 && phase !== 5 && (phase !== 0 || welcomeChar > 0);
+
+  return (
+    <div className={className}>
+      <div className="flex flex-col items-center justify-center min-h-[3.4em]">
+        {welcomeVisible && (
+          <span className="block text-5xl md:text-7xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            {welcomeVisible}
+            {cursorPhase && phase === 0 && <span className="inline-block w-0.5 h-[1.1em] bg-indigo-600 ml-1 align-middle animate-pulse" />}
+          </span>
+        )}
+        {showRoyal && (
+          <span className="block bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
+            {royalVisible}
+            {(phase === 2 || phase === 5) && royalVisible.length > 0 && <span className="inline-block w-0.5 h-[1.1em] bg-indigo-600 ml-1 align-middle animate-pulse" />}
+          </span>
+        )}
+        {showHub && (
+          <span className="block bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
+            {hubVisible}
+            {(phase === 3 || phase === 4) && hubVisible.length > 0 && <span className="inline-block w-0.5 h-[1.1em] bg-indigo-600 ml-1 align-middle animate-pulse" />}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function LandingPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -96,8 +170,8 @@ function LandingPage() {
       <BannerGallery />
 
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-1.5 md:py-2 overflow-hidden shadow-lg">
-        <div className="flex whitespace-nowrap" style={{ animation: "marquee 20s linear infinite" }}>
-          {[...Array(4)].map((_, i) => (
+        <div className="flex whitespace-nowrap" style={{ animation: "marquee 25s linear infinite" }}>
+          {[...Array(8)].map((_, i) => (
             <span key={i} className="text-white text-sm md:text-base font-medium mx-8 flex-shrink-0 tracking-wide">
               ✨ Welcome to Royal Youth Hub — Where God refines you... Keep impacting your world ✨
             </span>
@@ -107,19 +181,8 @@ function LandingPage() {
 
       <ScrollSection className="py-20 md:py-32 px-4" delay={100}>
         <div className="container mx-auto max-w-5xl text-center">
-          <div className="inline-block mb-6">
-            <span className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full text-sm font-semibold tracking-wide">
-              BUILDING COMMUNITY
-            </span>
-          </div>
-          <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-none tracking-[-0.08em] md:tracking-[-0.05em]">
-            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
-              ROYAL YOUTH
-            </span>
-            <br />
-            <span className="text-gray-800">HUB</span>
-          </h2>
-          <p className="text-gray-600 mb-10 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
+          <TypeWriter className="text-5xl md:text-7xl font-bold mb-10 leading-none tracking-[-0.08em] md:tracking-[-0.05em]" />
+          <p className="text-gray-600 mb-4 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
             Building a community of faith, purpose, and excellence. Join us in making a difference.
           </p>
           {!isLoggedIn && (
@@ -139,7 +202,7 @@ function LandingPage() {
         </div>
       </ScrollSection>
 
-      <ScrollSection className="py-16 md:py-24 px-4 bg-white" delay={200}>
+      <ScrollSection className="-mt-10 py-0 px-4 bg-white" delay={200}>
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
