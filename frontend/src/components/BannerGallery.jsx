@@ -82,7 +82,7 @@ function BannerGallery() {
 
   return (
     <div
-      className="relative w-full h-[30vh] sm:h-[35vh] md:h-[45vh] lg:h-[55vh] overflow-hidden bg-gray-900"
+      className="group relative w-full aspect-[3/1] overflow-hidden bg-gray-100 dark:bg-gray-800"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -97,7 +97,7 @@ function BannerGallery() {
           <img
             src={banner.image.startsWith("http") ? banner.image : `${import.meta.env.VITE_API_URL}${banner.image}`}
             alt={banner.title}
-            className="w-full h-full object-contain bg-gray-900"
+            className="w-full h-full object-contain"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
         </div>
@@ -105,11 +105,14 @@ function BannerGallery() {
 
       {banners.length > 1 && (
         <>
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
+          <div
+            className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 transition-all duration-300 opacity-0 group-hover:opacity-100"
+          >
             {banners.map((_, index) => (
               <button
                 key={index}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setCurrentIndex(index);
                   setIsPaused(true);
                   setTimeout(() => setIsPaused(false), 60000);
@@ -122,8 +125,11 @@ function BannerGallery() {
           </div>
 
           <button
-            onClick={handlePrev}
-            className="absolute top-1/2 -translate-y-1/2 left-4 md:left-6 bg-black/20 backdrop-blur-md hover:bg-black/40 p-2 md:p-3 rounded-full transition-all hover:scale-110"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrev();
+            }}
+            className="absolute top-1/2 -translate-y-1/2 left-4 md:left-6 bg-black/20 backdrop-blur-md hover:bg-black/40 p-2 md:p-3 rounded-full transition-all duration-300 hover:scale-110 opacity-0 group-hover:opacity-100"
           >
             <svg className="h-5 w-5 md:h-6 md:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -131,8 +137,11 @@ function BannerGallery() {
           </button>
 
           <button
-            onClick={handleNext}
-            className="absolute top-1/2 -translate-y-1/2 right-4 md:right-6 bg-black/20 backdrop-blur-md hover:bg-black/40 p-2 md:p-3 rounded-full transition-all hover:scale-110"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
+            className="absolute top-1/2 -translate-y-1/2 right-4 md:right-6 bg-black/20 backdrop-blur-md hover:bg-black/40 p-2 md:p-3 rounded-full transition-all duration-300 hover:scale-110 opacity-0 group-hover:opacity-100"
           >
             <svg className="h-5 w-5 md:h-6 md:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
