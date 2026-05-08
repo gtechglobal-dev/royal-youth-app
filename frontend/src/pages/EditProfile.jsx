@@ -15,6 +15,7 @@ function EditProfile() {
     address: "",
     email: "",
     phone: "",
+    branch: "",
   });
 
   const [image, setImage] = useState(null);
@@ -31,6 +32,7 @@ function EditProfile() {
           address: user.address || "",
           email: user.email || "",
           phone: user.phone || "",
+          branch: user.branch || "Plot C4/C5 Owerri",
         });
         setCurrentImage(user.profileImage);
       } catch (error) {
@@ -147,6 +149,11 @@ function EditProfile() {
               className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
               onChange={handleChange}
             />
+
+            <div className="p-3 border rounded-lg bg-gray-100">
+              <p className="text-sm text-gray-500">Soulwinners Branch</p>
+              <p className="font-medium">{formData.branch || "Plot C4/C5 Owerri"}</p>
+            </div>
 
             <div className="p-3 border rounded-lg bg-gray-100">
               <p className="text-sm text-gray-500">Email</p>

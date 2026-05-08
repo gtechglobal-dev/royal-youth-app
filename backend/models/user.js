@@ -45,6 +45,11 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
 
+    branch: {
+      type: String,
+      default: "Plot C4/C5 Owerri",
+    },
+
     occupation: {
       type: String,
       required: true,

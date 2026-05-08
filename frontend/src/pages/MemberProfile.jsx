@@ -48,6 +48,10 @@ function MemberProfile() {
         </p>
 
         <p>
+          <b>Soulwinners Branch:</b> {member.branch || "Plot C4/C5 Owerri"}
+        </p>
+
+        <p>
           <b>Born Again:</b> {member.bornAgain}
         </p>
 

@@ -67,7 +67,7 @@ function Register() {
   const [notification, setNotification] = useState({ open: false, type: "", message: "" });
   const [formData, setFormData] = useState({
     surname: "", firstname: "", othername: "", email: "", phone: "",
-    dob: "", address: "", stateOfOrigin: "", lga: "", occupation: "",
+    dob: "", address: "", stateOfOrigin: "", lga: "", branch: "Plot C4/C5 Owerri", occupation: "",
     hobbies: "", serviceUnit: "", serviceUnitLove: "", bornAgain: "",
     password: "", confirmPassword: "",
   });
@@ -127,11 +127,11 @@ function Register() {
     if (name === "surname" || name === "firstname" || name === "othername") value = value.toUpperCase();
     if (name === "stateOfOrigin") {
       setSelectedState(value);
-      setFormData({ ...formData, [name]: value, lga: "" });
+      setFormData((prev) => ({ ...prev, [name]: value, lga: "" }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
-    if (errors[name]) setErrors({ ...errors, [name]: "" });
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleSubmit = async (e) => {
@@ -158,6 +158,7 @@ function Register() {
       fd.append("address", sanitize(formData.address));
       fd.append("stateOfOrigin", formData.stateOfOrigin || "");
       fd.append("lga", formData.lga || "");
+      fd.append("branch", formData.branch || "Plot C4/C5 Owerri");
       fd.append("occupation", sanitize(formData.occupation) || "");
       fd.append("hobbies", formData.hobbies || "");
       fd.append("serviceUnit", formData.serviceUnit || "");
@@ -242,7 +243,7 @@ function Register() {
                 {errors.dob && <p className="text-red-500 text-sm mt-1">{errors.dob}</p>}
               </div>
               <div>
-                <input type="text" name="occupation" placeholder="Occupation *" required className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all" onChange={handleChange} />
+                <input type="text" name="occupation" placeholder="Occupation *" required value={formData.occupation} className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all" onChange={handleChange} />
               </div>
             </div>
 
@@ -250,7 +251,7 @@ function Register() {
             {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <select name="stateOfOrigin" required className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all" onChange={handleChange}>
+              <select name="stateOfOrigin" required value={formData.stateOfOrigin} className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all" onChange={handleChange}>
                 <option value="">State of Origin *</option>
                 {nigerianStates.map((state) => (<option key={state} value={state}>{state}</option>))}
               </select>
@@ -258,6 +259,12 @@ function Register() {
                 <option value="">Local Government Area *</option>
                 {selectedState && lgaByState[selectedState]?.map((lga) => (<option key={lga} value={lga}>{lga}</option>))}
               </select>
+            </div>
+
+            <div className="p-4 rounded-xl border-2 border-indigo-200 bg-indigo-50">
+              <label className="block text-sm text-gray-600 mb-1 font-medium">Soulwinners Branch</label>
+              <input type="text" name="branch" value="Plot C4/C5 Owerri" disabled className="w-full p-4 rounded-xl border-2 border-indigo-100 bg-white/50 focus:outline-none text-gray-700" />
+              <p className="text-xs text-gray-500 mt-1">Registration is currently open for this branch only</p>
             </div>
 
             <input type="text" name="hobbies" placeholder="Hobbies (e.g., Reading, Football, Music)" className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all" onChange={handleChange} />

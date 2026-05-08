@@ -477,6 +477,7 @@ function MemberDashboard() {
               <p><span className="font-semibold">Phone:</span> {user.phone}</p>
               <p><span className="font-semibold">Email:</span> {user.email || "Not provided"}</p>
               <p><span className="font-semibold">Address:</span> {user.address || "Not provided"}</p>
+              <p><span className="font-semibold">Soulwinners Branch:</span> {user.branch || "Plot C4/C5 Owerri"}</p>
               {user.hobbies && user.hobbies.length > 0 && (
                 <p><span className="font-semibold">Hobbies:</span> {user.hobbies.join(", ")}</p>
               )}

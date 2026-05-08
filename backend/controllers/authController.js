@@ -42,6 +42,7 @@ export const registerUser = async (req, res) => {
       address,
       stateOfOrigin,
       lga,
+      branch,
       occupation,
       hobbies,
       serviceUnit,
@@ -152,6 +153,7 @@ export const registerUser = async (req, res) => {
       address,
       stateOfOrigin,
       lga,
+      branch: branch || "Plot C4/C5 Owerri",
       occupation,
       hobbies: hobbies ? hobbies.split(",").map(h => h.trim()) : [],
       serviceUnit,
@@ -427,12 +429,13 @@ export const getMemberDues = async (req, res) => {
 // UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
-    const { occupation, hobbies, address } = req.body;
+    const { occupation, hobbies, address, branch } = req.body;
     const updateData = {};
 
     if (occupation) updateData.occupation = occupation;
     if (hobbies) updateData.hobbies = hobbies;
     if (address !== undefined) updateData.address = address;
+    if (branch) updateData.branch = branch;
 
     if (req.file && req.file.buffer && req.file.buffer.length > 0) {
       try {

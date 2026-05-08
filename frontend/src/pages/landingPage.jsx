@@ -4,6 +4,7 @@ import BannerGallery from "../components/BannerGallery";
 import ContactSection from "../components/ContactSection";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import Logo from "../assets/gdev logo.svg";
+import PresidentImage from "../assets/president.png";
 import { PageLoader } from "../components/Loaders";
 
 function ScrollSection({ children, className = "", delay = 0 }) {
@@ -97,6 +98,8 @@ function LandingPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [readMore, setReadMore] = useState(false);
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -170,39 +173,75 @@ function LandingPage() {
       <BannerGallery />
 
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-1.5 md:py-2 overflow-hidden shadow-lg">
-        <div className="flex whitespace-nowrap" style={{ animation: "marquee 25s linear infinite" }}>
-          {[...Array(8)].map((_, i) => (
-            <span key={i} className="text-white text-sm md:text-base font-medium mx-8 flex-shrink-0 tracking-wide">
-              ✨ Welcome to Royal Youth Hub — Where God refines you... Keep impacting your world ✨
+        <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 80s linear infinite" }}>
+          {[...Array(12)].map((_, i) => (
+            <span key={i} className="text-white text-sm md:text-base font-medium mx-6 flex-shrink-0 tracking-wide">
+              ✨ Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
             </span>
           ))}
         </div>
       </div>
 
-      <ScrollSection className="py-20 md:py-32 px-4" delay={100}>
-        <div className="container mx-auto max-w-5xl text-center">
-          <TypeWriter className="text-5xl md:text-7xl font-bold mb-10 leading-none tracking-[-0.08em] md:tracking-[-0.05em]" />
-          <p className="text-gray-600 mb-4 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
-            Building a community of faith, purpose, and excellence. Join us in making a difference.
-          </p>
-          {!isLoggedIn && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-8">
-              <Link to="/register" className="w-full max-w-xs sm:w-auto">
-                <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 md:px-10 md:py-4 rounded-2xl font-bold text-base md:text-lg transition-all shadow-xl shadow-indigo-600/30 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]">
-                  Create An Account
-                </button>
-              </Link>
-              <Link to="/login" className="w-full max-w-xs sm:w-auto">
-                <button className="w-full bg-white text-indigo-600 border-2 border-indigo-200 px-8 py-3 md:px-10 md:py-4 rounded-2xl font-bold text-base md:text-lg transition-all hover:bg-indigo-50 hover:border-indigo-300">
-                  Login
-                </button>
-              </Link>
+      <ScrollSection className="py-8 px-4" delay={100}>
+        <div className="container mx-auto max-w-5xl">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden p-8 md:p-12">
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <div className="w-32 h-32 md:w-48 md:h-48 overflow-hidden shadow-2xl rounded-2xl border-4 border-indigo-100 flex-shrink-0">
+                  <img src={PresidentImage} alt="Youth President" className="w-full h-full object-cover object-[center_10%]" />
+                </div>
+                <div className="text-left">
+                  <svg className="w-10 h-10 md:w-14 md:h-14 text-indigo-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                  </svg>
+                  <h2 className="text-xl md:text-3xl font-bold text-indigo-700">From the President's Desk</h2>
+                </div>
+              </div>
             </div>
-          )}
+            <div className="text-gray-700 space-y-4 leading-relaxed text-sm md:text-base max-w-3xl mx-auto">
+              <p>Welcome to Royal Youth Hub — a growing platform created to connect and empower young people.</p>
+              <p>As we launch this initiative, we are currently at the startup stage, and we are excited about the many innovations,
+                {readMore && (
+                  <>
+                    improvements, and opportunities that will continue to develop within the Hub. Our vision is to build a vibrant community where young believers within Soulwinners International Churches and other denominations as well can connect, share ideas, grow together, and support one another in the fear of God.
+                  </>
+                )}
+              </p>
+              {readMore && (
+                <>
+                  <p>Royal Youth Hub is a space for collaboration, learning, leadership, and meaningful relationships. We invite you to be part of this journey from the beginning, as your participation, ideas, and support will help shape the future of this Hub.</p>
+                  <p>You will also find sections for Complaints/Suggestions, Prayer Requests, and Testimonies below—please feel free to use them at your convenience.</p>
+                  <p className="font-semibold text-indigo-700">More updates and exciting features are coming soon. Royal Youth Hub — where growth happens.</p>
+                  <div className="mt-6 pt-4 border-t border-indigo-200 text-left">
+                    <p className="font-bold text-gray-800">Warm regards,</p>
+                    <p className="text-indigo-600 font-semibold">Rev. Mark Nelson Nnannah</p>
+                    <p className="text-gray-500 text-sm">Youth President</p>
+                  </div>
+                </>
+              )}
+              {!readMore && (
+                <button onClick={() => setReadMore(true)} className="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">Read more...</button>
+              )}
+            </div>
+            {!isLoggedIn && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-8 pt-8 border-t border-gray-200">
+                <div className="w-full max-w-xs sm:w-auto">
+                  <button onClick={() => setShowEligibilityModal(true)} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 md:px-10 md:py-4 rounded-2xl font-bold text-base md:text-lg transition-all shadow-xl shadow-indigo-600/30 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]">
+                    Create An Account
+                  </button>
+                </div>
+                <Link to="/login" className="w-full max-w-xs sm:w-auto">
+                  <button className="w-full bg-white text-indigo-600 border-2 border-indigo-200 px-8 py-3 md:px-10 md:py-4 rounded-2xl font-bold text-base md:text-lg transition-all hover:bg-indigo-50 hover:border-indigo-300">
+                    Login
+                  </button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </ScrollSection>
 
-      <ScrollSection className="-mt-10 py-0 px-4 bg-white" delay={200}>
+      <ScrollSection className="py-16 px-4 bg-white" delay={200}>
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
@@ -282,6 +321,38 @@ function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {showEligibilityModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 animate-slideUp border border-gray-100">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Important Registration Notice</h3>
+            </div>
+            <div className="text-gray-600 space-y-4 mb-8 leading-relaxed">
+              <p>
+                Please note that account registration is currently <strong className="text-indigo-700">exclusive to youths of Soulwinners Int'l Church C4/C5 Owerri</strong>.
+              </p>
+              <p>
+                We are actively working on expanding access to other branches and denominations. More upgrades are coming soon!
+              </p>
+              <p className="font-medium text-gray-800">Would you like to proceed with registration?</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button onClick={() => navigate("/register")} className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]">
+                Yes, Proceed
+              </button>
+              <button onClick={() => setShowEligibilityModal(false)} className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-bold transition-all hover:bg-gray-200 hover:scale-[1.02] active:scale-[0.98]">
+                Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
