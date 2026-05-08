@@ -284,7 +284,7 @@ function Register() {
               )}
             </div>
 
-            <select name="bornAgain" required className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all" onChange={handleChange}>
+            <select name="bornAgain" required value={formData.bornAgain} className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all" onChange={handleChange}>
               <option value="">Born Again? *</option>
               <option value="Yes">Yes</option>
               <option value="No">No</option>

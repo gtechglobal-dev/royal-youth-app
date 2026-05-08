@@ -108,6 +108,11 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Please select a service unit you'd like to join" });
     }
 
+    const validBornAgainOptions = ["Yes", "No", "Not sure"];
+    if (!bornAgain || !validBornAgainOptions.includes(bornAgain)) {
+      return res.status(400).json({ message: "Please select a valid Born Again status" });
+    }
+
     console.log("Checking existing phone:", phone);
     const existingPhone = await User.findOne({ phone, isDeleted: false });
     if (existingPhone) {
