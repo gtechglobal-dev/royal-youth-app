@@ -184,21 +184,21 @@ function LandingPage() {
 
       <ScrollSection className="py-8 px-4" delay={100}>
         <div className="container mx-auto max-w-5xl">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden p-8 md:p-12">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden p-6 md:p-12">
             <div className="text-center mb-8">
-              <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
                 <div className="w-32 h-32 md:w-48 md:h-48 overflow-hidden shadow-2xl rounded-2xl border-4 border-indigo-100 flex-shrink-0">
                   <img src={PresidentImage} alt="Youth President" className="w-full h-full object-cover object-[center_10%]" />
                 </div>
-                <div className="text-left">
-                  <svg className="w-10 h-10 md:w-14 md:h-14 text-indigo-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <div className="text-center md:text-left">
+                  <svg className="w-10 h-10 md:w-14 md:h-14 text-indigo-600 mb-2 mx-auto md:mx-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                   </svg>
                   <h2 className="text-xl md:text-3xl font-bold text-indigo-700">From the President's Desk</h2>
                 </div>
               </div>
             </div>
-            <div className="text-gray-700 space-y-4 leading-relaxed text-sm md:text-base max-w-3xl mx-auto">
+            <div className="text-gray-700 space-y-4 leading-relaxed text-sm md:text-base">
               <p>Welcome to Royal Youth Hub — a growing platform created to connect and empower young people.</p>
               <p>As we launch this initiative, we are currently at the startup stage, and we are excited about the many innovations,
                 {readMore && (
