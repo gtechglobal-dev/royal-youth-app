@@ -173,7 +173,7 @@ function LandingPage() {
       <BannerGallery />
 
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-1.5 md:py-2 overflow-hidden shadow-lg">
-        <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 80s linear infinite" }}>
+        <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 120s linear infinite" }}>
           {[...Array(12)].map((_, i) => (
             <span key={i} className="text-white text-sm md:text-base font-medium mx-6 flex-shrink-0 tracking-wide">
               ✨ Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
