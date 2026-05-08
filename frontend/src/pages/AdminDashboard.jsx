@@ -14,6 +14,7 @@ function AdminDashboard() {
   const [showAll, setShowAll] = useState(true);
   const [members, setMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberImageModal, setShowMemberImageModal] = useState(false);
   const [selectedDuesMember, setSelectedDuesMember] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [duesSearch, setDuesSearch] = useState("");
@@ -817,7 +818,10 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               <h3 className="text-lg font-bold mb-4 text-adminBlue">Member Profile</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                  <div
+                    className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => selectedMember.profileImage && selectedMember.profileImage.length > 0 && setShowMemberImageModal(true)}
+                  >
                     {selectedMember.profileImage && selectedMember.profileImage.length > 0 && (
                          <img
                          src={selectedMember.profileImage}
@@ -835,26 +839,6 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                     <p className="font-semibold">{selectedMember.firstname} {selectedMember.surname} {selectedMember.othername}</p>
                     <p className="text-sm text-gray-500">{selectedMember.occupation || 'No occupation'}</p>
                   </div>
-                  {selectedMember.profileImage && selectedMember.profileImage.length > 0 && (
-                    <button
-                      onClick={() => {
-                        const a = document.createElement("a");
-                        a.href = selectedMember.profileImage;
-                        a.download = `${selectedMember.firstname}_${selectedMember.surname}_profile.jpg`;
-                        a.target = "_blank";
-                        a.rel = "noopener noreferrer";
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                      }}
-                      className="ml-auto text-adminBlue hover:text-blue-700 transition"
-                      title="Download Profile Image"
-                    >
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div><span className="font-semibold">Phone:</span> {selectedMember.phone}</div>
@@ -1780,6 +1764,40 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   Delete
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {showMemberImageModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4" onClick={() => setShowMemberImageModal(false)}>
+            <div className="relative max-w-3xl max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowMemberImageModal(false)}
+                className="absolute top-0 right-0 bg-white rounded-full p-2 hover:bg-gray-100"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <img
+                src={selectedMember.profileImage}
+                alt="Profile"
+                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              />
+              <button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = selectedMember.profileImage;
+                  link.download = `${selectedMember.firstname}_${selectedMember.surname}_profile.jpg`;
+                  link.click();
+                }}
+                className="mt-4 flex items-center gap-2 bg-memberBlue text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Image
+              </button>
             </div>
           </div>
         )}
