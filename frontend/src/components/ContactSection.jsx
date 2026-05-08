@@ -9,7 +9,7 @@ const contactTypes = [
     subtitle: "We stand with you in faith",
     icon: (
       <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l6.364-6.364a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4c-1.5 2-4 4-4 7a4 4 0 108 0c0-3-2.5-5-4-7zM8 14c-2 1-4 3-4 6a2 2 0 002 2h12a2 2 0 002-2c0-3-2-5-4-6" />
       </svg>
     ),
   },
@@ -19,7 +19,7 @@ const contactTypes = [
     subtitle: "Have a story to share?",
     icon: (
       <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 001.38 0l4.674-4.674a1 1 0 000-1.902l-4.674-4.674a1 1 0 00-1.902 0l-4.674 4.674a1 1 0 000 1.902l1.674 4.674z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
       </svg>
     ),
   },

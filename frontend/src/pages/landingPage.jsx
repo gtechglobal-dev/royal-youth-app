@@ -200,17 +200,11 @@ function LandingPage() {
             </div>
             <div className="text-gray-700 space-y-4 leading-relaxed text-sm md:text-base text-justify">
               <p>Welcome to Royal Youth Hub — a growing platform created to connect and empower young people.</p>
-              <p>As we launch this initiative, we are currently at the startup stage, and we are excited about the many innovations,
-                {readMore && (
-                  <>
-                    improvements, and opportunities that will continue to develop within the Hub. Our vision is to build a vibrant community where young believers within Soulwinners International Churches and other denominations as well can connect, share ideas, grow together, and support one another in the fear of God.
-                  </>
-                )}
-              </p>
+              <p>As we launch this initiative, we are currently at the startup stage, and we are excited about the many innovations, {readMore && <>improvements, and opportunities that will continue to develop within the Hub. Our vision is to build a vibrant community where young believers within Soulwinners International Churches and other denominations as well can connect, share ideas, grow together, and support one another in the fear of God.</>}</p>
               {readMore && (
                 <>
                   <p>Royal Youth Hub is a space for collaboration, learning, leadership, and meaningful relationships. We invite you to be part of this journey from the beginning, as your participation, ideas, and support will help shape the future of this Hub.</p>
-                  <p>You will also find sections for Complaints/Suggestions, Prayer Requests, and Testimonies below—please feel free to use them at your convenience.</p>
+                  <p>You will also find sections for Complaints/Suggestions, Prayer Requests, and Testimonies below — please feel free to use them at your convenience.</p>
                   <p className="font-semibold text-indigo-700">More updates and exciting features are coming soon. Royal Youth Hub — where growth happens.</p>
                   <div className="mt-6 pt-4 border-t border-indigo-200 text-left">
                     <p className="font-bold text-gray-800">Warm regards,</p>
