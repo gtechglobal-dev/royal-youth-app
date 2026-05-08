@@ -13,6 +13,7 @@ function AdminDashboard() {
   });
   const [showAll, setShowAll] = useState(true);
   const [members, setMembers] = useState([]);
+  const [memberSearch, setMemberSearch] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberImageModal, setShowMemberImageModal] = useState(false);
   const [selectedDuesMember, setSelectedDuesMember] = useState(null);
@@ -752,54 +753,69 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
           )}
 
         {activeTab === "members" && (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm md:text-base">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border p-2 md:p-3 text-left">Name</th>
-                  <th className="border p-2 md:p-3 text-left">Phone</th>
-                  <th className="border p-2 md:p-3 text-left">DOB</th>
-                  <th className="border p-2 md:p-3 text-left">Status</th>
-                  <th className="border p-2 md:p-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {members.map((member) => (
-                  <tr key={member._id}>
-                    <td className="border p-2 md:p-3">{member.firstname} {member.surname}</td>
-                    <td className="border p-2 md:p-3">{member.phone}</td>
-                    <td className="border p-2 md:p-3">{member.dob ? new Date(member.dob).toLocaleDateString() : '-'}</td>
-                    <td className="border p-2 md:p-3">
-                      <span className={`px-2 py-1 rounded ${member.membershipStatus === "Active Member" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                        {member.membershipStatus}
-                      </span>
-                    </td>
-                    <td className="border p-2 md:p-3">
-                      <button
-                        onClick={() => setSelectedMember(member)}
-                        className="text-adminBlue hover:underline mr-2"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => confirmDeleteMember(member._id)}
-                        className="text-red-500 hover:underline mr-2"
-                      >
-                        Delete
-                      </button>
-                      <select
-                        value={member.membershipStatus}
-                        onChange={(e) => updateMembershipStatus(member._id, e.target.value)}
-                        className="border p-1 rounded"
-                      >
-                        <option value="Active Member">Active</option>
-                        <option value="Inactive Member">Inactive</option>
-                      </select>
-                    </td>
+          <div>
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search member by name..."
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-adminBlue focus:outline-none"
+              />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm md:text-base">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border p-2 md:p-3 text-left">Name</th>
+                    <th className="border p-2 md:p-3 text-left">Phone</th>
+                    <th className="border p-2 md:p-3 text-left">DOB</th>
+                    <th className="border p-2 md:p-3 text-left">Status</th>
+                    <th className="border p-2 md:p-3 text-left">Actions</th>
                   </tr>
-                ))}
-</tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {members
+                    .filter((member) =>
+                      `${member.firstname} ${member.surname} ${member.othername}`.toLowerCase().includes(memberSearch.toLowerCase())
+                    )
+                    .map((member) => (
+                      <tr key={member._id}>
+                        <td className="border p-2 md:p-3">{member.firstname} {member.surname}</td>
+                        <td className="border p-2 md:p-3">{member.phone}</td>
+                        <td className="border p-2 md:p-3">{member.dob ? new Date(member.dob).toLocaleDateString() : '-'}</td>
+                        <td className="border p-2 md:p-3">
+                          <span className={`px-2 py-1 rounded ${member.membershipStatus === "Active Member" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                            {member.membershipStatus}
+                          </span>
+                        </td>
+                        <td className="border p-2 md:p-3">
+                          <button
+                            onClick={() => setSelectedMember(member)}
+                            className="text-adminBlue hover:underline mr-2"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => confirmDeleteMember(member._id)}
+                            className="text-red-500 hover:underline mr-2"
+                          >
+                            Delete
+                          </button>
+                          <select
+                            value={member.membershipStatus}
+                            onChange={(e) => updateMembershipStatus(member._id, e.target.value)}
+                            className="border p-1 rounded"
+                          >
+                            <option value="Active Member">Active</option>
+                            <option value="Inactive Member">Inactive</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
