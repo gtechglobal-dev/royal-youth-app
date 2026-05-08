@@ -1,13 +1,18 @@
 import nodemailer from "nodemailer";
-import "dotenv/config";
+
+const hasEmailConfig = process.env.GMAIL_USER && process.env.GMAIL_APP_PASS;
+
+if (!hasEmailConfig) {
+  console.warn("EMAIL WARNING: GMAIL_USER or GMAIL_APP_PASS not configured. Emails will not be sent.");
+}
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASS,
+    user: process.env.GMAIL_USER || "",
+    pass: process.env.GMAIL_APP_PASS || "",
   },
 });
 
@@ -37,6 +42,7 @@ export const sendApprovalEmail = async (email, name) => {
       <p style="color: #475569; line-height: 1.6; margin-top: 20px;">We look forward to having you as part of our community!</p>
     `;
 
+    if (!hasEmailConfig) throw new Error("GMAIL_USER/GMAIL_APP_PASS not configured");
     await transporter.sendMail({
       from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
       to: email,
@@ -59,6 +65,7 @@ export const sendRejectionEmail = async (email, name, reason) => {
       <p style="color: #475569; line-height: 1.6; margin-top: 20px;">We encourage you to reapply in the future.</p>
     `;
 
+    if (!hasEmailConfig) throw new Error("GMAIL_USER/GMAIL_APP_PASS not configured");
     await transporter.sendMail({
       from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
       to: email,
@@ -84,6 +91,7 @@ export const sendOTPEmail = async (email, name, otp) => {
       <p style="color: #475569; line-height: 1.6;">If you did not request this, please ignore this email.</p>
     `;
 
+    if (!hasEmailConfig) throw new Error("GMAIL_USER/GMAIL_APP_PASS not configured");
     await transporter.sendMail({
       from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
       to: email,
