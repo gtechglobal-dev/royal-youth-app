@@ -177,7 +177,7 @@ function LandingPage() {
         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-0.5 md:py-2 overflow-hidden flex items-center">
           <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 120s linear infinite" }}>
             {[...Array(12)].map((_, i) => (
-              <span key={i} className="text-white text-[10px] sm:text-xs md:text-sm lg:text-base font-medium mx-3 sm:mx-6 flex-shrink-0 tracking-wide">
+              <span key={i} className="text-white text-[9px] xs:text-[11px] sm:text-xs md:text-sm lg:text-base font-medium mx-1.5 sm:mx-6 flex-shrink-0">
                 ✨ Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
               </span>
             ))}
