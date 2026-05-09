@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import Notification from "../components/Notification";
@@ -25,6 +25,7 @@ function AdminDashboard() {
   const [notification, setNotification] = useState({ open: false, type: "", message: "" });
   const [deletingMemberId, setDeletingMemberId] = useState(null);
   const [showAdminBirthdayModal, setShowAdminBirthdayModal] = useState(false);
+  const hasShownBirthday = useRef(false);
 
   const [newMeeting, setNewMeeting] = useState({ meetingTitle: "", meetingDate: "" });
   const [meetings, setMeetings] = useState([]);
@@ -648,7 +649,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   });
 
   useEffect(() => {
-    if (!loading && todayBirthdayMembers.length > 0) {
+    if (!loading && todayBirthdayMembers.length > 0 && !hasShownBirthday.current) {
+      hasShownBirthday.current = true;
       setShowAdminBirthdayModal(true);
     }
   }, [loading, todayBirthdayMembers]);

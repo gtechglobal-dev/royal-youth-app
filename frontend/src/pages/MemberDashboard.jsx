@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 
@@ -12,6 +12,7 @@ function MemberDashboard() {
   const [showSpecialModal, setShowSpecialModal] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showBirthdayModal, setShowBirthdayModal] = useState(false);
+  const hasShownBirthday = useRef(false);
   const [selectedResponse, setSelectedResponse] = useState("");
   const [pendingResponse, setPendingResponse] = useState("");
   const [responseSubmitted, setResponseSubmitted] = useState(false);
@@ -161,7 +162,8 @@ function MemberDashboard() {
 
   // Auto-show birthday modal on every visit while it's their birthday
   useEffect(() => {
-    if (!loading && user && isBirthday) {
+    if (!loading && user && isBirthday && !hasShownBirthday.current) {
+      hasShownBirthday.current = true;
       setShowBirthdayModal(true);
     }
   }, [loading, user, isBirthday]);
