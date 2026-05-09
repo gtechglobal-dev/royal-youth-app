@@ -38,6 +38,7 @@ const [expenses, setExpenses] = useState([]);
 
 const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpenses: 0, balance: 0, duesMonthly: {} });
   const [incomeRecords, setIncomeRecords] = useState({});
+  const [incomeRecords2027, setIncomeRecords2027] = useState({});
   const [otherIncome, setOtherIncome] = useState([]);
   const [specialDonations, setSpecialDonations] = useState([]);
   const [editingOtherIncome, setEditingOtherIncome] = useState(null);
@@ -67,9 +68,16 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     meetingResponses: 0,
   });
 
+  const [duesYear, setDuesYear] = useState("2026");
+
   const months = [
     "May", "June", "July", "August", "September", 
     "October", "November", "December"
+  ];
+
+  const allMonths = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
   ];
 
   const totalOtherIncome = otherIncome.reduce((sum, inc) => sum + (inc.amount || 0), 0);
@@ -179,6 +187,23 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       }
     });
     setIncomeRecords(duesIncome);
+  }, [members]);
+
+  useEffect(() => {
+    const duesIncome2027 = {};
+    allMonths.forEach(month => {
+      duesIncome2027[month] = 0;
+    });
+    members.forEach(m => {
+      if (m.registrationStatus === "Approved" && m.dues2027) {
+        allMonths.forEach(month => {
+          if (m.dues2027[month]?.status === "Paid") {
+            duesIncome2027[month] += m.dues2027[month]?.amount || 0;
+          }
+        });
+      }
+    });
+    setIncomeRecords2027(duesIncome2027);
   }, [members]);
 
   useEffect(() => {
@@ -520,14 +545,15 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     }
   };
 
-  const updateDues = async (memberId, month, status, amount = 0) => {
+  const updateDues = async (memberId, month, status, amount = 0, year = "2026") => {
     try {
-      await API.put(`/auth/dues/${memberId}`, { month, status, amount });
+      await API.put(`/auth/dues/${memberId}`, { month, status, amount, year });
+      const duesField = year === "2027" ? "dues2027" : "dues";
       
       if (status === "Paid" && amount > 0) {
         const member = members.find(m => m._id === memberId);
         await API.post("/finance/income", {
-          purpose: `2026 Dues - ${month} (${member?.firstname} ${member?.surname})`,
+          purpose: `${year} Dues - ${month} (${member?.firstname} ${member?.surname})`,
           amount: amount,
           date: new Date().toISOString().split('T')[0],
           memberId: memberId
@@ -536,7 +562,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       
       setMembers(members.map(m => 
         m._id === memberId 
-          ? { ...m, dues: { ...m.dues, [month]: { status, amount, date: status === "Paid" ? new Date() : null } } }
+          ? { ...m, [duesField]: { ...m[duesField], [month]: { status, amount, date: status === "Paid" ? new Date() : null } } }
           : m
       ));
     } catch (error) {
@@ -1014,14 +1040,24 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
 
         {activeTab === "dues" && (
           <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
-            <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">Mark Dues for 2026</h2>
+            <div className="flex items-center gap-4 mb-4">
+              <h2 className="text-lg md:text-xl font-bold text-adminBlue">Mark Dues for</h2>
+              <select
+                value={duesYear}
+                onChange={(e) => { setDuesYear(e.target.value); setSelectedMonth(""); }}
+                className="border p-2 rounded text-lg font-bold text-adminBlue"
+              >
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
             <select
               className="border p-2 w-full mb-4"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
             >
               <option value="">Select Month</option>
-              {months.map((month) => (
+              {(duesYear === "2027" ? allMonths : months).map((month) => (
                 <option key={month} value={month}>{month}</option>
               ))}
             </select>
@@ -1049,47 +1085,50 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                       {members.filter(m => 
                         m.registrationStatus === "Approved" && 
                         `${m.firstname} ${m.surname}`.toLowerCase().includes(duesSearch.toLowerCase())
-                      ).map((member) => (
+                      ).map((member) => {
+                        const duesField = duesYear === "2027" ? member.dues2027 : member.dues;
+                        return (
                         <tr key={member._id}>
                           <td className="border p-2 md:p-3">{member.firstname} {member.surname}</td>
                           <td className="border p-2 md:p-3">
                             <input
                               type="number"
                               className="border p-1 rounded w-20"
-                              defaultValue={member.dues?.[selectedMonth]?.amount || 1000}
+                              defaultValue={duesField?.[selectedMonth]?.amount || 1000}
                               onBlur={(e) => {
                                 const amount = parseInt(e.target.value) || 0;
                                 if (amount > 0) {
-                                  updateDues(member._id, selectedMonth, "Paid", amount);
+                                  updateDues(member._id, selectedMonth, "Paid", amount, duesYear);
                                 }
                               }}
                             />
                           </td>
                           <td className="border p-2 md:p-3 text-sm">
-                            {member.dues?.[selectedMonth]?.date
-                              ? new Date(member.dues[selectedMonth].date).toLocaleDateString('en-GB')
+                            {duesField?.[selectedMonth]?.date
+                              ? new Date(duesField[selectedMonth].date).toLocaleDateString('en-GB')
                               : '-'}
                           </td>
                           <td className="border p-2 md:p-3">
                             <button
                               onClick={() => {
-                                const currentAmount = member.dues?.[selectedMonth]?.amount || 0;
-                                const currentStatus = member.dues?.[selectedMonth]?.status || "Unpaid";
+                                const currentAmount = duesField?.[selectedMonth]?.amount || 0;
+                                const currentStatus = duesField?.[selectedMonth]?.status || "Unpaid";
                                 const newStatus = currentStatus === "Paid" ? "Unpaid" : "Paid";
                                 const amount = newStatus === "Paid" ? (currentAmount || 1000) : 0;
-                                updateDues(member._id, selectedMonth, newStatus, amount);
+                                updateDues(member._id, selectedMonth, newStatus, amount, duesYear);
                               }}
                               className={`px-2 py-1 rounded text-sm ${
-                                member.dues?.[selectedMonth]?.status === "Paid"
+                                duesField?.[selectedMonth]?.status === "Paid"
                                   ? "bg-green-100 text-green-700"
                                   : "bg-red-100 text-red-700"
                               }`}
                             >
-                              {member.dues?.[selectedMonth]?.status || "Unpaid"}
+                              {duesField?.[selectedMonth]?.status || "Unpaid"}
                             </button>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -1343,6 +1382,32 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                     <tr className="bg-green-100 font-bold">
                       <td className="border p-2 md:p-3">Grand Total</td>
                       <td className="border p-2 md:p-3">N{Object.values(incomeRecords).reduce((a, b) => a + b, 0).toLocaleString()}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+              <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">2027 Monthly Dues Income</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm md:text-base">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border p-2 md:p-3 text-left">Month</th>
+                      <th className="border p-2 md:p-3 text-left">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(incomeRecords2027).map(([month, amount]) => (
+                      <tr key={month}>
+                        <td className="border p-2 md:p-3">{month}</td>
+                        <td className="border p-2 md:p-3">N{amount.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                    <tr className="bg-green-100 font-bold">
+                      <td className="border p-2 md:p-3">Grand Total</td>
+                      <td className="border p-2 md:p-3">N{Object.values(incomeRecords2027).reduce((a, b) => a + b, 0).toLocaleString()}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1739,6 +1804,10 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                  <p className="text-gray-600 text-sm md:text-base">2026 Dues Income (May-Dec)</p>
                  <p className="text-xl md:text-2xl font-bold text-green-700">N{Object.values(incomeRecords).reduce((a, b) => a + b, 0).toLocaleString()}</p>
                </div>
+              <div className="bg-green-200 p-4 rounded-lg">
+                 <p className="text-gray-600 text-sm md:text-base">2027 Dues Income (Jan-Dec)</p>
+                 <p className="text-xl md:text-2xl font-bold text-green-800">N{Object.values(incomeRecords2027).reduce((a, b) => a + b, 0).toLocaleString()}</p>
+               </div>
               <div className="bg-blue-100 p-4 rounded-lg">
                 <p className="text-gray-600 text-sm md:text-base">Other Income</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-700">N{totalOtherIncome.toLocaleString()}</p>
@@ -1753,7 +1822,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               </div>
               <div className="bg-adminOrange p-4 rounded-lg md:col-span-2">
                 <p className="text-gray-600 text-sm md:text-base">Final Balance</p>
-                <p className="text-xl md:text-2xl font-bold text-black">N{(Object.values(incomeRecords).reduce((a, b) => a + b, 0) + totalOtherIncome + totalSpecialDonations - balance.totalExpenses).toLocaleString()}</p>
+                <p className="text-xl md:text-2xl font-bold text-black">N{(Object.values(incomeRecords).reduce((a, b) => a + b, 0) + Object.values(incomeRecords2027).reduce((a, b) => a + b, 0) + totalOtherIncome + totalSpecialDonations - balance.totalExpenses).toLocaleString()}</p>
               </div>
             </div>
           </div>

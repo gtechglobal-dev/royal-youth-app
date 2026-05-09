@@ -181,6 +181,69 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    dues2027: {
+      January: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      February: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      March: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      April: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      May: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      June: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      July: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      August: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      September: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      October: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      November: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+      December: {
+        status: { type: String, default: "Unpaid" },
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: null },
+      },
+    },
+
     specialDonations: [{
       purpose: { type: String, required: true },
       amount: { type: Number, required: true },

@@ -59,6 +59,7 @@ export const getBalanceSheet = async (req, res) => {
 
     let totalDues = 0;
     const months2026 = ["May", "June", "July", "August", "September", "October", "November", "December"];
+    const months2027 = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     months2026.forEach(month => {
       members.forEach(member => {
@@ -68,17 +69,25 @@ export const getBalanceSheet = async (req, res) => {
       });
     });
 
+    months2027.forEach(month => {
+      members.forEach(member => {
+        if (member.dues2027?.[month]?.status === "Paid") {
+          totalDues += Number(member.dues2027[month].amount || 2000);
+        }
+      });
+    });
+
     // Get OTHER income only (NO memberId) - exclude dues payments
     const otherIncome = await Income.find({
       memberId: { $exists: false },
-      purpose: { $not: /2026 Dues|Dues -/ }
+      purpose: { $not: /Dues -/ }
     });
     const totalOtherIncome = otherIncome.reduce((sum, inc) => sum + inc.amount, 0);
 
     // Get Special Donations (WITH memberId) - exclude dues payments
     const specialDonations = await Income.find({
       memberId: { $exists: true, $ne: null },
-      purpose: { $not: /2026 Dues|Dues -/ }
+      purpose: { $not: /Dues -/ }
     });
     const totalSpecialDonations = specialDonations.reduce((sum, don) => sum + don.amount, 0);
 

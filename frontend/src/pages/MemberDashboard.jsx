@@ -22,6 +22,8 @@ function MemberDashboard() {
   const [error, setError] = useState(false);
   const [specialPurpose, setSpecialPurpose] = useState("");
   const [specialAmount, setSpecialAmount] = useState("");
+  const [selectedYear, setSelectedYear] = useState("2026");
+  const [showMore2027, setShowMore2027] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -197,8 +199,9 @@ function MemberDashboard() {
     navigate("/");
   };
 
-  const handlePayOffline = (month) => {
+  const handlePayOffline = (month, year = "2026") => {
     setSelectedMonth(month);
+    setSelectedYear(year);
     setShowOfflineModal(true);
   };
 
@@ -244,9 +247,14 @@ function MemberDashboard() {
     );
   }
 
-   const months = [
+  const months = [
     "May", "June", "July", "August", "September", 
     "October", "November", "December"
+  ];
+
+  const allMonths = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
   ];
 
   return (
@@ -255,9 +263,9 @@ function MemberDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowOfflineModal(false)} />
           <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-bold mb-4">Pay Offline</h3>
-            <p className="text-gray-600 mb-4">
-              Kindly make dues payment to <br />
+      <h3 className="text-lg font-bold mb-4">Pay Offline - {selectedMonth} {selectedYear}</h3>
+      <p className="text-gray-600 mb-4">
+        Kindly make dues payment to <br />
               <span className="font-bold text-sky-600">6337423425 Moniepoint - Royal Youth Concepts</span>
             </p>
             <p className="text-gray-600 mb-4">
@@ -581,10 +589,10 @@ function MemberDashboard() {
         <div className="mt-4 md:mt-6 bg-white p-4 md:p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg md:text-xl font-bold text-memberBlue">2026 Dues Record</h2>
-              <button
-                onClick={() => setShowSpecialModal(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-semibold"
-              >
+            <button
+              onClick={() => setShowSpecialModal(true)}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-semibold"
+            >
               Make Special Payment/Donations
             </button>
           </div>
@@ -631,6 +639,63 @@ function MemberDashboard() {
               </tbody>
             </table>
           </div>
+          <div className="text-center mt-4">
+            <button
+              onClick={() => setShowMore2027(!showMore2027)}
+              className="text-sm text-sky-600 hover:text-sky-800 font-semibold underline"
+            >
+              {showMore2027 ? "Show Less" : "Show More →"}
+            </button>
+          </div>
+          {showMore2027 && (
+            <>
+              <hr className="my-4 border-gray-300" />
+              <h3 className="text-lg md:text-xl font-bold text-memberBlue mb-4">2027 Dues Record</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm md:text-base">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border p-2 md:p-3 text-left">Month</th>
+                      <th className="border p-2 md:p-3 text-left">Status</th>
+                      <th className="border p-2 md:p-3 text-left">Amount</th>
+                      <th className="border p-2 md:p-3 text-left">Date Paid</th>
+                      <th className="border p-2 md:p-3 text-left">Pay Offline</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allMonths.map((month) => (
+                      <tr key={month}>
+                        <td className="border p-2 md:p-3">{month}</td>
+                        <td className="border p-2 md:p-3">
+                          <span className={`px-2 py-1 rounded ${user.dues2027?.[month]?.status === "Paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                            {user.dues2027?.[month]?.status || "Unpaid"}
+                          </span>
+                        </td>
+                        <td className="border p-2 md:p-3">N{user.dues2027?.[month]?.amount || 1000}</td>
+                        <td className="border p-2 md:p-3">
+                          {user.dues2027?.[month]?.status === "Paid" && user.dues2027?.[month]?.date
+                            ? new Date(user.dues2027[month].date).toLocaleDateString('en-GB')
+                            : "-"}
+                        </td>
+                        <td className="border p-2 md:p-3">
+                          {user.dues2027?.[month]?.status !== "Paid" ? (
+                            <button
+                              onClick={() => handlePayOffline(month, "2027")}
+                              className="bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-700"
+                            >
+                              Pay Offline
+                            </button>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="mt-4 md:mt-6 bg-white p-4 md:p-6 rounded-lg shadow-md">

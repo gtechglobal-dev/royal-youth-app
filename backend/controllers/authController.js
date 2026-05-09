@@ -317,7 +317,8 @@ export const updateMembershipStatus = async (req, res) => {
 
 export const updateDues = async (req, res) => {
   try {
-    const { month, status, amount } = req.body;
+    const { month, status, amount, year } = req.body;
+    const duesField = year === "2027" ? "dues2027" : "dues";
 
     const member = await User.findById(req.params.id);
 
@@ -325,13 +326,13 @@ export const updateDues = async (req, res) => {
       return res.status(404).json({ message: "Member not found" });
     }
 
-    member.dues[month].status = status;
-    member.dues[month].amount = amount;
+    member[duesField][month].status = status;
+    member[duesField][month].amount = amount;
     
     if (status === "Paid") {
-      member.dues[month].date = new Date();
+      member[duesField][month].date = new Date();
     } else {
-      member.dues[month].date = null;
+      member[duesField][month].date = null;
     }
 
     await member.save();
@@ -437,7 +438,7 @@ export const deleteMember = async (req, res) => {
 // GET MEMBER DUES
 export const getMemberDues = async (req, res) => {
   try {
-    const member = await User.findOne({ _id: req.params.id, isDeleted: false }).select("dues firstname surname");
+    const member = await User.findOne({ _id: req.params.id, isDeleted: false }).select("dues dues2027 firstname surname");
 
     if (!member) {
       return res.status(404).json({ message: "Member not found" });
