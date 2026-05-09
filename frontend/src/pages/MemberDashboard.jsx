@@ -565,7 +565,7 @@ function MemberDashboard() {
               {user.hobbies && user.hobbies.length > 0 && (
                 <p><span className="font-semibold">Hobbies:</span> {user.hobbies.join(", ")}</p>
               )}
-              <p><span className="font-semibold">Last Login:</span> {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : "First login"}</p>
+              <p><span className="font-semibold">Last Login:</span> {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "First login"}</p>
               <p><span className="font-semibold">Date Registered:</span> {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Unknown"}</p>
               <button
                 onClick={() => setShowHandbookModal(true)}

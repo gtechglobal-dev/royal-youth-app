@@ -960,7 +960,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   <div><span className="font-semibold">Address:</span> {selectedMember.address || '-'}</div>
                   <div><span className="font-semibold">Born Again:</span> {selectedMember.bornAgain}</div>
                   <div><span className="font-semibold">Status:</span> {selectedMember.membershipStatus}</div>
-                  <div><span className="font-semibold">Last Login:</span> {selectedMember.lastLogin ? new Date(selectedMember.lastLogin).toLocaleDateString() : 'Never'}</div>
+                  <div><span className="font-semibold">Last Login:</span> {selectedMember.lastLogin ? new Date(selectedMember.lastLogin).toLocaleString() : 'Never'}</div>
                 </div>
               </div>
             </div>
