@@ -12,6 +12,7 @@ import {
   deleteMember,
   getMemberDues,
   updateProfile,
+  uploadProfileImage,
 } from "../controllers/authController.js";
 import upload from "../config/cloudinary.js";
 import protect from "../middleware/authMiddleware.js";
@@ -19,6 +20,8 @@ import User from "../models/user.js";
 import { sendApprovalEmail, sendRejectionEmail, sendOTPEmail } from "../utils/emailSender.js";
 
 const router = express.Router();
+
+router.post("/upload-image", upload.single("profileImage"), uploadProfileImage);
 
 router.post("/register", upload.single("profileImage"), registerUser);
 

@@ -160,14 +160,6 @@ function MemberDashboard() {
     };
   }, [showReminderModal]);
 
-  // Auto-show birthday modal on every visit while it's their birthday
-  useEffect(() => {
-    if (!loading && user && isBirthday && !hasShownBirthday.current) {
-      hasShownBirthday.current = true;
-      setShowBirthdayModal(true);
-    }
-  }, [loading, user, isBirthday]);
-
   const calculateAge = (dob) => {
     const birthDate = new Date(dob);
     const today = new Date();
@@ -178,6 +170,26 @@ function MemberDashboard() {
     }
     return age;
   };
+
+  const isBirthday = (() => {
+    try {
+      if (!user?.dob) return false;
+      const today = new Date();
+      const birth = new Date(user.dob);
+      if (isNaN(birth.getTime())) return false;
+      return today.getDate() === birth.getDate() && today.getMonth() === birth.getMonth();
+    } catch {
+      return false;
+    }
+  })();
+
+  // Auto-show birthday modal on every visit while it's their birthday
+  useEffect(() => {
+    if (!loading && user && isBirthday && !hasShownBirthday.current) {
+      hasShownBirthday.current = true;
+      setShowBirthdayModal(true);
+    }
+  }, [loading, user, isBirthday]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -231,12 +243,6 @@ function MemberDashboard() {
       </div>
     );
   }
-
-  const isBirthday = user?.dob && (() => {
-    const today = new Date();
-    const birth = new Date(user.dob);
-    return today.getDate() === birth.getDate() && today.getMonth() === birth.getMonth();
-  })();
 
    const months = [
     "May", "June", "July", "August", "September", 

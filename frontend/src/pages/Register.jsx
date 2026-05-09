@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import Notification from "../components/Notification";
-import { OverlayLoader, PageLoader } from "../components/Loaders";
+import { PageLoader } from "../components/Loaders";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
@@ -73,6 +73,7 @@ function Register() {
   });
   const [selectedState, setSelectedState] = useState("");
   const [image, setImage] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [terms, setTerms] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -110,6 +111,7 @@ function Register() {
     if (!formData.occupation.trim()) errs.occupation = "Occupation is required";
     if (!formData.serviceUnit) errs.serviceUnit = "Service Unit is required";
     if (formData.serviceUnit === "None" && !formData.serviceUnitLove) errs.serviceUnitLove = "Please select a service unit to join";
+    if (!image) errs.image = "Profile image is required";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -148,6 +150,7 @@ function Register() {
     if (submitting) return;
     try {
       setSubmitting(true);
+      setUploadProgress(0);
       const fd = new FormData();
       fd.append("surname", sanitize(formData.surname));
       fd.append("firstname", sanitize(formData.firstname));
@@ -168,11 +171,13 @@ function Register() {
       if (image) fd.append("profileImage", image);
 
       console.log("Submitting registration...");
-      for (let [key, value] of fd.entries()) {
-        console.log(key, value instanceof File ? value.name : value);
-      }
 
-      const response = await API.post("/auth/register", fd);
+      const response = await API.post("/auth/register", fd, {
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percent);
+        },
+      });
       console.log("Registration response:", response.data);
       if (response.data?.message) {
         setSubmitting(false);
@@ -191,7 +196,23 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-8 px-4">
-      {submitting && <OverlayLoader />}
+      {submitting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
+            <div className="w-16 h-16 mx-auto mb-4">
+              <div className="w-full h-full border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+            </div>
+            <p className="text-lg font-bold text-gray-800 mb-2">
+              {uploadProgress < 100 ? "Uploading Image..." : "Creating Account..."}
+            </p>
+            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden mb-2">
+              <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+            </div>
+            <p className="text-sm text-indigo-600 font-medium">{uploadProgress}%</p>
+            <p className="text-xs text-gray-500 mt-3">Please do not close this page</p>
+          </div>
+        </div>
+      )}
       <div className="max-w-2xl mx-auto">
         <Link to="/" className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6 font-medium transition-colors">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -292,7 +313,7 @@ function Register() {
             </select>
 
               <div>
-                <label className="block text-sm text-gray-600 mb-1 font-medium">Profile Image (Optional - Max 3MB)</label>
+                <label className="block text-sm text-gray-600 mb-1 font-medium">Profile Image * (Required - Max 3MB)</label>
                 <input type="file" name="profileImage" accept="image/*" className="w-full p-3 rounded-xl border-2 border-gray-200" onChange={(e) => {
                   const file = e.target.files[0] || null;
                   if (file && file.size > 3 * 1024 * 1024) {
@@ -304,6 +325,7 @@ function Register() {
                   }
                 }} />
                 {image && <p className="text-sm text-gray-500 mt-1">{image.name} ({(image.size / 1024).toFixed(1)} KB)</p>}
+                {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
               </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

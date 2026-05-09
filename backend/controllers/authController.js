@@ -26,11 +26,29 @@ const calculateAge = (dob) => {
   return age;
 };
 
+// UPLOAD PROFILE IMAGE (pre-upload before registration)
+export const uploadProfileImage = async (req, res) => {
+  try {
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+    console.log("Uploading profile image... Size:", req.file.size, "bytes");
+    const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
+    if (!result || !result.secure_url) {
+      return res.status(500).json({ message: "Image upload failed" });
+    }
+    console.log("Image uploaded successfully:", result.secure_url);
+    res.json({ imageUrl: result.secure_url });
+  } catch (error) {
+    console.error("Image upload error:", error);
+    res.status(500).json({ message: "Image upload failed" });
+  }
+};
+
 // REGISTER USER
 export const registerUser = async (req, res) => {
   try {
     console.log("Registration attempt:", req.body.email, req.body.phone);
-    console.log("Request file:", req.file?.originalname, req.file?.mimetype);
     
     const {
       surname,
@@ -49,6 +67,7 @@ export const registerUser = async (req, res) => {
       serviceUnitLove,
       bornAgain,
       password,
+      profileImage,
     } = req.body;
 
     const age = calculateAge(dob);
@@ -132,8 +151,8 @@ export const registerUser = async (req, res) => {
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    let imagePath = "";
-    if (req.file && req.file.buffer && req.file.buffer.length > 0) {
+    let imagePath = profileImage || "";
+    if (!imagePath && req.file && req.file.buffer && req.file.buffer.length > 0) {
       try {
         console.log("Uploading image to Cloudinary... Size:", req.file.size, "bytes");
         const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
@@ -142,8 +161,7 @@ export const registerUser = async (req, res) => {
           console.log("Image uploaded:", imagePath);
         }
       } catch (cloudErr) {
-        console.error("Cloudinary upload failed, continuing without image:", cloudErr.message);
-        imagePath = "";
+        console.error("Cloudinary upload failed:", cloudErr.message);
       }
     }
 

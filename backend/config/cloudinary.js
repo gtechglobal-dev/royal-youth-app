@@ -31,11 +31,11 @@ const uploadToCloudinary = async (fileBuffer, mimeType) => {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error("Cloudinary upload timeout"));
-    }, 30000);
+    }, 60000);
     
     cloudinary.uploader.upload(
       dataUri,
-      { folder: "royal-youth", timeout: 30000 },
+      { folder: "royal-youth", timeout: 60000 },
       (error, result) => {
         clearTimeout(timeout);
         if (error) {
