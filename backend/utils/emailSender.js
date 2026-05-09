@@ -47,6 +47,7 @@ export const sendApprovalEmail = async (email, name) => {
     await transporter.sendMail({
       from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
       to: email,
+      bcc: "royalyouthsc4c5@gmail.com",
       subject: "Congratulations! Welcome to Royal Youth Hub",
       html: getBaseTemplate(content),
     });
@@ -70,6 +71,7 @@ export const sendRejectionEmail = async (email, name, reason) => {
     await transporter.sendMail({
       from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
       to: email,
+      bcc: "royalyouthsc4c5@gmail.com",
       subject: "Update on Your Royal Youth Hub Registration",
       html: getBaseTemplate(content),
     });

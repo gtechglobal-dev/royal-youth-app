@@ -190,33 +190,43 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   }, [activeTab]);
 
   const handleApproveMember = async (id) => {
+    setLoadingAction({ id, type: "approve" });
     try {
-      setLoadingAction({ id, type: "approve" });
       await API.put(`/auth/approve-member/${id}`);
       setNotification({ open: true, type: "success", message: "Member Approved" });
+    } catch {
+      setNotification({ open: true, type: "error", message: "Approval failed" });
+      setLoadingAction({ id: null, type: null });
+      return;
+    }
+    try {
       const res = await API.get("/auth/pending");
       setPendingMembers(res.data);
       setCounts(prev => ({ ...prev, pending: res.data.length }));
     } catch {
-      setNotification({ open: true, type: "error", message: "Approval failed" });
-    } finally {
-      setLoadingAction({ id: null, type: null });
+      // UI refresh failed - member was already approved
     }
+    setLoadingAction({ id: null, type: null });
   };
 
   const handleRejectMember = async (id) => {
+    setLoadingAction({ id, type: "reject" });
     try {
-      setLoadingAction({ id, type: "reject" });
       await API.put(`/auth/reject-member/${id}`);
       setNotification({ open: true, type: "success", message: "Member rejected" });
+    } catch {
+      setNotification({ open: true, type: "error", message: "Rejection failed" });
+      setLoadingAction({ id: null, type: null });
+      return;
+    }
+    try {
       const res = await API.get("/auth/pending");
       setPendingMembers(res.data);
       setCounts(prev => ({ ...prev, pending: res.data.length }));
     } catch {
-      setNotification({ open: true, type: "error", message: "Rejection failed" });
-    } finally {
-      setLoadingAction({ id: null, type: null });
+      // UI refresh failed - member was already rejected
     }
+    setLoadingAction({ id: null, type: null });
   };
 
   const fetchData = async () => {
