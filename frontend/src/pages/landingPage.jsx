@@ -124,8 +124,9 @@ function LandingPage() {
   if (loading) return <PageLoader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg shadow-sm border-b border-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 relative">
+      <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(99,102,241,0.15) 1.5px, transparent 1.5px)", backgroundSize: "30px 30px" }} />
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-indigo-50/90 via-white/90 to-purple-50/90 backdrop-blur-lg shadow-sm border-b border-indigo-200">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 group">
@@ -170,19 +171,21 @@ function LandingPage() {
         </div>
       </header>
 
-      <BannerGallery />
+      <section className="mx-6 md:mx-20 lg:mx-32 mt-6 md:mt-8 mb-2 overflow-hidden shadow-lg">
+        <BannerGallery />
 
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-1.5 md:py-2 overflow-hidden shadow-lg">
-        <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 120s linear infinite" }}>
-          {[...Array(12)].map((_, i) => (
-            <span key={i} className="text-white text-sm md:text-base font-medium mx-6 flex-shrink-0 tracking-wide">
-              ✨ Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
-            </span>
-          ))}
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-0.5 md:py-2 overflow-hidden flex items-center">
+          <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 120s linear infinite" }}>
+            {[...Array(12)].map((_, i) => (
+              <span key={i} className="text-white text-[10px] sm:text-xs md:text-sm lg:text-base font-medium mx-3 sm:mx-6 flex-shrink-0 tracking-wide">
+                ✨ Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      <ScrollSection className="py-8 px-4" delay={100}>
+      <ScrollSection className="pt-2 pb-8 px-4" delay={100}>
         <div className="container mx-auto max-w-5xl">
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden p-8 md:p-12">
             <div className="text-center mb-8">

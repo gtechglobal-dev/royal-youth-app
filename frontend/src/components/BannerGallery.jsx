@@ -82,11 +82,18 @@ function BannerGallery() {
 
   return (
     <div
-      className="group relative w-full aspect-[3/1] overflow-hidden bg-gray-100 dark:bg-gray-800"
+      className="group relative w-full overflow-hidden bg-gradient-to-br from-indigo-100 via-purple-50 to-indigo-100"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
+      {banners[currentIndex] && (
+        <img
+          src={banners[currentIndex].image.startsWith("http") ? banners[currentIndex].image : `${import.meta.env.VITE_API_URL}${banners[currentIndex].image}`}
+          className="w-full opacity-0 block"
+          aria-hidden="true"
+        />
+      )}
       {banners.map((banner, index) => (
         <div
           key={banner._id}
