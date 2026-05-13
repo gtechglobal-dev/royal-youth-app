@@ -187,13 +187,19 @@ function ContactSection() {
               <button
                 key={type.id}
                 onClick={() => setActiveForm(type.id)}
-                className="group bg-white p-8 rounded-3xl shadow-lg shadow-gray-200/50 hover:shadow-2xl hover:shadow-indigo-200/50 transition-all hover:-translate-y-2 border border-gray-100"
+                className="group bg-white p-8 rounded-3xl shadow-lg shadow-gray-200/50 hover:shadow-2xl hover:shadow-indigo-200/50 transition-all hover:-translate-y-2 border-2 border-indigo-100 hover:border-indigo-300 cursor-pointer text-left w-full"
               >
                 <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg shadow-indigo-500/25">
                   {type.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">{type.title}</h3>
-                <p className="text-gray-500 text-sm">{type.subtitle}</p>
+                <h3 className="text-xl font-bold text-gray-800 mb-2 text-center">{type.title}</h3>
+                <p className="text-gray-500 text-sm text-center mb-4">{type.subtitle}</p>
+                <div className="flex items-center justify-center gap-1.5 text-indigo-600 font-semibold text-sm group-hover:gap-3 transition-all">
+                  <span>Open</span>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </div>
               </button>
             ))}
           </div>

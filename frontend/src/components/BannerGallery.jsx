@@ -5,7 +5,8 @@ function BannerGallery() {
   const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [bannersLoaded, setBannersLoaded] = useState(false);
+  const [firstImageLoaded, setFirstImageLoaded] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -29,7 +30,7 @@ function BannerGallery() {
     } catch (error) {
       console.error("Error fetching banners:", error);
     } finally {
-      setIsLoading(false);
+      setBannersLoaded(true);
     }
   };
 
@@ -61,7 +62,9 @@ function BannerGallery() {
     }
   };
 
-  if (isLoading) {
+  const showLoading = !bannersLoaded || (banners.length > 0 && !firstImageLoaded);
+
+  if (showLoading) {
     return (
       <div className="w-full h-[30vh] sm:h-[35vh] md:h-[45vh] lg:h-[55vh] bg-gradient-to-br from-indigo-100 via-purple-50 to-indigo-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
@@ -71,7 +74,7 @@ function BannerGallery() {
 
   if (banners.length === 0) {
     return (
-      <div className="w-full h-[30vh] sm:h-[35vh] md:h-[45vh] lg:h-[55vh] bg-gradient-to-br from-indigo-100 via-purple-50 to-indigo-100 flex flex-col items-center justify-center gap-4">
+      <div className="w-full bg-gradient-to-br from-indigo-100 via-purple-50 to-indigo-100 flex flex-col items-center justify-center gap-4 py-16 md:py-24">
         <svg className="w-16 h-16 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
@@ -92,6 +95,7 @@ function BannerGallery() {
           src={banners[currentIndex].image.startsWith("http") ? banners[currentIndex].image : `${import.meta.env.VITE_API_URL}${banners[currentIndex].image}`}
           className="w-full opacity-0 block"
           aria-hidden="true"
+          onLoad={() => setFirstImageLoaded(true)}
         />
       )}
       {banners.map((banner, index) => (
