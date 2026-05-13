@@ -1,22 +1,14 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const hasEmailConfig = process.env.GMAIL_USER && process.env.GMAIL_APP_PASS;
+const resendApiKey = process.env.RESEND_API_KEY;
+const hasEmailConfig = !!resendApiKey;
 
 if (!hasEmailConfig) {
-  console.warn("EMAIL WARNING: GMAIL_USER or GMAIL_APP_PASS not configured. Emails will not be sent.");
+  console.warn("EMAIL WARNING: RESEND_API_KEY not configured. Emails will not be sent.");
 }
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.GMAIL_USER || "",
-    pass: process.env.GMAIL_APP_PASS || "",
-  },
-});
+const resend = new Resend(resendApiKey || "re_placeholder");
 
-// Base email template for Royal Youth
 const getBaseTemplate = (content) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -32,76 +24,53 @@ const getBaseTemplate = (content) => `
   </div>
 `;
 
-export const sendApprovalEmail = async (email, name) => {
-  try {
-    const content = `
-      <p style="font-size: 18px; color: #1e293b; font-weight: bold;">Dear ${name},</p>
-      <p style="color: #475569; line-height: 1.6;">Congratulations! Welcome to the Royal Youth Community.</p>
-      <p style="color: #475569; line-height: 1.6;">Your registration has been approved successfully.</p>
-      <p style="color: #475569; line-height: 1.6;">You can now login to your Royal Youth Account and remain active to all events and fellowship with other youth members.</p>
-      <p style="color: #475569; line-height: 1.6; margin-top: 20px;">We look forward to having you as part of our community!</p>
-    `;
+const sendEmail = async (to, subject, html, bcc) => {
+  if (!hasEmailConfig) throw new Error("RESEND_API_KEY not configured");
+  const { error } = await resend.emails.send({
+    from: "Royal Youth Hub <onboarding@resend.dev>",
+    to: [to],
+    bcc: bcc ? [bcc] : undefined,
+    subject,
+    html,
+  });
+  if (error) throw error;
+};
 
-    if (!hasEmailConfig) throw new Error("GMAIL_USER/GMAIL_APP_PASS not configured");
-    await transporter.sendMail({
-      from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
-      to: email,
-      bcc: "royalyouthsc4c5@gmail.com",
-      subject: "Congratulations! Welcome to Royal Youth Hub",
-      html: getBaseTemplate(content),
-    });
-    console.log("Approval email sent");
-  } catch (error) {
-    console.error("Email error:", error);
-  }
+export const sendApprovalEmail = async (email, name) => {
+  const content = `
+    <p style="font-size: 18px; color: #1e293b; font-weight: bold;">Dear ${name},</p>
+    <p style="color: #475569; line-height: 1.6;">Congratulations! Welcome to the Royal Youth Community.</p>
+    <p style="color: #475569; line-height: 1.6;">Your registration has been approved successfully.</p>
+    <p style="color: #475569; line-height: 1.6;">You can now login to your Royal Youth Account and remain active to all events and fellowship with other youth members.</p>
+    <p style="color: #475569; line-height: 1.6; margin-top: 20px;">We look forward to having you as part of our community!</p>
+  `;
+  await sendEmail(email, "Congratulations! Welcome to Royal Youth Hub", getBaseTemplate(content), "royalyouthsc4c5@gmail.com");
+  console.log("Approval email sent");
 };
 
 export const sendRejectionEmail = async (email, name, reason) => {
-  try {
-    const content = `
-      <p style="font-size: 18px; color: #1e293b; font-weight: bold;">Dear ${name},</p>
-      <p style="color: #475569; line-height: 1.6;">Thank you for your interest in the Royal Youth Community.</p>
-      <p style="color: #475569; line-height: 1.6;">After careful consideration, we regret to inform you that your application was not approved at this time.</p>
-      <p style="color: #475569; line-height: 1.6;">Reason: ${reason || "Not specified"}</p>
-      <p style="color: #475569; line-height: 1.6; margin-top: 20px;">We encourage you to reapply in the future.</p>
-    `;
-
-    if (!hasEmailConfig) throw new Error("GMAIL_USER/GMAIL_APP_PASS not configured");
-    await transporter.sendMail({
-      from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
-      to: email,
-      bcc: "royalyouthsc4c5@gmail.com",
-      subject: "Update on Your Royal Youth Hub Registration",
-      html: getBaseTemplate(content),
-    });
-    console.log("Rejection email sent");
-  } catch (error) {
-    console.error("Email error:", error);
-  }
+  const content = `
+    <p style="font-size: 18px; color: #1e293b; font-weight: bold;">Dear ${name},</p>
+    <p style="color: #475569; line-height: 1.6;">Thank you for your interest in the Royal Youth Community.</p>
+    <p style="color: #475569; line-height: 1.6;">After careful consideration, we regret to inform you that your application was not approved at this time.</p>
+    <p style="color: #475569; line-height: 1.6;">Reason: ${reason || "Not specified"}</p>
+    <p style="color: #475569; line-height: 1.6; margin-top: 20px;">We encourage you to reapply in the future.</p>
+  `;
+  await sendEmail(email, "Update on Your Royal Youth Hub Registration", getBaseTemplate(content), "royalyouthsc4c5@gmail.com");
+  console.log("Rejection email sent");
 };
 
 export const sendOTPEmail = async (email, name, otp) => {
-  try {
-    const content = `
-      <p style="font-size: 18px; color: #1e293b; font-weight: bold;">Dear ${name},</p>
-      <p style="color: #475569; line-height: 1.6;">We received a request to recover your password.</p>
-      <p style="color: #475569; line-height: 1.6;">Use the OTP below to reset your password:</p>
-      <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 20px 0; color: #7c3aed;">
-        ${otp}
-      </div>
-      <p style="color: #475569; line-height: 1.6;">This OTP will expire in 10 minutes.</p>
-      <p style="color: #475569; line-height: 1.6;">If you did not request this, please ignore this email.</p>
-    `;
-
-    if (!hasEmailConfig) throw new Error("GMAIL_USER/GMAIL_APP_PASS not configured");
-    await transporter.sendMail({
-      from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
-      to: email,
-      subject: "Password Recovery - Royal Youth Hub",
-      html: getBaseTemplate(content),
-    });
-    console.log("OTP email sent");
-  } catch (error) {
-    console.error("Email error:", error);
-  }
+  const content = `
+    <p style="font-size: 18px; color: #1e293b; font-weight: bold;">Dear ${name},</p>
+    <p style="color: #475569; line-height: 1.6;">We received a request to recover your password.</p>
+    <p style="color: #475569; line-height: 1.6;">Use the OTP below to reset your password:</p>
+    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 20px 0; color: #7c3aed;">
+      ${otp}
+    </div>
+    <p style="color: #475569; line-height: 1.6;">This OTP will expire in 10 minutes.</p>
+    <p style="color: #475569; line-height: 1.6;">If you did not request this, please ignore this email.</p>
+  `;
+  await sendEmail(email, "Password Recovery - Royal Youth Hub", getBaseTemplate(content));
+  console.log("OTP email sent");
 };

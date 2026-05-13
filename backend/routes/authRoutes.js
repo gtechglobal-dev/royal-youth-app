@@ -111,19 +111,14 @@ router.post("/forgot-password", async (req, res) => {
     user.resetPasswordOTP = otp;
     user.resetPasswordExpiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
-    console.log("OTP saved to database");
     
-    try {
-      console.log("Attempting to send OTP email...");
-      await sendOTPEmail(user.email, user.firstname, otp);
-      console.log("OTP email sent successfully");
-    } catch (emailErr) {
-      console.error("Failed to send OTP email:", emailErr);
-    }
+    console.log("Attempting to send OTP email...");
+    await sendOTPEmail(user.email, user.firstname, otp);
+    console.log("OTP email sent successfully");
     res.json({ message: "OTP sent to your email. Please check your inbox and spam folder." });
   } catch (err) {
     console.error("Forgot password error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: err.message || "Server error" });
   }
 });
 
