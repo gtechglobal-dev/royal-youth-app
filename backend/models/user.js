@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    soulwinnersBranch: {
+      type: String,
+    },
+
     hobbies: {
       type: [String],
     },

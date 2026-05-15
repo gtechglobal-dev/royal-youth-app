@@ -12,12 +12,14 @@ import {
   deletePost,
   deleteComment,
   getSinglePost,
+  getUserPosts,
 } from "../controllers/postController.js";
 
 const router = express.Router();
 
 router.get("/feed", protect, getFeed);
 router.get("/friends-feed", protect, getFriendsFeed);
+router.get("/user/:userId", protect, getUserPosts);
 router.get("/:id", protect, getSinglePost);
 router.post("/", protect, uploadMiddleware.single("image"), createPost);
 router.put("/:id/like", protect, likePost);

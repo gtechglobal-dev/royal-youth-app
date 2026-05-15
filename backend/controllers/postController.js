@@ -274,3 +274,18 @@ export const getSinglePost = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getUserPosts = async (req, res) => {
+  try {
+    const posts = await Post.find({ userId: req.params.userId, isDeleted: false })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .populate("userId", "firstname surname profileImage branch")
+      .populate("comments.userId", "firstname surname profileImage");
+
+    res.json({ posts });
+  } catch (err) {
+    console.error("Get user posts error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

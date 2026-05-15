@@ -28,6 +28,13 @@ function MemberDashboard() {
   const [friendRequests, setFriendRequests] = useState([]);
   const [suggested, setSuggested] = useState([]);
   const [friendLoading, setFriendLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+  const [leaderboardView, setLeaderboardView] = useState("list");
+  const [lbMemberPosts, setLbMemberPosts] = useState([]);
+  const [lbMemberPostsLoading, setLbMemberPostsLoading] = useState(false);
+  const [hubPosts, setHubPosts] = useState([]);
+  const [hubPostsLoading, setHubPostsLoading] = useState(false);
 
   // Existing features state
   const [attendance, setAttendance] = useState([]);
@@ -113,6 +120,7 @@ function MemberDashboard() {
     fetchFeed(1, true);
     fetchFriendData();
     fetchNotifications();
+    fetchLeaderboard();
   }, [user?._id]);
 
   useEffect(() => {
@@ -155,6 +163,46 @@ function MemberDashboard() {
     finally { setFriendLoading(false); }
   };
 
+  const fetchHubPosts = async () => {
+    setHubPostsLoading(true);
+    try {
+      const res = await API.get("/posts/friends-feed?page=1&limit=10");
+      setHubPosts(res.data.posts || []);
+    } catch (err) {
+      console.error("Hub posts error:", err);
+    }
+    setHubPostsLoading(false);
+  };
+
+  useEffect(() => {
+    if (activeTab === "hub-connect") {
+      fetchHubPosts();
+    }
+  }, [activeTab]);
+
+  const fetchLeaderboard = async () => {
+    setLeaderboardLoading(true);
+    try {
+      const res = await API.get("/leaderboard");
+      setLeaderboard(res.data);
+    } catch (err) {
+      console.error("Leaderboard error:", err);
+    }
+    setLeaderboardLoading(false);
+  };
+
+  const fetchLbMemberPosts = async (userId) => {
+    setLbMemberPostsLoading(true);
+    try {
+      const res = await API.get(`/posts/user/${userId}`);
+      setLbMemberPosts(res.data.posts || res.data || []);
+    } catch (err) {
+      console.error("LB member posts error:", err);
+      setLbMemberPosts([]);
+    }
+    setLbMemberPostsLoading(false);
+  };
+
   const fetchNotifications = async () => {
     try {
       const res = await API.get("/notifications");
@@ -169,7 +217,10 @@ function MemberDashboard() {
   };
 
   const handlePostCreated = useCallback((post) => { setPosts(prev => [post, ...prev]); }, []);
-  const handleDeletePost = useCallback((postId) => { setPosts(prev => prev.filter(p => p._id !== postId)); }, []);
+  const handleDeletePost = useCallback((postId) => {
+    setPosts(prev => prev.filter(p => p._id !== postId));
+    setHubPosts(prev => prev.filter(p => p._id !== postId));
+  }, []);
 
   const handleShare = useCallback((post) => {
     navigate("/messages", { state: { sharedPost: { _id: post._id, text: post.text, imageUrl: post.imageUrl } } });
@@ -257,6 +308,10 @@ function MemberDashboard() {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
           Messages
         </Link>
+        <button onClick={() => { setActiveTab("leaderboard"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "leaderboard" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+          Leaderboard
+        </button>
       </div>
 
       {/* Account Section */}
@@ -330,8 +385,8 @@ function MemberDashboard() {
                 <p className="text-xs font-semibold truncate">{r.from?.firstname} {r.from?.surname}</p>
               </div>
               <div className="flex gap-1">
-                <button onClick={() => handleAcceptRequest(r._id)} className="bg-purple-600 text-white text-[10px] px-2 py-1 rounded hover:bg-purple-700">Accept</button>
-                <button onClick={() => handleRejectRequest(r._id)} className="bg-gray-200 text-gray-600 text-[10px] px-2 py-1 rounded hover:bg-gray-300">Decline</button>
+                <button onClick={() => handleAcceptRequest(r._id)} className="bg-purple-600 text-white text-[10px] px-2 py-1 rounded hover:bg-purple-700">Accept Royalty</button>
+                <button onClick={() => handleRejectRequest(r._id)} className="bg-gray-200 text-gray-600 text-[10px] px-2 py-1 rounded hover:bg-gray-300">Reject Royalty</button>
               </div>
             </div>
           ))}
@@ -356,7 +411,7 @@ function MemberDashboard() {
               <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">RY</span>
               </div>
-              <span className="font-bold text-lg hidden sm:block text-gray-800">Royal Youth</span>
+              <span className="font-bold text-lg text-gray-800">Royal Youth Hub</span>
             </Link>
           </div>
           <div className="flex items-center gap-2">
@@ -388,8 +443,12 @@ function MemberDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-4 flex gap-6">
+        {/* Left Sidebar backdrop */}
+        {showMobileNav && (
+          <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setShowMobileNav(false)} />
+        )}
         {/* Left Sidebar - hidden on mobile unless toggled */}
-        <aside className={`w-64 flex-shrink-0 ${showMobileNav ? "block" : "hidden"} lg:block fixed lg:static inset-0 top-0 lg:top-auto z-40 lg:z-auto bg-gray-50 lg:bg-transparent p-4 lg:p-0 pt-16 lg:pt-0 overflow-y-auto`}>
+        <aside className={`w-64 flex-shrink-0 ${showMobileNav ? "block" : "hidden"} lg:block fixed lg:static left-0 top-0 h-full lg:h-auto z-40 lg:z-auto bg-gray-50 lg:bg-transparent p-4 lg:p-0 pt-16 lg:pt-0 overflow-y-auto shadow-xl lg:shadow-none`}>
           <div className="lg:hidden flex justify-end mb-4">
             <button onClick={() => setShowMobileNav(false)} className="text-gray-500 hover:text-gray-700"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
@@ -400,49 +459,79 @@ function MemberDashboard() {
         <main className="flex-1 min-w-0">
           {activeTab === "feed" && (
             <>
-              {/* Suggested Members - Instagram style */}
+              {/* Suggested Members - Facebook style */}
               {suggested.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 overflow-hidden">
-                  <div className="flex overflow-x-auto gap-4 pb-1 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                  <h3 className="text-sm font-bold text-gray-700 mb-3">People You May Know</h3>
+                  <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
                     {suggested.map((s) => (
-                      <div key={s._id} className="flex flex-col items-center gap-1 min-w-[72px]">
-                        <div className="relative">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-500 p-[2px]">
-                            <div className="w-full h-full rounded-full bg-white p-[2px]">
-                              <Link to={`/member/${s._id}`} className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
-                                {s.profileImage ? (
-                                  <img src={s.profileImage} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-sm">
-                                    {s.firstname?.[0]}{s.surname?.[0]}
-                                  </div>
-                                )}
-                              </Link>
-                            </div>
+                      <div key={s._id} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-500 p-[2px]">
+                          <div className="w-full h-full rounded-full bg-white p-[2px]">
+                            <Link to={`/member/${s._id}`} className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
+                              {s.profileImage ? (
+                                <img src={s.profileImage} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-xs">
+                                  {s.firstname?.[0]}{s.surname?.[0]}
+                                </div>
+                              )}
+                            </Link>
                           </div>
+                        </div>
+                        <Link to={`/member/${s._id}`} className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center hover:text-purple-600">
+                          {s.surname} {s.firstname}
+                        </Link>
+                        {s.soulwinnersBranch && (
+                          <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.soulwinnersBranch}</span>
+                        )}
+                        {s.friendStatus === "none" && (
                           <button
                             onClick={() => handleSendRequest(s._id)}
-                            className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-purple-600 text-white rounded-full flex items-center justify-center hover:bg-purple-700 shadow-sm"
-                            title="Add friend"
+                            className="mt-1 w-full text-[11px] bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
                           >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                            Add Royalty
                           </button>
-                        </div>
-                        <Link to={`/member/${s._id}`} className="text-[11px] text-gray-600 font-medium truncate max-w-[72px] text-center hover:text-purple-600">
-                          {s.firstname}
-                        </Link>
+                        )}
+                        {s.friendStatus === "pending_sent" && (
+                          <button
+                            disabled
+                            className="mt-1 w-full text-[11px] bg-gray-200 text-gray-400 px-3 py-1.5 rounded-lg font-semibold cursor-not-allowed"
+                          >
+                            Pending
+                          </button>
+                        )}
+                        {s.friendStatus === "pending_received" && (
+                          <div className="mt-1 flex gap-1.5 w-full">
+                            <button
+                              onClick={() => handleAcceptRequest(s.requestId)}
+                              className="flex-1 text-[10px] bg-purple-600 text-white px-2 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
+                            >
+                              Accept Royalty
+                            </button>
+                            <button
+                              onClick={() => handleRejectRequest(s.requestId)}
+                              className="flex-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-1.5 rounded-lg font-semibold hover:bg-gray-300 transition"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
               {friendLoading && suggested.length === 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                  <div className="h-4 w-36 bg-gray-200 rounded mb-3 animate-pulse" />
                   <div className="flex gap-4">
                     {Array.from({length:5}).map((_,i) => (
-                      <div key={i} className="flex flex-col items-center gap-1 min-w-[72px] animate-pulse">
-                        <div className="w-16 h-16 rounded-full bg-gray-200" />
-                        <div className="h-3 w-12 bg-gray-100 rounded" />
+                      <div key={i} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl animate-pulse">
+                        <div className="w-14 h-14 rounded-full bg-gray-200" />
+                        <div className="h-3 w-20 bg-gray-200 rounded" />
+                        <div className="h-2 w-16 bg-gray-100 rounded" />
+                        <div className="h-6 w-full bg-gray-200 rounded-lg" />
                       </div>
                     ))}
                   </div>
@@ -565,6 +654,110 @@ function MemberDashboard() {
             </div>
           )}
 
+          {activeTab === "leaderboard" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              {leaderboardView === "list" ? (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-purple-700">Leaderboard</h2>
+                    <span className="text-sm text-gray-500">Top 10 Active Members</span>
+                  </div>
+                  {leaderboardLoading ? (
+                    <div className="space-y-3">
+                      {Array.from({length:5}).map((_,i) => (
+                        <div key={i} className="flex items-center gap-3 animate-pulse p-2"><div className="w-8 h-8 rounded-full bg-gray-200" /><div className="h-4 w-32 bg-gray-200 rounded" /><div className="flex-1" /><div className="h-4 w-10 bg-gray-100 rounded" /></div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {leaderboard.map((u) => {
+                        const badge = u.rank === 1 ? "🥇" : u.rank === 2 ? "🥈" : u.rank === 3 ? "🥉" : "⭐";
+                        return (
+                          <button
+                            key={u._id}
+                            onClick={() => { setLeaderboardView(u._id); fetchLbMemberPosts(u._id); }}
+                            className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-purple-50 transition text-left border border-gray-100"
+                          >
+                            <span className="text-xl shrink-0">{badge}</span>
+                            <span className="text-sm font-bold text-purple-600 shrink-0">#{u.rank}</span>
+                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0">
+                              {u.profileImage ? (
+                                <img src={u.profileImage} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-purple-600 font-bold text-xs">{u.firstname?.[0]}{u.surname?.[0]}</span>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-gray-700 truncate">{u.surname} {u.firstname}</p>
+                              <p className="text-[11px] text-gray-400">Posts: {u.posts} · Attendance: {u.attendance}</p>
+                            </div>
+                            <span className="text-sm font-bold text-purple-600">{u.score}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setLeaderboardView("list")}
+                    className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700 mb-4"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                    Back to Leaderboard
+                  </button>
+                  {(() => {
+                    const user = leaderboard.find((u) => u._id === leaderboardView);
+                    if (!user) return null;
+                    const badge = user.rank === 1 ? "🥇" : user.rank === 2 ? "🥈" : user.rank === 3 ? "🥉" : "⭐";
+                    return (
+                      <>
+                        <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-500 p-[2px]">
+                            <div className="w-full h-full rounded-full bg-white p-[2px]">
+                              <div className="w-full h-full rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+                                {user.profileImage ? (
+                                  <img src={user.profileImage} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-purple-600 font-bold text-lg">{user.firstname?.[0]}{user.surname?.[0]}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-lg font-bold text-gray-800">{user.surname} {user.firstname}</p>
+                              <span className="text-2xl">{badge}</span>
+                            </div>
+                            <p className="text-sm text-gray-500">Rank #{user.rank} · Score: {user.score}</p>
+                            <p className="text-xs text-gray-400">Posts: {user.posts} · Attendance: {user.attendance}</p>
+                          </div>
+                        </div>
+                        <h3 className="text-md font-bold text-purple-700 mb-3">Recent Posts</h3>
+                        {lbMemberPostsLoading ? (
+                          <div className="space-y-3">
+                            {Array.from({length:2}).map((_,i) => (
+                              <div key={i} className="bg-gray-50 rounded-xl p-4 animate-pulse"><div className="h-4 w-3/4 bg-gray-200 rounded mb-2" /><div className="h-16 bg-gray-200 rounded-xl" /></div>
+                            ))}
+                          </div>
+                        ) : lbMemberPosts.length === 0 ? (
+                          <p className="text-gray-400 text-sm text-center py-6">No posts yet</p>
+                        ) : (
+                          <div className="space-y-4">
+                            {lbMemberPosts.map((post) => (
+                              <PostCard key={post._id} post={post} currentUserId={user?._id} onDelete={() => {}} onShare={handleShare} />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+          )}
+
           {activeTab === "hub-connect" && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-6">
@@ -606,12 +799,40 @@ function MemberDashboard() {
                   ))}
                 </div>
               )}
+              {!friendLoading && friends.length > 0 && (
+                <div className="mt-6">
+                  <hr className="mb-4 border-gray-200" />
+                  <h3 className="text-lg font-bold text-purple-700 mb-4">Recent Friend Posts</h3>
+                  {hubPostsLoading ? (
+                    <div className="space-y-4">
+                      {Array.from({length:2}).map((_,i) => (
+                        <div key={i} className="bg-gray-50 rounded-xl p-4 animate-pulse">
+                          <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 bg-gray-200 rounded-full" /><div className="h-4 w-32 bg-gray-200 rounded" /></div>
+                          <div className="h-20 bg-gray-200 rounded-xl" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : hubPosts.length === 0 ? (
+                    <p className="text-gray-400 text-sm text-center py-6">No recent posts from friends</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {hubPosts.map((post) => (
+                        <PostCard key={post._id} post={post} currentUserId={user._id} onDelete={handleDeletePost} onShare={handleShare} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </main>
 
+        {/* Right Panel backdrop */}
+        {showRightPanel && (
+          <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setShowRightPanel(false)} />
+        )}
         {/* Right Panel - hidden on mobile unless toggled */}
-        <aside className={`w-72 flex-shrink-0 ${showRightPanel ? "block" : "hidden"} lg:block fixed lg:static inset-0 top-0 lg:top-auto z-40 lg:z-auto bg-gray-50 lg:bg-transparent p-4 lg:p-0 pt-16 lg:pt-0 overflow-y-auto`}>
+        <aside className={`w-72 flex-shrink-0 ${showRightPanel ? "block" : "hidden"} lg:block fixed lg:static right-0 top-0 h-full lg:h-auto z-40 lg:z-auto bg-gray-50 lg:bg-transparent p-4 lg:p-0 pt-16 lg:pt-0 overflow-y-auto shadow-xl lg:shadow-none`}>
           <div className="lg:hidden flex justify-end mb-4">
             <button onClick={() => setShowRightPanel(false)} className="text-gray-500 hover:text-gray-700"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>

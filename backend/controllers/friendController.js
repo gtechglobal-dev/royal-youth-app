@@ -124,9 +124,18 @@ export const getSuggested = async (req, res) => {
       $or: [{ from: req.user._id }, { to: req.user._id }],
       status: "pending",
     });
+
+    const statusMap = {};
     pending.forEach((r) => {
-      const id = r.from.toString() === req.user._id.toString() ? r.to.toString() : r.from.toString();
-      if (!friendIds.includes(id)) friendIds.push(id);
+      const fromId = r.from.toString();
+      const toId = r.to.toString();
+      const myId = req.user._id.toString();
+
+      if (fromId === myId) {
+        statusMap[toId] = { status: "pending_sent" };
+      } else if (toId === myId) {
+        statusMap[fromId] = { status: "pending_received", requestId: r._id };
+      }
     });
 
     const suggested = await User.find({
@@ -134,10 +143,24 @@ export const getSuggested = async (req, res) => {
       registrationStatus: "Approved",
       isDeleted: false,
     })
-      .select("firstname surname profileImage branch occupation")
+      .select("firstname surname profileImage branch occupation soulwinnersBranch")
       .limit(20);
 
-    res.json(suggested);
+    const enriched = suggested.map((s) => {
+      const obj = s.toObject();
+      const idStr = obj._id.toString();
+      if (statusMap[idStr]) {
+        obj.friendStatus = statusMap[idStr].status;
+        if (statusMap[idStr].requestId) {
+          obj.requestId = statusMap[idStr].requestId;
+        }
+      } else {
+        obj.friendStatus = "none";
+      }
+      return obj;
+    });
+
+    res.json(enriched);
   } catch (err) {
     console.error("Get suggested error:", err);
     res.status(500).json({ message: "Server error" });
