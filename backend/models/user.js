@@ -112,6 +112,8 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
     registrationStatus: {
       type: String,
       enum: ["Pending", "Approved", "Rejected"],

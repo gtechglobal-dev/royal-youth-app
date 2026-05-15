@@ -1,13 +1,20 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resendApiKey = process.env.RESEND_API_KEY;
-const hasEmailConfig = !!resendApiKey;
+const hasEmailConfig = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASS);
 
 if (!hasEmailConfig) {
-  console.warn("EMAIL WARNING: RESEND_API_KEY not configured. Emails will not be sent.");
+  console.warn("EMAIL WARNING: GMAIL_USER or GMAIL_APP_PASS not configured. Emails will not be sent.");
 }
 
-const resend = new Resend(resendApiKey || "re_placeholder");
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASS,
+  },
+});
 
 const getBaseTemplate = (content) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -25,15 +32,15 @@ const getBaseTemplate = (content) => `
 `;
 
 const sendEmail = async (to, subject, html, bcc) => {
-  if (!hasEmailConfig) throw new Error("RESEND_API_KEY not configured");
-  const { error } = await resend.emails.send({
-    from: "Royal Youth Hub <onboarding@resend.dev>",
-    to: [to],
-    bcc: bcc ? [bcc] : undefined,
+  if (!hasEmailConfig) throw new Error("GMAIL_USER or GMAIL_APP_PASS not configured");
+  const mailOptions = {
+    from: `"Royal Youth Hub" <${process.env.GMAIL_USER}>`,
+    to,
+    bcc: bcc || undefined,
     subject,
     html,
-  });
-  if (error) throw error;
+  };
+  await transporter.sendMail(mailOptions);
 };
 
 export const sendApprovalEmail = async (email, name) => {
@@ -61,6 +68,7 @@ export const sendRejectionEmail = async (email, name, reason) => {
 };
 
 export const sendOTPEmail = async (email, name, otp) => {
+  console.log(`\n🔑 OTP for ${email}: ${otp} (expires in 10 min)\n`);
   const content = `
     <p style="font-size: 18px; color: #1e293b; font-weight: bold;">Dear ${name},</p>
     <p style="color: #475569; line-height: 1.6;">We received a request to recover your password.</p>
@@ -71,6 +79,10 @@ export const sendOTPEmail = async (email, name, otp) => {
     <p style="color: #475569; line-height: 1.6;">This OTP will expire in 10 minutes.</p>
     <p style="color: #475569; line-height: 1.6;">If you did not request this, please ignore this email.</p>
   `;
-  await sendEmail(email, "Password Recovery - Royal Youth Hub", getBaseTemplate(content));
-  console.log("OTP email sent");
+  try {
+    await sendEmail(email, "Password Recovery - Royal Youth Hub", getBaseTemplate(content));
+    console.log("OTP email sent via Gmail SMTP");
+  } catch (err) {
+    console.log("OTP not sent via email — check server console above for the OTP to use in testing.");
+  }
 };

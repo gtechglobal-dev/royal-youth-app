@@ -11,6 +11,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Members from "./pages/Members";
 import MemberProfile from "./pages/MemberProfile";
 import EditProfile from "./pages/EditProfile";
+import CommunityFeed from "./pages/CommunityFeed";
+import DirectMessages from "./pages/DirectMessages";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route path="/members" element={<Members />} />
         <Route path="/member/:id" element={<MemberProfile />} />
         <Route path="/edit-profile" element={<EditProfile />} />
+        <Route path="/community" element={<CommunityFeed />} />
+        <Route path="/messages" element={<DirectMessages />} />
       </Routes>
     </BrowserRouter>
   );

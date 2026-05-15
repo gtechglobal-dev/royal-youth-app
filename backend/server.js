@@ -13,6 +13,10 @@ import clearDataRoutes from "./routes/clearDataRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import meetingResponseRoutes from "./routes/meetingResponseRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import friendRoutes from "./routes/friendRoutes.js";
 
 dotenv.config();
 
@@ -57,6 +61,10 @@ app.use("/api/admin", clearDataRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/meeting-responses", meetingResponseRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/friends", friendRoutes);
 
 // ✅ Error handler
 app.use((err, req, res, next) => {
