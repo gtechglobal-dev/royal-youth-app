@@ -482,8 +482,8 @@ function MemberDashboard() {
                         <Link to={`/member/${s._id}`} className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center hover:text-purple-600">
                           {s.surname} {s.firstname}
                         </Link>
-                        {s.soulwinnersBranch && (
-                          <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.soulwinnersBranch}</span>
+                        {s.branch && (
+                          <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.branch}</span>
                         )}
                         {s.friendStatus === "none" && (
                           <button

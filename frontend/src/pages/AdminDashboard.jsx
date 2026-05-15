@@ -219,8 +219,9 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     try {
       await API.put(`/auth/approve-member/${id}`);
       setNotification({ open: true, type: "success", message: "Member Approved" });
-    } catch {
-      setNotification({ open: true, type: "error", message: "Approval failed" });
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || "Approval failed";
+      setNotification({ open: true, type: "error", message: msg });
       setLoadingAction({ id: null, type: null });
       return;
     }
@@ -239,8 +240,9 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     try {
       await API.put(`/auth/reject-member/${id}`);
       setNotification({ open: true, type: "success", message: "Member rejected" });
-    } catch {
-      setNotification({ open: true, type: "error", message: "Rejection failed" });
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || "Rejection failed";
+      setNotification({ open: true, type: "error", message: msg });
       setLoadingAction({ id: null, type: null });
       return;
     }
