@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../services/api";
 import { timeAgo } from "../utils/formatTime";
+import { optimizeImage } from "../utils/cloudinary";
 
 function CommentSection({ postId, currentUserId, onCommentCountChange }) {
   const [comments, setComments] = useState([]);
@@ -63,7 +64,7 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
               <Link to={`/member/${comment.userId?._id}`}>
                 <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {comment.userId?.profileImage ? (
-                    <img src={comment.userId.profileImage} alt="" className="w-full h-full object-cover" />
+                    <img src={optimizeImage(comment.userId.profileImage, 48)} alt="" className="w-full h-full object-cover" loading="lazy" />
                   ) : (
                     <span className="text-purple-600 font-bold text-[10px]">
                       {comment.userId?.firstname?.[0]}

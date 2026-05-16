@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
+import { optimizeImage } from "../utils/cloudinary";
 
 function MemberDashboard() {
   const navigate = useNavigate();
@@ -283,7 +284,7 @@ function MemberDashboard() {
       {/* Profile Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
         <div className="w-16 h-16 rounded-full bg-purple-100 mx-auto flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => user.profileImage && setShowImageModal(true)}>
-          {user.profileImage ? <img src={user.profileImage} alt="" className="w-full h-full object-cover" /> : <span className="text-purple-600 font-bold text-xl">{user.firstname?.[0]}{user.surname?.[0]}</span>}
+          {user.profileImage ? <img src={optimizeImage(user.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-xl">{user.firstname?.[0]}{user.surname?.[0]}</span>}
         </div>
         <p className="font-semibold mt-2">{user.firstname} {user.surname}</p>
         <p className="text-gray-400 text-xs">{user.branch}</p>
@@ -360,7 +361,7 @@ function MemberDashboard() {
           {notifications.slice(0, 8).map((n) => (
             <div key={n._id} className={`flex items-start gap-2 p-2 rounded-lg text-xs ${n.read ? "" : "bg-purple-50"}`}>
               <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {n.fromUserId?.profileImage ? <img src={n.fromUserId.profileImage} alt="" className="w-full h-full object-cover" /> : <span className="text-purple-600 font-bold text-[9px]">{n.fromUserId?.firstname?.[0]}</span>}
+                {n.fromUserId?.profileImage ? <img src={optimizeImage(n.fromUserId.profileImage, 32)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-[9px]">{n.fromUserId?.firstname?.[0]}</span>}
               </div>
               <div>
                 <p className="text-gray-700"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked" : n.type === "comment" ? "commented on" : "messaged"} you</p>
@@ -379,7 +380,7 @@ function MemberDashboard() {
           {friendRequests.map((r) => (
             <div key={r._id} className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {r.from?.profileImage ? <img src={r.from.profileImage} alt="" className="w-full h-full object-cover" /> : <span className="text-purple-600 font-bold text-xs">{r.from?.firstname?.[0]}</span>}
+                {r.from?.profileImage ? <img src={optimizeImage(r.from.profileImage, 48)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-xs">{r.from?.firstname?.[0]}</span>}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold truncate">{r.from?.firstname} {r.from?.surname}</p>
@@ -470,7 +471,7 @@ function MemberDashboard() {
                           <div className="w-full h-full rounded-full bg-white p-[2px]">
                             <Link to={`/member/${s._id}`} className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
                               {s.profileImage ? (
-                                <img src={s.profileImage} alt="" className="w-full h-full object-cover" />
+                                <img src={optimizeImage(s.profileImage, 80)} alt="" className="w-full h-full object-cover" loading="lazy" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-xs">
                                   {s.firstname?.[0]}{s.surname?.[0]}
@@ -574,7 +575,7 @@ function MemberDashboard() {
               <h2 className="text-xl font-bold mb-4 text-purple-700">My Profile</h2>
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => user.profileImage && setShowImageModal(true)}>
-                  {user.profileImage ? <img src={user.profileImage} alt="" className="w-full h-full object-cover" /> : <span className="text-purple-600 font-bold text-2xl">{user.firstname?.[0]}{user.surname?.[0]}</span>}
+                  {user.profileImage ? <img src={optimizeImage(user.profileImage, 128)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-2xl">{user.firstname?.[0]}{user.surname?.[0]}</span>}
                 </div>
                 <div>
                   <p className="text-lg font-bold">{user.firstname} {user.surname} {user.othername}</p>
@@ -682,7 +683,7 @@ function MemberDashboard() {
                             <span className="text-sm font-bold text-purple-600 shrink-0">#{u.rank}</span>
                             <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0">
                               {u.profileImage ? (
-                                <img src={u.profileImage} alt="" className="w-full h-full object-cover" />
+                                <img src={optimizeImage(u.profileImage, 64)} alt="" className="w-full h-full object-cover" loading="lazy" />
                               ) : (
                                 <span className="text-purple-600 font-bold text-xs">{u.firstname?.[0]}{u.surname?.[0]}</span>
                               )}
@@ -718,7 +719,7 @@ function MemberDashboard() {
                             <div className="w-full h-full rounded-full bg-white p-[2px]">
                               <div className="w-full h-full rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
                                 {user.profileImage ? (
-                                  <img src={user.profileImage} alt="" className="w-full h-full object-cover" />
+                                  <img src={optimizeImage(user.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" />
                                 ) : (
                                   <span className="text-purple-600 font-bold text-lg">{user.firstname?.[0]}{user.surname?.[0]}</span>
                                 )}
@@ -787,7 +788,7 @@ function MemberDashboard() {
                   {friends.map((f) => (
                     <div key={f._id} className="bg-gray-50 rounded-xl p-4 flex flex-col items-center gap-2 hover:shadow-sm transition">
                       <Link to={`/member/${f._id}`} className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
-                        {f.profileImage ? <img src={f.profileImage} alt="" className="w-full h-full object-cover" /> : <span className="text-purple-600 font-bold text-lg">{f.firstname?.[0]}{f.surname?.[0]}</span>}
+                        {f.profileImage ? <img src={optimizeImage(f.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-lg">{f.firstname?.[0]}{f.surname?.[0]}</span>}
                       </Link>
                       <Link to={`/member/${f._id}`} className="font-semibold text-sm text-center hover:text-purple-600">{f.firstname} {f.surname}</Link>
                       <p className="text-gray-400 text-[10px] text-center">{f.branch}</p>
@@ -917,7 +918,7 @@ function MemberDashboard() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4" onClick={() => setShowImageModal(false)}>
           <div className="relative max-w-3xl max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
             <button onClick={() => setShowImageModal(false)} className="absolute top-0 right-0 bg-white rounded-full p-2 hover:bg-gray-100"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-            <img src={user.profileImage} alt="Profile" className="max-w-full max-h-[80vh] object-contain" />
+            <img src={optimizeImage(user.profileImage, 800)} alt="Profile" className="max-w-full max-h-[80vh] object-contain" loading="lazy" />
             <button onClick={() => { const a = document.createElement('a'); a.href = user.profileImage; a.download = `${user.firstname}_${user.surname}_profile.jpg`; a.click(); }} className="mt-4 flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               Download Image

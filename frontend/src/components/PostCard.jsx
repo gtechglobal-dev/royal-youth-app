@@ -4,6 +4,7 @@ import API from "../services/api";
 import CommentSection from "./CommentSection";
 import { timeAgo } from "../utils/formatTime";
 import siteLogo from "../assets/gdev logo.svg";
+import { optimizeImage } from "../utils/cloudinary";
 
 const PLACARD_COLORS = [
   "#000000", "#1a1a2e", "#16213e", "#0f3460", "#533483",
@@ -116,7 +117,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
         <Link to={`/member/${post.userId?._id}`}>
           <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
             {post.userId?.profileImage ? (
-              <img src={post.userId.profileImage} alt="" className="w-full h-full object-cover" />
+              <img src={optimizeImage(post.userId.profileImage, 64)} alt="" className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <span className="text-purple-600 font-bold text-sm">
                 {post.userId?.firstname?.[0]}{post.userId?.surname?.[0]}

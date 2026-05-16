@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import API from "../services/api";
+import { optimizeImage } from "../utils/cloudinary";
 
 function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
   const [messages, setMessages] = useState([]);
@@ -112,7 +113,7 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
         </button>
         <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
           {otherUser?.profileImage ? (
-            <img src={otherUser.profileImage} alt="" className="w-full h-full object-cover" />
+            <img src={optimizeImage(otherUser.profileImage, 48)} alt="" className="w-full h-full object-cover" loading="lazy" />
           ) : (
             <span className="text-purple-600 font-bold text-xs">
               {otherUser?.firstname?.[0]}{otherUser?.surname?.[0]}

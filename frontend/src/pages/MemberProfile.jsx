@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
+import { optimizeImage } from "../utils/cloudinary";
 
 function MemberProfile() {
   const { id } = useParams();
@@ -46,7 +47,7 @@ function MemberProfile() {
         <div className="flex items-center gap-4 mb-4">
           <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
             {member.profileImage ? (
-              <img src={member.profileImage} alt="" className="w-full h-full object-cover" />
+              <img src={optimizeImage(member.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <span className="text-purple-600 font-bold text-xl">{member.firstname?.[0]}</span>
             )}

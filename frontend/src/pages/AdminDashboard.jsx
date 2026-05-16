@@ -4,6 +4,7 @@ import API from "../services/api";
 import Notification from "../components/Notification";
 import Logo from "../assets/gdev logo.svg";
 import { OverlayLoader } from "../components/Loaders";
+import { optimizeImage } from "../utils/cloudinary";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -938,9 +939,10 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   >
                     {selectedMember.profileImage && selectedMember.profileImage.length > 0 && (
                          <img
-                         src={selectedMember.profileImage}
+                         src={optimizeImage(selectedMember.profileImage, 96)}
                          alt="Profile"
                          className="w-full h-full object-cover rounded-full"
+                         loading="lazy"
                        />
                     )}
                     {(!selectedMember.profileImage || selectedMember.profileImage.length === 0) && (
@@ -1937,9 +1939,10 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 </svg>
               </button>
               <img
-                src={selectedMember.profileImage}
+                src={optimizeImage(selectedMember.profileImage, 800)}
                 alt="Profile"
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
+                loading="lazy"
               />
               <button
                 onClick={() => {

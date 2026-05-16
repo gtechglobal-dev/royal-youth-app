@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import API from "../services/api";
+import { optimizeImage } from "../utils/cloudinary";
 
 function ConversationList({ currentUserId, onSelect, selectedId, onMessageReceived }) {
   const [conversations, setConversations] = useState([]);
@@ -46,7 +47,7 @@ function ConversationList({ currentUserId, onSelect, selectedId, onMessageReceiv
           >
             <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
               {conv.otherUser?.profileImage ? (
-                <img src={conv.otherUser.profileImage} alt="" className="w-full h-full object-cover" />
+                <img src={optimizeImage(conv.otherUser.profileImage, 64)} alt="" className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <span className="text-purple-600 font-bold text-sm">
                   {conv.otherUser?.firstname?.[0]}{conv.otherUser?.surname?.[0]}

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
+import { optimizeImage } from "../utils/cloudinary";
 
 function CommunityFeed() {
   const navigate = useNavigate();
@@ -155,7 +156,7 @@ function CommunityFeed() {
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
             {user.profileImage ? (
-              <img src={user.profileImage} alt="" className="w-full h-full object-cover" />
+              <img src={optimizeImage(user.profileImage, 64)} alt="" className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <span className="text-purple-600 font-bold text-sm">{user.firstname?.[0]}</span>
             )}
