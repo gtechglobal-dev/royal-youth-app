@@ -14,15 +14,19 @@ import {
   getSinglePost,
   getUserPosts,
   getPinnedPosts,
+  getPastAnnouncements,
   createAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
+  unpinAnnouncement,
 } from "../controllers/postController.js";
 
 const router = express.Router();
 
 router.get("/pinned", protect, getPinnedPosts);
+router.get("/announcements/past", protect, getPastAnnouncements);
 router.post("/announcement", protect, uploadMiddleware.single("image"), createAnnouncement);
+router.put("/announcement/unpin/:id", protect, unpinAnnouncement);
 router.put("/announcement/:id", protect, uploadMiddleware.single("image"), updateAnnouncement);
 router.delete("/announcement/:id", protect, deleteAnnouncement);
 router.get("/feed", protect, getFeed);

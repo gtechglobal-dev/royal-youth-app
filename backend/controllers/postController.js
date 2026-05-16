@@ -301,12 +301,8 @@ export const getUserPosts = async (req, res) => {
 
 export const getPinnedPosts = async (req, res) => {
   try {
-    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-    const cutoff = new Date(Date.now() - TWENTY_FOUR_HOURS);
-
     const posts = await Post.find({
       isPinned: true,
-      pinnedAt: { $gte: cutoff },
       isDeleted: false,
     })
       .sort({ pinnedAt: -1 })
@@ -316,6 +312,28 @@ export const getPinnedPosts = async (req, res) => {
     res.json({ posts });
   } catch (err) {
     console.error("Get pinned posts error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getPastAnnouncements = async (req, res) => {
+  try {
+    if (req.user.role !== "admin" && req.user.role !== "youth_president") {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const posts = await Post.find({
+      isPinned: false,
+      pinnedAt: { $ne: null },
+      isDeleted: false,
+    })
+      .sort({ pinnedAt: -1 })
+      .populate("userId", "firstname surname profileImage branch role")
+      .populate("comments.userId", "firstname surname profileImage");
+
+    res.json({ posts });
+  } catch (err) {
+    console.error("Get past announcements error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -429,6 +447,31 @@ export const deleteAnnouncement = async (req, res) => {
     res.json({ message: "Announcement deleted" });
   } catch (err) {
     console.error("Delete announcement error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const unpinAnnouncement = async (req, res) => {
+  try {
+    if (req.user.role !== "admin" && req.user.role !== "youth_president") {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Announcement not found" });
+    if (!post.isPinned) return res.status(400).json({ message: "Not an announcement" });
+
+    post.isPinned = false;
+
+    await post.save();
+
+    const populated = await Post.findById(post._id)
+      .populate("userId", "firstname surname profileImage branch role");
+
+    try { getIO().emit("announcementUnpinned", populated.toObject()); } catch (e) {}
+    res.json(populated);
+  } catch (err) {
+    console.error("Unpin announcement error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

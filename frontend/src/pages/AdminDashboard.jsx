@@ -31,6 +31,7 @@ function AdminDashboard() {
   const [editingColor, setEditingColor] = useState("#000000");
   const [editingImage, setEditingImage] = useState(null);
   const [editingSaving, setEditingSaving] = useState(false);
+  const [pastAnnouncements, setPastAnnouncements] = useState([]);
 
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem("adminActiveTab");
@@ -154,15 +155,18 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     if (!socket) return;
 
     const handleAnnouncementEvent = () => { fetchAnnouncements(); };
+    const handleUnpinEvent = () => { fetchAnnouncements(); fetchPastAnnouncements(); };
 
     socket.on("newAnnouncement", handleAnnouncementEvent);
     socket.on("announcementUpdated", handleAnnouncementEvent);
     socket.on("announcementDeleted", handleAnnouncementEvent);
+    socket.on("announcementUnpinned", handleUnpinEvent);
 
     return () => {
       socket.off("newAnnouncement", handleAnnouncementEvent);
       socket.off("announcementUpdated", handleAnnouncementEvent);
       socket.off("announcementDeleted", handleAnnouncementEvent);
+      socket.off("announcementUnpinned", handleUnpinEvent);
     };
   }, []);
 
@@ -270,6 +274,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     }
     if (activeTab === "announcements") {
       fetchAnnouncements();
+      fetchPastAnnouncements();
     }
   }, [activeTab]);
 
@@ -668,6 +673,13 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     } catch (err) { console.error("Fetch announcements error:", err); }
   };
 
+  const fetchPastAnnouncements = async () => {
+    try {
+      const res = await API.get("/posts/announcements/past");
+      setPastAnnouncements(res.data.posts || []);
+    } catch (err) { console.error("Fetch past announcements error:", err); }
+  };
+
   const handleCreateAnnouncement = async () => {
     if (!announcementText.trim()) return;
     setAnnouncementSending(true);
@@ -731,8 +743,31 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
           await API.delete(`/posts/announcement/${id}`);
           setNotification({ open: true, type: "success", message: "Announcement deleted" });
           fetchAnnouncements();
+          fetchPastAnnouncements();
         } catch (err) {
           setNotification({ open: true, type: "error", message: "Failed to delete announcement" });
+        } finally {
+          setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false });
+        }
+      },
+    });
+  };
+
+  const handleUnpinAnnouncement = async (id) => {
+    setConfirmState({
+      open: true,
+      title: "Unpin Announcement",
+      message: "Unpin this announcement? It will move to Past Announcements log but its content and comments will be preserved.",
+      loading: false,
+      onConfirm: async () => {
+        setConfirmState((prev) => ({ ...prev, loading: true }));
+        try {
+          await API.put(`/posts/announcement/unpin/${id}`);
+          setNotification({ open: true, type: "success", message: "Announcement unpinned" });
+          fetchAnnouncements();
+          fetchPastAnnouncements();
+        } catch (err) {
+          setNotification({ open: true, type: "error", message: "Failed to unpin announcement" });
         } finally {
           setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false });
         }
@@ -1143,6 +1178,13 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                 </button>
                                 <button
+                                  onClick={() => handleUnpinAnnouncement(post._id)}
+                                  className="text-xs text-gray-400 hover:text-amber-500 p-1"
+                                  title="Unpin"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                                </button>
+                                <button
                                   onClick={() => handleDeleteAnnouncement(post._id)}
                                   className="text-xs text-gray-400 hover:text-red-500 p-1"
                                   title="Delete"
@@ -1164,6 +1206,44 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 </div>
               )}
             </div>
+
+            {pastAnnouncements.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-4">
+                <h2 className="text-lg font-bold mb-4 text-gray-500">Past Announcements Log</h2>
+                <div className="space-y-3">
+                  {pastAnnouncements.map((post) => (
+                    <div key={post._id} className="border border-gray-200 bg-gray-50 rounded-lg p-4 opacity-75">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                          {post.userId?.profileImage ? (
+                            <img src={post.userId.profileImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <span className="text-gray-500 font-bold text-xs">{post.userId?.firstname?.[0]}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-semibold text-gray-600">{post.userId?.firstname} {post.userId?.surname}
+                              {post.userId?.role && post.userId.role !== "member" && (
+                                <span className="ml-1.5 text-[10px] font-medium text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">{post.userId.role === "youth_president" ? "Youth President" : post.userId.role === "admin" ? "Admin" : post.userId.role}</span>
+                              )}
+                            </p>
+                          </div>
+                          <p className="text-xs text-gray-400">{new Date(post.pinnedAt).toLocaleString()}</p>
+                          <p className="text-sm mt-2 whitespace-pre-wrap text-gray-500">{post.text}</p>
+                          {post.imageUrl && (
+                            <img src={post.imageUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover opacity-75" loading="lazy" />
+                          )}
+                          {post.comments?.length > 0 && (
+                            <p className="text-xs text-gray-400 mt-2">{post.comments.length} comment(s)</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

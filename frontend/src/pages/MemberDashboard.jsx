@@ -170,15 +170,15 @@ function MemberDashboard() {
     socket.on("newAnnouncement", handleAnnouncementEvent);
     socket.on("announcementUpdated", handleAnnouncementEvent);
     socket.on("announcementDeleted", handleAnnouncementEvent);
+    socket.on("announcementUnpinned", handleAnnouncementEvent);
     socket.on("newNotification", handleNewNotification);
     socket.on("friendRequestUpdate", handleFriendUpdate);
 
     return () => {
-      socket.off("newPost", handleNewPost);
-      socket.off("postDeleted", handlePostDeleted);
       socket.off("newAnnouncement", handleAnnouncementEvent);
       socket.off("announcementUpdated", handleAnnouncementEvent);
       socket.off("announcementDeleted", handleAnnouncementEvent);
+      socket.off("announcementUnpinned", handleAnnouncementEvent);
       socket.off("newNotification", handleNewNotification);
       socket.off("friendRequestUpdate", handleFriendUpdate);
     };
