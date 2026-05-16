@@ -64,6 +64,10 @@ function MemberProfile() {
           <p><b>Occupation:</b> {member.occupation}</p>
           <p><b>Born Again:</b> {member.bornAgain}</p>
           <p><b>Status:</b> {member.membershipStatus}</p>
+          <p><b>Role:</b> <span className={`font-medium ${
+            member.role === "youth_president" ? "text-yellow-600" :
+            member.role === "admin" ? "text-purple-600" : ""
+          }`}>{member.role === "youth_president" ? "Youth President" : member.role === "admin" ? "Admin" : "Member"}</span></p>
         </div>
 
         <div className="mt-5 space-y-3">
@@ -74,12 +78,6 @@ function MemberProfile() {
             >
               Send Message
             </button>
-          )}
-          {currentUser?.role === "admin" && (
-            <div className="flex gap-3">
-              <button onClick={() => updateStatus("Active Member")} className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Set Active</button>
-              <button onClick={() => updateStatus("Inactive Member")} className="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Set Inactive</button>
-            </div>
           )}
         </div>
       </div>

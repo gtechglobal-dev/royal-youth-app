@@ -298,6 +298,10 @@ function MemberDashboard() {
         <p className="font-semibold mt-2">{user.firstname} {user.surname}</p>
         <p className="text-gray-400 text-xs">{user.branch}</p>
         <p className={`text-xs mt-1 font-medium ${user.membershipStatus === "Active Member" ? "text-green-600" : "text-red-500"}`}>{user.membershipStatus}</p>
+        <p className={`text-xs mt-0.5 font-medium ${
+          user.role === "youth_president" ? "text-yellow-600" :
+          user.role === "admin" ? "text-purple-600" : "text-gray-500"
+        }`}>{user.role === "youth_president" ? "Youth President" : user.role === "admin" ? "Admin" : "Member"}</p>
       </div>
 
       {/* Navigation */}
@@ -495,6 +499,10 @@ function MemberDashboard() {
                         {s.branch && (
                           <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.branch}</span>
                         )}
+                        <span className={`text-[10px] font-medium ${
+                          s.role === "youth_president" ? "text-yellow-600" :
+                          s.role === "admin" ? "text-purple-600" : "text-gray-400"
+                        }`}>{s.role === "youth_president" ? "Youth President" : s.role === "admin" ? "Admin" : "Member"}</span>
                         {s.friendStatus === "none" && (
                           <button
                             onClick={() => handleSendRequest(s._id)}
@@ -630,6 +638,10 @@ function MemberDashboard() {
                 <div><span className="font-semibold text-gray-600">Branch:</span> {user.branch || "Plot C4/C5 Owerri"}</div>
                 {user.hobbies?.length > 0 && <div className="md:col-span-2"><span className="font-semibold text-gray-600">Hobbies:</span> {user.hobbies.join(", ")}</div>}
                 <div><span className="font-semibold text-gray-600">Membership:</span> <span className={user.membershipStatus === "Active Member" ? "text-green-600 font-medium" : "text-red-500 font-medium"}>{user.membershipStatus}</span></div>
+                <div><span className="font-semibold text-gray-600">Role:</span> <span className={`font-medium ${
+                  user.role === "youth_president" ? "text-yellow-600" :
+                  user.role === "admin" ? "text-purple-600" : ""
+                }`}>{user.role === "youth_president" ? "Youth President" : user.role === "admin" ? "Admin" : "Member"}</span></div>
                 <div><span className="font-semibold text-gray-600">Last Login:</span> {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "First login"}</div>
                 <div><span className="font-semibold text-gray-600">Registered:</span> {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Unknown"}</div>
               </div>
