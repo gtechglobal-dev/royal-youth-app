@@ -480,7 +480,7 @@ function MemberDashboard() {
                   <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
                     {suggested.map((s) => (
                       <div key={s._id} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-500 p-[2px]">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 via-cyan-400 to-teal-400 p-[2px]">
                           <div className="w-full h-full rounded-full bg-white p-[2px]">
                             <Link to={`/member/${s._id}`} className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
                               {s.profileImage ? (
@@ -765,7 +765,7 @@ function MemberDashboard() {
                     return (
                       <>
                         <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-500 p-[2px]">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 via-cyan-400 to-teal-400 p-[2px]">
                             <div className="w-full h-full rounded-full bg-white p-[2px]">
                               <div className="w-full h-full rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
                                 {user.profileImage ? (
