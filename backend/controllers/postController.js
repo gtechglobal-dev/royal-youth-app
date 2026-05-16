@@ -181,11 +181,12 @@ export const updatePost = async (req, res) => {
     if (placardColor) post.placardColor = placardColor;
     await post.save();
 
-    const populated = await Post.findById(post._id)
-      .populate("userId", "firstname surname profileImage branch role")
-      .populate("comments.userId", "firstname surname profileImage");
+     const populated = await Post.findById(post._id)
+       .populate("userId", "firstname surname profileImage branch role")
+       .populate("comments.userId", "firstname surname profileImage");
 
-    res.json(populated);
+     try { getIO().emit("postUpdated", populated.toObject()); } catch (e) {}
+     res.json(populated);
   } catch (err) {
     console.error("Update post error:", err);
     res.status(500).json({ message: "Server error" });
@@ -383,9 +384,10 @@ export const createAnnouncement = async (req, res) => {
       pinnedAt: new Date(),
     });
 
-    const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch role");
-    try { getIO().emit("newAnnouncement", populated.toObject()); } catch (e) {}
-    res.status(201).json(populated);
+     const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch role");
+     try { getIO().emit("newAnnouncement", populated.toObject()); } catch (e) {}
+     try { getIO().emit("newPost", populated.toObject()); } catch (e) {}
+     res.status(201).json(populated);
   } catch (err) {
     console.error("Create announcement error:", err);
     res.status(500).json({ message: "Server error" });
@@ -418,11 +420,12 @@ export const updateAnnouncement = async (req, res) => {
 
     await post.save();
 
-    const populated = await Post.findById(post._id)
-      .populate("userId", "firstname surname profileImage branch role");
+     const populated = await Post.findById(post._id)
+       .populate("userId", "firstname surname profileImage branch role");
 
-    try { getIO().emit("announcementUpdated", populated.toObject()); } catch (e) {}
-    res.json(populated);
+     try { getIO().emit("announcementUpdated", populated.toObject()); } catch (e) {}
+     try { getIO().emit("postUpdated", populated.toObject()); } catch (e) {}
+     res.json(populated);
   } catch (err) {
     console.error("Update announcement error:", err);
     res.status(500).json({ message: "Server error" });
@@ -439,12 +442,13 @@ export const deleteAnnouncement = async (req, res) => {
     if (!post) return res.status(404).json({ message: "Announcement not found" });
     if (!post.isPinned) return res.status(400).json({ message: "Not an announcement" });
 
-    await deleteFromCloudinary(post.imageUrl);
-    post.isDeleted = true;
-    await post.save();
-
-    try { getIO().emit("announcementDeleted", { postId: post._id.toString() }); } catch (e) {}
-    res.json({ message: "Announcement deleted" });
+     await deleteFromCloudinary(post.imageUrl);
+     post.isDeleted = true;
+     await post.save();
+ 
+     try { getIO().emit("announcementDeleted", { postId: post._id.toString() }); } catch (e) {}
+     try { getIO().emit("postDeleted", { postId: post._id.toString() }); } catch (e) {}
+     res.json({ message: "Announcement deleted" });
   } catch (err) {
     console.error("Delete announcement error:", err);
     res.status(500).json({ message: "Server error" });
@@ -465,11 +469,12 @@ export const unpinAnnouncement = async (req, res) => {
 
     await post.save();
 
-    const populated = await Post.findById(post._id)
-      .populate("userId", "firstname surname profileImage branch role");
+     const populated = await Post.findById(post._id)
+       .populate("userId", "firstname surname profileImage branch role");
 
-    try { getIO().emit("announcementUnpinned", populated.toObject()); } catch (e) {}
-    res.json(populated);
+     try { getIO().emit("announcementUnpinned", populated.toObject()); } catch (e) {}
+     try { getIO().emit("postUnpinned", populated.toObject()); } catch (e) {}
+     res.json(populated);
   } catch (err) {
     console.error("Unpin announcement error:", err);
     res.status(500).json({ message: "Server error" });

@@ -144,15 +144,16 @@ function MemberDashboard() {
     const socket = getSocket();
     if (!socket) return;
 
-    const handleNewPost = (post) => {
-      const isFriend = friends.some((f) => f._id === post.userId?._id);
-      if (isFriend) {
-        setPosts((prev) => {
-          if (prev.some((p) => p._id === post._id)) return prev;
-          return [post, ...prev];
-        });
-      }
-    };
+     const handleNewPost = (post) => {
+       const isFriend = friends.some((f) => f._id === post.userId?._id);
+       const isAnnouncement = post.isPinned && post.pinnedAt;
+       if (isFriend || isAnnouncement) {
+         setPosts((prev) => {
+           if (prev.some((p) => p._id === post._id)) return prev;
+           return [post, ...prev];
+         });
+       }
+     };
 
     const handlePostDeleted = ({ postId }) => {
       setPosts((prev) => prev.filter((p) => p._id !== postId));

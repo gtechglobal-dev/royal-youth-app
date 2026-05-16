@@ -4,6 +4,7 @@ import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
+import { connectSocket, getSocket } from "../services/socket";
 
 function CommunityFeed() {
   const navigate = useNavigate();
@@ -34,11 +35,40 @@ function CommunityFeed() {
     fetchUser();
   }, [navigate]);
 
-  useEffect(() => {
-    if (!user) return;
-    fetchFeed(1, true);
-    fetchNotifications();
-  }, [user]);
+   useEffect(() => {
+     if (!user) return;
+     fetchFeed(1, true);
+     fetchNotifications();
+   }, [user]);
+
+   useEffect(() => {
+     if (!user?._id) return;
+     connectSocket();
+     const socket = getSocket();
+     if (!socket) return;
+
+     const handleNewPost = (post) => {
+       setPosts((prev) => [post, ...prev]);
+     };
+
+     const handlePostUpdated = (post) => {
+       setPosts((prev) => prev.map((p) => (p._id === post._id ? post : p)));
+     };
+
+     const handlePostDeleted = ({ postId }) => {
+       setPosts((prev) => prev.filter((p) => p._id !== postId));
+     };
+
+     socket.on("newPost", handleNewPost);
+     socket.on("postUpdated", handlePostUpdated);
+     socket.on("postDeleted", handlePostDeleted);
+
+     return () => {
+       socket.off("newPost", handleNewPost);
+       socket.off("postUpdated", handlePostUpdated);
+       socket.off("postDeleted", handlePostDeleted);
+     };
+   }, [user?._id]);
 
   useEffect(() => {
     const interval = setInterval(fetchNotifications, 15000);
