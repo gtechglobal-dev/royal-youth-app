@@ -480,24 +480,24 @@ function MemberDashboard() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
                   <h3 className="text-sm font-bold text-gray-700 mb-3">People You May Know</h3>
                   <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
-                    {suggested.map((s) => (
-                      <div key={s._id} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
-                          <div className="w-full h-full rounded-full bg-white p-[2px]">
-                            <div className="block w-full h-full rounded-full bg-purple-100 overflow-hidden cursor-pointer" onClick={() => s.profileImage && setViewingImage({ url: s.profileImage, firstname: s.firstname, surname: s.surname })}>
-                              {s.profileImage ? (
-                                <img src={optimizeImage(s.profileImage, 80)} alt="" className="w-full h-full object-cover" loading="lazy" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-xs">
-                                  {s.firstname?.[0]}{s.surname?.[0]}
-                                </div>
-                              )}
+                      {suggested.map((s) => (
+                        <Link key={s._id} to={`/member/${s._id}`} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition">
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
+                            <div className="w-full h-full rounded-full bg-white p-[2px]">
+                              <div className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
+                                {s.profileImage ? (
+                                  <img src={optimizeImage(s.profileImage, 80)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-xs">
+                                    {s.firstname?.[0]}{s.surname?.[0]}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <Link to={`/member/${s._id}`} className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center hover:text-purple-600">
-                          {s.surname} {s.firstname}
-                        </Link>
+                          <span className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center">
+                            {s.surname} {s.firstname}
+                          </span>
                         {s.branch && (
                           <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.branch}</span>
                         )}
@@ -507,7 +507,7 @@ function MemberDashboard() {
                         }`}>{s.role === "youth_president" ? "Youth President" : s.role === "admin" ? "Admin" : "Member"}</span>
                         {s.friendStatus === "none" && (
                           <button
-                            onClick={() => handleSendRequest(s._id)}
+                            onClick={(e) => { e.stopPropagation(); handleSendRequest(s._id); }}
                             className="mt-1 w-full text-[11px] bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
                           >
                             Add Royalty
@@ -524,20 +524,20 @@ function MemberDashboard() {
                         {s.friendStatus === "pending_received" && (
                           <div className="mt-1 flex gap-1.5 w-full">
                             <button
-                              onClick={() => handleAcceptRequest(s.requestId)}
+                              onClick={(e) => { e.stopPropagation(); handleAcceptRequest(s.requestId); }}
                               className="flex-1 text-[10px] bg-purple-600 text-white px-2 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
                             >
                               Accept Royalty
                             </button>
                             <button
-                              onClick={() => handleRejectRequest(s.requestId)}
+                              onClick={(e) => { e.stopPropagation(); handleRejectRequest(s.requestId); }}
                               className="flex-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-1.5 rounded-lg font-semibold hover:bg-gray-300 transition"
                             >
                               Reject
                             </button>
                           </div>
                         )}
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
