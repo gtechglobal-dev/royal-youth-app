@@ -408,15 +408,13 @@ export const getCurrentUser = async (req, res) => {
       return res.status(200).json({ _id: "admin", firstname: "Admin", surname: "Admin", role: "admin" });
     }
 
-    if (!req.user.firstname) {
-      const user = await User.findById(req.user._id).select("-password");
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      return res.status(200).json(user);
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json(req.user);
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

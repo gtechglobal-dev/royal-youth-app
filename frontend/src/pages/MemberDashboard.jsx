@@ -1016,12 +1016,14 @@ function MemberDashboard() {
       {(showImageModal || viewingImage) && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4" onClick={() => { setShowImageModal(false); setViewingImage(null); }}>
           <div className="relative max-w-3xl max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => { setShowImageModal(false); setViewingImage(null); }} className="absolute top-0 right-0 bg-white rounded-full p-2 hover:bg-gray-100"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button onClick={() => { setShowImageModal(false); setViewingImage(null); }} className="absolute top-0 right-0 bg-white rounded-full p-2 hover:bg-gray-100 z-10"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             <img src={optimizeImage(viewingImage ? viewingImage.url : user.profileImage, 800)} alt="Profile" className="max-w-full max-h-[80vh] object-contain" loading="lazy" />
-            <button onClick={() => { const a = document.createElement('a'); a.href = viewingImage ? viewingImage.url : user.profileImage; a.download = `${viewingImage ? viewingImage.firstname : user.firstname}_${viewingImage ? viewingImage.surname : user.surname}_profile.jpg`; a.click(); }} className="mt-4 flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              Download Image
-            </button>
+            {!viewingImage && (
+              <button onClick={() => { const a = document.createElement('a'); a.href = user.profileImage; a.download = `${user.firstname}_${user.surname}_profile.jpg`; a.click(); }} className="mt-4 flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Download Image
+              </button>
+            )}
           </div>
         </div>
       )}
