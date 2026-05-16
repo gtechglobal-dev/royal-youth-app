@@ -8,6 +8,7 @@ import { optimizeImage } from "../utils/cloudinary";
 import siteLogo from "../assets/gdev logo.svg";
 import { connectSocket, getSocket } from "../services/socket";
 import EmojiPicker from "../components/EmojiPicker";
+import ConfirmModal from "../components/ConfirmModal";
 
 const PLACARD_COLORS = [
   "#000000", "#1a1a2e", "#16213e", "#0f3460", "#533483",
