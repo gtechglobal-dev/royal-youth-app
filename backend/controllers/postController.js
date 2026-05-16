@@ -23,7 +23,7 @@ export const createPost = async (req, res) => {
       placardColor: placardColor || "#000000",
     });
 
-    const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch");
+    const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch role");
     res.status(201).json(populated);
   } catch (err) {
     console.error("Create post error:", err);
@@ -41,7 +41,7 @@ export const getFeed = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("userId", "firstname surname profileImage branch")
+      .populate("userId", "firstname surname profileImage branch role")
       .populate("comments.userId", "firstname surname profileImage");
 
     const total = await Post.countDocuments({ isDeleted: false });
@@ -175,7 +175,7 @@ export const updatePost = async (req, res) => {
     await post.save();
 
     const populated = await Post.findById(post._id)
-      .populate("userId", "firstname surname profileImage branch")
+      .populate("userId", "firstname surname profileImage branch role")
       .populate("comments.userId", "firstname surname profileImage");
 
     res.json(populated);
@@ -240,7 +240,7 @@ export const getFriendsFeed = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("userId", "firstname surname profileImage branch")
+      .populate("userId", "firstname surname profileImage branch role")
       .populate("comments.userId", "firstname surname profileImage");
 
     const total = await Post.countDocuments({ isDeleted: false, userId: { $in: friendIds } });
@@ -261,7 +261,7 @@ export const getFriendsFeed = async (req, res) => {
 export const getSinglePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate("userId", "firstname surname profileImage branch")
+      .populate("userId", "firstname surname profileImage branch role")
       .populate("comments.userId", "firstname surname profileImage");
 
     if (!post || post.isDeleted) {
@@ -280,7 +280,7 @@ export const getUserPosts = async (req, res) => {
     const posts = await Post.find({ userId: req.params.userId, isDeleted: false })
       .sort({ createdAt: -1 })
       .limit(20)
-      .populate("userId", "firstname surname profileImage branch")
+      .populate("userId", "firstname surname profileImage branch role")
       .populate("comments.userId", "firstname surname profileImage");
 
     res.json({ posts });
@@ -301,7 +301,7 @@ export const getPinnedPosts = async (req, res) => {
       isDeleted: false,
     })
       .sort({ pinnedAt: -1 })
-      .populate("userId", "firstname surname profileImage branch")
+      .populate("userId", "firstname surname profileImage branch role")
       .populate("comments.userId", "firstname surname profileImage");
 
     res.json({ posts });
@@ -325,8 +325,11 @@ export const createAnnouncement = async (req, res) => {
     const targetRole = authorRole === "admin" ? "admin" : "youth_president";
 
     let author;
-    if (req.user._id !== "admin" && req.user.role === targetRole) {
+    if (req.user.role === targetRole) {
       author = req.user;
+      if (author._id === "admin") {
+        author = await User.findOne({ role: "admin", isDeleted: false }).select("-password");
+      }
     } else {
       author = await User.findOne({ role: targetRole, isDeleted: false, registrationStatus: "Approved" }).select("-password");
     }
@@ -350,10 +353,65 @@ export const createAnnouncement = async (req, res) => {
       pinnedAt: new Date(),
     });
 
-    const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch");
+    const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch role");
     res.status(201).json(populated);
   } catch (err) {
     console.error("Create announcement error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateAnnouncement = async (req, res) => {
+  try {
+    if (req.user.role !== "admin" && req.user.role !== "youth_president") {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const { text, placardColor } = req.body;
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: "Announcement text is required" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Announcement not found" });
+    if (!post.isPinned) return res.status(400).json({ message: "Not an announcement" });
+
+    post.text = text.trim();
+    if (placardColor) post.placardColor = placardColor;
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
+      if (result) post.imageUrl = result.secure_url;
+    }
+
+    await post.save();
+
+    const populated = await Post.findById(post._id)
+      .populate("userId", "firstname surname profileImage branch role");
+
+    res.json(populated);
+  } catch (err) {
+    console.error("Update announcement error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const deleteAnnouncement = async (req, res) => {
+  try {
+    if (req.user.role !== "admin" && req.user.role !== "youth_president") {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Announcement not found" });
+    if (!post.isPinned) return res.status(400).json({ message: "Not an announcement" });
+
+    post.isDeleted = true;
+    await post.save();
+
+    res.json({ message: "Announcement deleted" });
+  } catch (err) {
+    console.error("Delete announcement error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

@@ -131,6 +131,9 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
               <Link to={`/member/${post.userId?._id}`} className="font-semibold text-sm hover:text-purple-600">
                 {post.userId?.firstname} {post.userId?.surname}
               </Link>
+              {post.userId?.role && post.userId.role !== "member" && (
+                <span className="ml-1.5 text-[10px] font-medium text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">{post.userId.role === "youth_president" ? "Youth President" : post.userId.role === "admin" ? "Admin" : post.userId.role}</span>
+              )}
               <span className="text-gray-400 text-xs ml-2">{post.userId?.branch}</span>
             </div>
             <div className="flex items-center gap-1">

@@ -427,7 +427,7 @@ function MemberDashboard() {
               <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">RY</span>
               </div>
-              <span className="font-bold text-lg text-gray-800">Royal Youth Hub</span>
+              <span className="font-bold text-sm sm:text-base md:text-lg text-gray-800 whitespace-nowrap">Royal Youth Hub</span>
             </Link>
           </div>
           <div className="flex items-center gap-2">

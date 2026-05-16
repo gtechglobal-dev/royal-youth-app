@@ -23,6 +23,11 @@ function AdminDashboard() {
   const [announcementSending, setAnnouncementSending] = useState(false);
   const [announcementAuthorRole, setAnnouncementAuthorRole] = useState("youth_president");
   const [announcementColor, setAnnouncementColor] = useState("#000000");
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [editingText, setEditingText] = useState("");
+  const [editingColor, setEditingColor] = useState("#000000");
+  const [editingImage, setEditingImage] = useState(null);
+  const [editingSaving, setEditingSaving] = useState(false);
 
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem("adminActiveTab");
@@ -643,6 +648,48 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     } finally { setAnnouncementSending(false); }
   };
 
+  const handleEditAnnouncement = (post) => {
+    setEditingAnnouncement(post);
+    setEditingText(post.text);
+    setEditingColor(post.placardColor || "#000000");
+    setEditingImage(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAnnouncement(null);
+    setEditingText("");
+    setEditingColor("#000000");
+    setEditingImage(null);
+  };
+
+  const handleSaveAnnouncement = async () => {
+    if (!editingText.trim()) return;
+    setEditingSaving(true);
+    try {
+      const form = new FormData();
+      form.append("text", editingText.trim());
+      form.append("placardColor", editingColor);
+      if (editingImage) form.append("image", editingImage);
+      await API.put(`/posts/announcement/${editingAnnouncement._id}`, form);
+      setNotification({ open: true, type: "success", message: "Announcement updated!" });
+      handleCancelEdit();
+      fetchAnnouncements();
+    } catch (err) {
+      setNotification({ open: true, type: "error", message: "Failed to update announcement" });
+    } finally { setEditingSaving(false); }
+  };
+
+  const handleDeleteAnnouncement = async (id) => {
+    if (!confirm("Delete this announcement?")) return;
+    try {
+      await API.delete(`/posts/announcement/${id}`);
+      setNotification({ open: true, type: "success", message: "Announcement deleted" });
+      fetchAnnouncements();
+    } catch (err) {
+      setNotification({ open: true, type: "error", message: "Failed to delete announcement" });
+    }
+  };
+
   const deleteMember = async () => {
     try {
       await API.delete(`/auth/member/${deletingMemberId}`);
@@ -994,23 +1041,76 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 <div className="space-y-4">
                   {announcements.map((post) => (
                     <div key={post._id} className="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0">
-                          {post.userId?.profileImage ? (
-                            <img src={post.userId.profileImage} alt="" className="w-full h-full object-cover" loading="lazy" />
-                          ) : (
-                            <span className="text-purple-600 font-bold text-xs">{post.userId?.firstname?.[0]}</span>
-                          )}
+                      {editingAnnouncement?._id === post._id ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-adminBlue">Edit Announcement</h3>
+                            <button onClick={handleCancelEdit} className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
+                          </div>
+                          <textarea
+                            value={editingText}
+                            onChange={(e) => setEditingText(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-adminBlue"
+                            rows={3}
+                          />
+                          <div className="flex items-center gap-3">
+                            <label className="cursor-pointer text-xs text-adminBlue hover:underline">
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => setEditingImage(e.target.files[0])} />
+                              {editingImage ? editingImage.name : "Change Image"}
+                            </label>
+                            {editingImage && (
+                              <button onClick={() => setEditingImage(null)} className="text-xs text-red-500 hover:underline">Remove</button>
+                            )}
+                            <button
+                              onClick={handleSaveAnnouncement}
+                              disabled={editingSaving || !editingText.trim()}
+                              className="ml-auto bg-adminBlue text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              {editingSaving ? "Saving..." : "Save"}
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold">{post.userId?.firstname} {post.userId?.surname}</p>
-                          <p className="text-xs text-gray-400">{new Date(post.pinnedAt).toLocaleString()}</p>
-                          <p className="text-sm mt-2 whitespace-pre-wrap">{post.text}</p>
-                          {post.imageUrl && (
-                            <img src={post.imageUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover" loading="lazy" />
-                          )}
+                      ) : (
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0">
+                            {post.userId?.profileImage ? (
+                              <img src={post.userId.profileImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                              <span className="text-purple-600 font-bold text-xs">{post.userId?.firstname?.[0]}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-semibold">{post.userId?.firstname} {post.userId?.surname}
+                                {post.userId?.role && post.userId.role !== "member" && (
+                                  <span className="ml-1.5 text-[10px] font-medium text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">{post.userId.role === "youth_president" ? "Youth President" : post.userId.role === "admin" ? "Admin" : post.userId.role}</span>
+                                )}
+                              </p>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleEditAnnouncement(post)}
+                                  className="text-xs text-gray-400 hover:text-adminBlue p-1"
+                                  title="Edit"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteAnnouncement(post._id)}
+                                  className="text-xs text-gray-400 hover:text-red-500 p-1"
+                                  title="Delete"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-400">{new Date(post.pinnedAt).toLocaleString()}</p>
+                            <p className="text-sm mt-2 whitespace-pre-wrap">{post.text}</p>
+                            {post.imageUrl && (
+                              <img src={post.imageUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover" loading="lazy" />
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>

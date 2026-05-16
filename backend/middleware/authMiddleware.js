@@ -14,7 +14,8 @@ const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       if (decoded.id === "admin") {
-        req.user = { role: "admin", _id: "admin" };
+        const adminUser = await User.findOne({ role: "admin", isDeleted: false }).select("-password");
+        req.user = adminUser || { role: "admin", _id: "admin" };
         return next();
       }
 
