@@ -188,7 +188,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
             </>
           ) : (
             <div
-              className="mt-2 rounded-xl px-5 py-8 text-center flex items-center justify-center relative overflow-y-auto max-w-xs mx-auto aspect-square"
+              className="mt-4 rounded-xl px-8 py-14 text-center flex items-center justify-center relative overflow-hidden w-full min-h-[160px]"
               style={{
                 backgroundColor: post.placardColor || "#000000",
                 backgroundImage: `url("${siteLogo}")`,
@@ -197,7 +197,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
               }}
             >
               <div className="absolute inset-0 opacity-90" style={{ backgroundColor: post.placardColor || "#000000" }} />
-              <p className="text-white text-sm font-bold leading-relaxed whitespace-pre-wrap relative z-10">{postText}</p>
+              <p className="text-white text-base font-bold leading-relaxed whitespace-pre-wrap relative z-10 max-w-2xl">{postText}</p>
             </div>
           )}
           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100">
