@@ -48,5 +48,24 @@ const uploadToCloudinary = async (fileBuffer, mimeType) => {
   });
 };
 
-export { uploadToCloudinary };
+const getPublicIdFromUrl = (url) => {
+  if (!url || typeof url !== "string") return null;
+  const regex = /https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/(?:v\d+\/)?(.+)/;
+  const match = url.match(regex);
+  if (!match) return null;
+  return match[1].replace(/\.[^.]+$/, "");
+};
+
+const deleteFromCloudinary = async (url) => {
+  if (!hasCloudinary || !url) return;
+  const publicId = getPublicIdFromUrl(url);
+  if (!publicId) return;
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (err) {
+    console.error("Failed to delete from Cloudinary:", publicId, err.message);
+  }
+};
+
+export { uploadToCloudinary, deleteFromCloudinary };
 export default uploadMiddleware;

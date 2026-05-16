@@ -2,6 +2,7 @@ import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
 import Notification from "../models/Notification.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
+import { getIO } from "../socket.js";
 
 export const getConversations = async (req, res) => {
   try {
@@ -125,6 +126,7 @@ export const sendMessage = async (req, res) => {
         type: "message",
         referenceId: conversation._id.toString(),
       });
+      try { getIO().to(`user:${receiverId}`).emit("newNotification", {}); } catch (e) {}
     }
 
     res.status(201).json(populated);

@@ -6,6 +6,7 @@ import Logo from "../assets/gdev logo.svg";
 import { OverlayLoader } from "../components/Loaders";
 import { optimizeImage } from "../utils/cloudinary";
 import siteLogo from "../assets/gdev logo.svg";
+import { connectSocket, getSocket } from "../services/socket";
 
 const PLACARD_COLORS = [
   "#000000", "#1a1a2e", "#16213e", "#0f3460", "#533483",
@@ -143,6 +144,24 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
         navigate("/admin-login");
       });
   }, [navigate]);
+
+  useEffect(() => {
+    connectSocket();
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleAnnouncementEvent = () => { fetchAnnouncements(); };
+
+    socket.on("newAnnouncement", handleAnnouncementEvent);
+    socket.on("announcementUpdated", handleAnnouncementEvent);
+    socket.on("announcementDeleted", handleAnnouncementEvent);
+
+    return () => {
+      socket.off("newAnnouncement", handleAnnouncementEvent);
+      socket.off("announcementUpdated", handleAnnouncementEvent);
+      socket.off("announcementDeleted", handleAnnouncementEvent);
+    };
+  }, []);
 
   // Save activeTab to localStorage whenever it changes
   useEffect(() => {

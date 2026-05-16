@@ -4,6 +4,7 @@ import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
+import { connectSocket, getSocket } from "../services/socket";
 
 function MemberDashboard() {
   const navigate = useNavigate();
@@ -136,6 +137,52 @@ function MemberDashboard() {
     const interval = setInterval(fetchNotifications, 15000);
     return () => clearInterval(interval);
   }, [user?._id]);
+
+  useEffect(() => {
+    if (!user?._id) return;
+    connectSocket();
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNewPost = (post) => {
+      const isFriend = friends.some((f) => f._id === post.userId?._id);
+      if (isFriend) {
+        setPosts((prev) => {
+          if (prev.some((p) => p._id === post._id)) return prev;
+          return [post, ...prev];
+        });
+      }
+    };
+
+    const handlePostDeleted = ({ postId }) => {
+      setPosts((prev) => prev.filter((p) => p._id !== postId));
+      setHubPosts((prev) => prev.filter((p) => p._id !== postId));
+    };
+
+    const handleAnnouncementEvent = () => { fetchPinnedPosts(); };
+
+    const handleNewNotification = () => { fetchNotifications(); };
+
+    const handleFriendUpdate = () => { fetchFriendData(); };
+
+    socket.on("newPost", handleNewPost);
+    socket.on("postDeleted", handlePostDeleted);
+    socket.on("newAnnouncement", handleAnnouncementEvent);
+    socket.on("announcementUpdated", handleAnnouncementEvent);
+    socket.on("announcementDeleted", handleAnnouncementEvent);
+    socket.on("newNotification", handleNewNotification);
+    socket.on("friendRequestUpdate", handleFriendUpdate);
+
+    return () => {
+      socket.off("newPost", handleNewPost);
+      socket.off("postDeleted", handlePostDeleted);
+      socket.off("newAnnouncement", handleAnnouncementEvent);
+      socket.off("announcementUpdated", handleAnnouncementEvent);
+      socket.off("announcementDeleted", handleAnnouncementEvent);
+      socket.off("newNotification", handleNewNotification);
+      socket.off("friendRequestUpdate", handleFriendUpdate);
+    };
+  }, [user?._id, friends]);
 
   useEffect(() => {
     if (!loading && user && isBirthday) {

@@ -1,7 +1,8 @@
 import Post from "../models/Post.js";
 import Notification from "../models/Notification.js";
 import User from "../models/user.js";
-import { uploadToCloudinary } from "../config/cloudinary.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
+import { getIO } from "../socket.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -24,6 +25,7 @@ export const createPost = async (req, res) => {
     });
 
     const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch role");
+    try { getIO().emit("newPost", populated.toObject()); } catch (e) {}
     res.status(201).json(populated);
   } catch (err) {
     console.error("Create post error:", err);
@@ -81,8 +83,10 @@ export const likePost = async (req, res) => {
         type: "like",
         referenceId: post._id.toString(),
       });
+      try { getIO().to(`user:${post.userId}`).emit("newNotification", {}); } catch (e) {}
     }
 
+    try { getIO().emit("postLiked", { postId: post._id.toString(), userId: userId.toString(), likeCount: post.likes.length }); } catch (e) {}
     res.json({ likes: post.likes, likeCount: post.likes.length });
   } catch (err) {
     console.error("Like post error:", err);
@@ -106,6 +110,7 @@ export const unlikePost = async (req, res) => {
     post.likes.splice(index, 1);
     await post.save();
 
+    try { getIO().emit("postUnliked", { postId: post._id.toString(), userId: userId.toString(), likeCount: post.likes.length }); } catch (e) {}
     res.json({ likes: post.likes, likeCount: post.likes.length });
   } catch (err) {
     console.error("Unlike post error:", err);
@@ -148,8 +153,10 @@ export const commentOnPost = async (req, res) => {
         type: "comment",
         referenceId: post._id.toString(),
       });
+      try { getIO().to(`user:${post.userId}`).emit("newNotification", {}); } catch (e) {}
     }
 
+    try { getIO().emit("newComment", { postId: post._id.toString(), comment: addedComment.toObject() }); } catch (e) {}
     res.status(201).json(addedComment);
   } catch (err) {
     console.error("Comment error:", err);
@@ -194,9 +201,11 @@ export const deletePost = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
+    await deleteFromCloudinary(post.imageUrl);
     post.isDeleted = true;
     await post.save();
 
+    try { getIO().emit("postDeleted", { postId: post._id.toString() }); } catch (e) {}
     res.json({ message: "Post deleted" });
   } catch (err) {
     console.error("Delete post error:", err);
@@ -357,6 +366,7 @@ export const createAnnouncement = async (req, res) => {
     });
 
     const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch role");
+    try { getIO().emit("newAnnouncement", populated.toObject()); } catch (e) {}
     res.status(201).json(populated);
   } catch (err) {
     console.error("Create announcement error:", err);
@@ -383,6 +393,7 @@ export const updateAnnouncement = async (req, res) => {
     if (placardColor) post.placardColor = placardColor;
 
     if (req.file) {
+      await deleteFromCloudinary(post.imageUrl);
       const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
       if (result) post.imageUrl = result.secure_url;
     }
@@ -392,6 +403,7 @@ export const updateAnnouncement = async (req, res) => {
     const populated = await Post.findById(post._id)
       .populate("userId", "firstname surname profileImage branch role");
 
+    try { getIO().emit("announcementUpdated", populated.toObject()); } catch (e) {}
     res.json(populated);
   } catch (err) {
     console.error("Update announcement error:", err);
@@ -409,9 +421,11 @@ export const deleteAnnouncement = async (req, res) => {
     if (!post) return res.status(404).json({ message: "Announcement not found" });
     if (!post.isPinned) return res.status(400).json({ message: "Not an announcement" });
 
+    await deleteFromCloudinary(post.imageUrl);
     post.isDeleted = true;
     await post.save();
 
+    try { getIO().emit("announcementDeleted", { postId: post._id.toString() }); } catch (e) {}
     res.json({ message: "Announcement deleted" });
   } catch (err) {
     console.error("Delete announcement error:", err);

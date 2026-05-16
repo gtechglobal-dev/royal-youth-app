@@ -1,6 +1,6 @@
 import Banner from "../models/banner.js";
 import multer from "multer";
-import { uploadToCloudinary } from "../config/cloudinary.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
 
 const uploadMiddleware = multer({ 
   storage: multer.memoryStorage(),
@@ -61,6 +61,8 @@ export const updateBanner = async (req, res) => {
     const updateData = { title, link, order, isActive };
     
     if (req.file) {
+      const current = await Banner.findById(req.params.id);
+      await deleteFromCloudinary(current?.image);
       const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
       if (result) {
         updateData.image = result.secure_url;
@@ -76,7 +78,10 @@ export const updateBanner = async (req, res) => {
 
 export const deleteBanner = async (req, res) => {
   try {
-    await Banner.findByIdAndDelete(req.params.id);
+    const banner = await Banner.findByIdAndDelete(req.params.id);
+    if (banner) {
+      await deleteFromCloudinary(banner.image);
+    }
     res.json({ message: "Banner deleted" });
   } catch (error) {
     res.status(500).json({ message: error.message });

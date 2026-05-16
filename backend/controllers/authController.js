@@ -2,7 +2,7 @@ import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { uploadToCloudinary } from "../config/cloudinary.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -453,6 +453,8 @@ export const deleteMember = async (req, res) => {
       return res.status(404).json({ message: "Member not found" });
     }
 
+    await deleteFromCloudinary(member.profileImage);
+
     res.status(200).json({ message: "Member account deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -487,6 +489,8 @@ export const updateProfile = async (req, res) => {
 
     if (req.file && req.file.buffer && req.file.buffer.length > 0) {
       try {
+        const user = await User.findById(req.user.id).select("profileImage");
+        await deleteFromCloudinary(user?.profileImage);
         const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
         if (result && result.secure_url) {
           updateData.profileImage = result.secure_url;

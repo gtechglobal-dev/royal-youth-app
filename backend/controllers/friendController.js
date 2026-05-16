@@ -1,5 +1,6 @@
 import FriendRequest from "../models/FriendRequest.js";
 import User from "../models/user.js";
+import { getIO } from "../socket.js";
 
 export const sendRequest = async (req, res) => {
   try {
@@ -25,10 +26,12 @@ export const sendRequest = async (req, res) => {
       existing.from = req.user._id;
       existing.to = userId;
       await existing.save();
+      try { getIO().to(`user:${userId}`).emit("friendRequestUpdate", {}); } catch (e) {}
       return res.json({ message: "Friend request sent" });
     }
 
     await FriendRequest.create({ from: req.user._id, to: userId });
+    try { getIO().to(`user:${userId}`).emit("friendRequestUpdate", {}); } catch (e) {}
     res.json({ message: "Friend request sent" });
   } catch (err) {
     console.error("Send request error:", err);
@@ -51,6 +54,8 @@ export const acceptRequest = async (req, res) => {
     await User.findByIdAndUpdate(request.from, { $addToSet: { friends: request.to } });
     await User.findByIdAndUpdate(request.to, { $addToSet: { friends: request.from } });
 
+    try { getIO().to(`user:${request.from}`).emit("friendRequestUpdate", {}); } catch (e) {}
+    try { getIO().to(`user:${request.to}`).emit("friendRequestUpdate", {}); } catch (e) {}
     res.json({ message: "Friend request accepted" });
   } catch (err) {
     console.error("Accept error:", err);
@@ -67,6 +72,7 @@ export const rejectRequest = async (req, res) => {
     }
     request.status = "rejected";
     await request.save();
+    try { getIO().to(`user:${request.from}`).emit("friendRequestUpdate", {}); } catch (e) {}
     res.json({ message: "Friend request rejected" });
   } catch (err) {
     console.error("Reject error:", err);
