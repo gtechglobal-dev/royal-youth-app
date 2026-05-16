@@ -4,12 +4,15 @@ import API from "../services/api";
 import { timeAgo } from "../utils/formatTime";
 import { optimizeImage } from "../utils/cloudinary";
 import EmojiPicker from "./EmojiPicker";
+import ConfirmModal from "./ConfirmModal";
 
 function CommentSection({ postId, currentUserId, onCommentCountChange }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const loadComments = async () => {
     if (loaded) return;
@@ -27,7 +30,8 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || sending) return;
+    setSending(true);
     try {
       const res = await API.post(`/posts/${postId}/comment`, { text: text.trim() });
       setComments((prev) => [...prev, res.data]);
@@ -35,17 +39,21 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
       if (onCommentCountChange) onCommentCountChange((c) => c + 1);
     } catch (err) {
       console.error("Comment error:", err);
+    } finally {
+      setSending(false);
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    if (!window.confirm("Delete this comment?")) return;
+  const handleDeleteComment = async () => {
+    if (!deleteTarget) return;
     try {
-      await API.delete(`/posts/${postId}/comment/${commentId}`);
-      setComments((prev) => prev.filter((c) => c._id !== commentId));
+      await API.delete(`/posts/${postId}/comment/${deleteTarget}`);
+      setComments((prev) => prev.filter((c) => c._id !== deleteTarget));
       if (onCommentCountChange) onCommentCountChange((c) => c - 1);
     } catch (err) {
       console.error("Delete comment error:", err);
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -81,7 +89,7 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
                   <div className="flex items-center gap-2">
                     <span className="text-gray-400 text-[10px]">{timeAgo(comment.createdAt)}</span>
                     {comment.userId?._id === currentUserId && (
-                      <button onClick={() => handleDeleteComment(comment._id)} className="text-gray-400 hover:text-red-500">
+                      <button onClick={() => setDeleteTarget(comment._id)} className="text-gray-400 hover:text-red-500">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -106,12 +114,27 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
         />
         <button
           type="submit"
-          disabled={!text.trim()}
+          disabled={!text.trim() || sending}
           className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
         >
-          Send
+          {sending ? (
+            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            "Send"
+          )}
         </button>
       </form>
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete Comment"
+        message="Are you sure you want to delete this comment? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDeleteComment}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

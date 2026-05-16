@@ -58,7 +58,8 @@ function AdminDashboard() {
   const [income, setIncome] = useState({ purpose: "", amount: "", date: "" });
   const [specialDonation, setSpecialDonation] = useState({ memberId: "", purpose: "", amount: "", date: "" });
 const [expense, setExpense] = useState({ purpose: "", amount: "", date: "" });
-const [expenses, setExpenses] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [confirmState, setConfirmState] = useState({ open: false, title: "", message: "", onConfirm: null, loading: false });
 
 const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpenses: 0, balance: 0, duesMonthly: {} });
   const [incomeRecords, setIncomeRecords] = useState({});
@@ -398,14 +399,24 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   };
 
   const handleDeleteMeeting = async (meetingId) => {
-    if (!confirm("Are you sure you want to delete this meeting?")) return;
-    try {
-      await API.delete(`/attendance/meeting/${meetingId}`);
-      setNotification({ open: true, type: "success", message: "Meeting deleted" });
-      fetchData();
-    } catch (error) {
-      setNotification({ open: true, type: "error", message: "Error deleting meeting" });
-    }
+    setConfirmState({
+      open: true,
+      title: "Delete Meeting",
+      message: "Are you sure you want to delete this meeting? This action cannot be undone.",
+      loading: false,
+      onConfirm: async () => {
+        setConfirmState((prev) => ({ ...prev, loading: true }));
+        try {
+          await API.delete(`/attendance/meeting/${meetingId}`);
+          setNotification({ open: true, type: "success", message: "Meeting deleted" });
+          fetchData();
+        } catch (error) {
+          setNotification({ open: true, type: "error", message: "Error deleting meeting" });
+        } finally {
+          setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false });
+        }
+      },
+    });
   };
 
   const handleAddIncome = async (e) => {
@@ -708,14 +719,24 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   };
 
   const handleDeleteAnnouncement = async (id) => {
-    if (!confirm("Delete this announcement?")) return;
-    try {
-      await API.delete(`/posts/announcement/${id}`);
-      setNotification({ open: true, type: "success", message: "Announcement deleted" });
-      fetchAnnouncements();
-    } catch (err) {
-      setNotification({ open: true, type: "error", message: "Failed to delete announcement" });
-    }
+    setConfirmState({
+      open: true,
+      title: "Delete Announcement",
+      message: "Are you sure you want to delete this announcement? This action cannot be undone.",
+      loading: false,
+      onConfirm: async () => {
+        setConfirmState((prev) => ({ ...prev, loading: true }));
+        try {
+          await API.delete(`/posts/announcement/${id}`);
+          setNotification({ open: true, type: "success", message: "Announcement deleted" });
+          fetchAnnouncements();
+        } catch (err) {
+          setNotification({ open: true, type: "error", message: "Failed to delete announcement" });
+        } finally {
+          setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false });
+        }
+      },
+    });
   };
 
   const deleteMember = async () => {
@@ -2050,17 +2071,27 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                             <td className="border p-2 md:p-3 text-xs">{new Date(response.createdAt).toLocaleString()}</td>
                             <td className="border p-2 md:p-3">
                               <button
-                                onClick={async () => {
-                                  if (window.confirm("Delete this response?")) {
-                                    try {
-                                      await API.delete(`/meeting-responses/${response._id}`);
-                                      setMeetingResponses(prev => prev.filter(r => r._id !== response._id));
-                                      setCounts(prev => ({ ...prev, meetingResponses: prev.meetingResponses - 1 }));
-                                      setNotification({ open: true, type: "success", message: "Response deleted" });
-                                    } catch (error) {
-                                      setNotification({ open: true, type: "error", message: "Delete failed" });
-                                    }
-                                  }
+                                onClick={() => {
+                                  const id = response._id;
+                                  setConfirmState({
+                                    open: true,
+                                    title: "Delete Response",
+                                    message: "Are you sure you want to delete this meeting response? This action cannot be undone.",
+                                    loading: false,
+                                    onConfirm: async () => {
+                                      setConfirmState((prev) => ({ ...prev, loading: true }));
+                                      try {
+                                        await API.delete(`/meeting-responses/${id}`);
+                                        setMeetingResponses(prev => prev.filter(r => r._id !== id));
+                                        setCounts(prev => ({ ...prev, meetingResponses: prev.meetingResponses - 1 }));
+                                        setNotification({ open: true, type: "success", message: "Response deleted" });
+                                      } catch (error) {
+                                        setNotification({ open: true, type: "error", message: "Delete failed" });
+                                      } finally {
+                                        setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false });
+                                      }
+                                    },
+                                  });
                                 }}
                                 className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
                               >
@@ -2274,6 +2305,15 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
           message={notification.message}
           isOpen={notification.open}
           onClose={() => setNotification({ ...notification, open: false })}
+        />
+        <ConfirmModal
+          open={confirmState.open}
+          title={confirmState.title}
+          message={confirmState.message}
+          confirmLabel="Delete"
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false })}
+          loading={confirmState.loading}
         />
       </div>
   );
