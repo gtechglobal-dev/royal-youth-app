@@ -803,9 +803,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   });
 
   useEffect(() => {
-    if (!loading && todayBirthdayMembers.length > 0 && !hasShownBirthday.current) {
+    if (!loading && todayBirthdayMembers.length > 0) {
       hasShownBirthday.current = true;
-      setShowAdminBirthdayModal(true);
     }
   }, [loading, todayBirthdayMembers]);
 
@@ -848,46 +847,15 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
          </div>
        </header>
 
-      {showAdminBirthdayModal && todayBirthdayMembers.length > 0 && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/70 via-pink-900/70 to-yellow-900/70 backdrop-blur-sm" onClick={() => setShowAdminBirthdayModal(false)} />
-          <div className="relative bg-gradient-to-br from-yellow-50 via-pink-50 to-purple-50 rounded-3xl shadow-2xl w-full max-w-md p-8 animate-slideUp border-4 border-yellow-300 max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setShowAdminBirthdayModal(false)}
-              className="absolute top-4 right-4 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-all hover:scale-110 z-10"
-            >
-              <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <div className="text-center">
-              <div className="text-5xl mb-3 animate-bounce">🎉</div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-yellow-600 bg-clip-text text-transparent mb-4">
-                Birthday Celebrations! 🎂
-              </h2>
-              <div className="bg-white/70 rounded-2xl p-5 shadow-inner">
-                {todayBirthdayMembers.map((member, index) => (
-                  <div key={member._id} className={index > 0 ? 'mt-4 pt-4 border-t border-pink-200' : ''}>
-                    <p className="text-gray-800 text-lg leading-relaxed">
-                      We are celebrating with <span className="font-bold text-purple-600">{member.firstname} {member.surname}</span>
-                    </p>
-                    <p className="text-gray-600 text-sm mt-1">
-                      🎂 {new Date(member.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}
-                    </p>
-                    <p className="text-gray-700 mt-3 leading-relaxed text-sm">
-                      A message has been sent to {member.firstname}'s profile.
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => setShowAdminBirthdayModal(false)}
-                className="mt-6 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 text-white p-3 rounded-xl font-bold text-lg hover:opacity-90 transition-all hover:scale-105 shadow-lg"
-              >
-                Close 🎉
-              </button>
-            </div>
+      {/* Birthday Banner */}
+      {todayBirthdayMembers.length > 0 && (
+        <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-500 py-1.5 overflow-hidden shadow-md">
+          <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 40s linear infinite" }}>
+            {[...Array(8)].map((_, i) => (
+              <span key={i} className="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">
+                🎉 Birthday Celebrant{todayBirthdayMembers.length > 1 ? "s" : ""}: {todayBirthdayMembers.map(m => `${m.firstname} ${m.surname}`).join(", ")}! 🎂 We celebrate with them today! 🎁✨
+              </span>
+            ))}
           </div>
         </div>
       )}

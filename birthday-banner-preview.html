@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Birthday Banner Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      animation: marquee 80s linear infinite;
+    }
+    .admin-marquee {
+      animation: marquee 40s linear infinite;
+    }
+    body { font-family: system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <!-- MEMBER DASHBOARD PREVIEW -->
+  <div class="max-w-4xl mx-auto mt-8 bg-white rounded-xl shadow-sm overflow-hidden">
+    <!-- Mock header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center"><span class="text-white font-bold text-sm">RY</span></div>
+        <span class="font-bold text-gray-800">Royal Youth Hub</span>
+      </div>
+      <div class="flex items-center gap-2 text-gray-400 text-sm">💬 🔔 👤</div>
+    </div>
+    <div class="bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-500 py-1.5 overflow-hidden">
+      <div class="inline-flex whitespace-nowrap animate-marquee">
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Happy Birthday John! 🎂 Today we celebrate the gift that you are to the Royal Youth Hub family. May this new year of your life be filled with purpose, grace, and remarkable achievements. Have a truly wonderful birthday! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Happy Birthday John! 🎂 Today we celebrate the gift that you are to the Royal Youth Hub family. May this new year of your life be filled with purpose, grace, and remarkable achievements. Have a truly wonderful birthday! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Happy Birthday John! 🎂 Today we celebrate the gift that you are to the Royal Youth Hub family. May this new year of your life be filled with purpose, grace, and remarkable achievements. Have a truly wonderful birthday! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Happy Birthday John! 🎂 Today we celebrate the gift that you are to the Royal Youth Hub family. May this new year of your life be filled with purpose, grace, and remarkable achievements. Have a truly wonderful birthday! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Happy Birthday John! 🎂 Today we celebrate the gift that you are to the Royal Youth Hub family. May this new year of your life be filled with purpose, grace, and remarkable achievements. Have a truly wonderful birthday! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Happy Birthday John! 🎂 Today we celebrate the gift that you are to the Royal Youth Hub family. May this new year of your life be filled with purpose, grace, and remarkable achievements. Have a truly wonderful birthday! 🎁✨</span>
+      </div>
+    </div>
+    <!-- Mock 3-column layout -->
+    <div class="flex gap-4 p-4 bg-gray-50">
+      <div class="w-48 bg-white rounded-lg shadow-sm p-3 text-sm text-gray-500">[ Left Sidebar ]</div>
+      <div class="flex-1 bg-white rounded-lg shadow-sm p-6 text-sm text-gray-500">[ Feed Content ]</div>
+      <div class="w-48 bg-white rounded-lg shadow-sm p-3 text-sm text-gray-500">[ Right Panel ]</div>
+    </div>
+    <div class="p-3 text-center text-xs text-gray-400">← Banner scrolls continuously right to left →</div>
+  </div>
+
+  <!-- ADMIN DASHBOARD PREVIEW -->
+  <div class="max-w-4xl mx-auto mt-8 bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="bg-adminBlue text-white px-4 py-3 font-bold">Admin Dashboard</div>
+    <div class="bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-500 py-1.5 overflow-hidden">
+      <div class="inline-flex whitespace-nowrap admin-marquee">
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Birthday Celebrant(s): Jane Smith, Bob Jones! 🎂 We celebrate with them today! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Birthday Celebrant(s): Jane Smith, Bob Jones! 🎂 We celebrate with them today! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Birthday Celebrant(s): Jane Smith, Bob Jones! 🎂 We celebrate with them today! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Birthday Celebrant(s): Jane Smith, Bob Jones! 🎂 We celebrate with them today! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Birthday Celebrant(s): Jane Smith, Bob Jones! 🎂 We celebrate with them today! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Birthday Celebrant(s): Jane Smith, Bob Jones! 🎂 We celebrate with them today! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Birthday Celebrant(s): Jane Smith, Bob Jones! 🎂 We celebrate with them today! 🎁✨</span>
+        <span class="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">🎉 Birthday Celebrant(s): Jane Smith, Bob Jones! 🎂 We celebrate with them today! 🎁✨</span>
+      </div>
+    </div>
+    <div class="p-4 bg-gray-50">
+      <div class="flex gap-2 mb-4">
+        <div class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm font-semibold text-gray-700">📢 Announcements</div>
+        <div class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm text-gray-500">Members</div>
+        <div class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm text-gray-500">Finance</div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm p-6 text-sm text-gray-500">[ Announcement Form &amp; Previous Announcements ]</div>
+    </div>
+    <div class="p-3 text-center text-xs text-gray-400">← Banner scrolls continuously right to left with celebrant names →</div>
+  </div>
+
+  <p class="text-center text-xs text-gray-500 mt-6 mb-10">Open in browser to see the scrolling animation</p>
+</body>
+</html>

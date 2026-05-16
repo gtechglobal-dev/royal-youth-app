@@ -138,9 +138,8 @@ function MemberDashboard() {
   }, [user?._id]);
 
   useEffect(() => {
-    if (!loading && user && isBirthday && !hasShownBirthday.current) {
+    if (!loading && user && isBirthday) {
       hasShownBirthday.current = true;
-      setShowBirthdayModal(true);
     }
   }, [loading, user]);
 
@@ -481,6 +480,19 @@ function MemberDashboard() {
           </div>
         </div>
       </header>
+
+      {/* Birthday Banner */}
+      {isBirthday && (
+        <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-500 py-1.5 overflow-hidden shadow-md">
+          <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 80s linear infinite" }}>
+            {[...Array(6)].map((_, i) => (
+              <span key={i} className="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">
+                🎉 Happy Birthday {user?.firstname}! 🎂 Today we celebrate the gift that you are to the Royal Youth Hub family. May this new year of your life be filled with purpose, grace, and remarkable achievements. Have a truly wonderful birthday! 🎁✨
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 py-4 flex gap-6">
         {/* Left Sidebar backdrop */}
@@ -967,35 +979,6 @@ function MemberDashboard() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Birthday Modal */}
-      {isBirthday && showBirthdayModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/70 via-pink-900/70 to-yellow-900/70 backdrop-blur-sm" onClick={() => setShowBirthdayModal(false)} />
-          <div className="relative bg-gradient-to-br from-yellow-50 via-pink-50 to-purple-50 rounded-3xl shadow-2xl w-full max-w-md p-8 animate-slideUp border-4 border-yellow-300">
-            <button onClick={handleBirthdayConfirm} className="absolute top-4 right-4 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-all hover:scale-110 z-10">
-              <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-            <div className="text-center">
-              <div className="text-6xl mb-4 animate-bounce">🎁</div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-yellow-600 bg-clip-text text-transparent mb-4">🎉 Happy Birthday! 🎉</h2>
-              <div className="bg-white/70 rounded-2xl p-5 shadow-inner">
-                <p className="text-gray-800 text-lg leading-relaxed">Happy Birthday <span className="font-bold text-purple-600">{user?.firstname}</span></p>
-                <p className="text-gray-700 mt-4 leading-relaxed">Today we celebrate the gift that you are to the Royal Youth Hub family. May this new year of your life be filled with purpose, grace, and remarkable achievements.</p>
-                <p className="text-gray-700 mt-3 leading-relaxed">Have a truly wonderful birthday. 🎂</p>
-              </div>
-              <button onClick={handleBirthdayConfirm} className="mt-6 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 text-white p-3 rounded-xl font-bold text-lg hover:opacity-90 transition-all hover:scale-105 shadow-lg">Close 🎉</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isBirthday && !showBirthdayModal && (
-        <button onClick={() => setShowBirthdayModal(true)} className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-1 animate-float">
-          <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-yellow-500 text-white rounded-full p-4 shadow-2xl hover:scale-110 transition-transform cursor-pointer"><span className="text-4xl">🎁</span></span>
-          <span className="bg-white/90 text-purple-700 text-xs font-bold px-3 py-1 rounded-full shadow-lg">Special Gift</span>
-        </button>
       )}
 
       {/* Handbook Modal */}
