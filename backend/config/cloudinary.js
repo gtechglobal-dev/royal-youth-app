@@ -35,7 +35,7 @@ const uploadToCloudinary = async (fileBuffer, mimeType) => {
     
     cloudinary.uploader.upload(
       dataUri,
-      { folder: "royal-youth", timeout: 60000 },
+      { folder: "royal-youth", timeout: 60000, quality: "auto", fetch_format: "auto", width: 1200, crop: "limit" },
       (error, result) => {
         clearTimeout(timeout);
         if (error) {

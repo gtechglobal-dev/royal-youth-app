@@ -323,7 +323,13 @@ export const createAnnouncement = async (req, res) => {
     }
 
     const targetRole = authorRole === "admin" ? "admin" : "youth_president";
-    const author = await User.findOne({ role: targetRole, isDeleted: false, registrationStatus: "Approved" }).select("-password");
+
+    let author;
+    if (req.user._id !== "admin" && req.user.role === targetRole) {
+      author = req.user;
+    } else {
+      author = await User.findOne({ role: targetRole, isDeleted: false, registrationStatus: "Approved" }).select("-password");
+    }
 
     if (!author) {
       return res.status(404).json({ message: `No user with role "${targetRole}" found` });

@@ -41,6 +41,7 @@ function MemberDashboard() {
   // Existing features state
   const [attendance, setAttendance] = useState([]);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [viewingImage, setViewingImage] = useState(null);
   const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [showSpecialModal, setShowSpecialModal] = useState(false);
@@ -81,7 +82,7 @@ function MemberDashboard() {
         }
 
         const userRes = await API.get("/auth/me");
-        if (userRes.data._id === "admin") { navigate("/admin"); return; }
+        if (userRes.data._id === "admin" && userRes.data.role === "admin") { navigate("/admin"); return; }
         setUser(userRes.data);
 
         const cutoffDate = new Date(2026, 4, 4, 17, 0, 0);
@@ -483,7 +484,7 @@ function MemberDashboard() {
                       <div key={s._id} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100">
                         <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
                           <div className="w-full h-full rounded-full bg-white p-[2px]">
-                            <Link to={`/member/${s._id}`} className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
+                            <div className="block w-full h-full rounded-full bg-purple-100 overflow-hidden cursor-pointer" onClick={() => s.profileImage && setViewingImage({ url: s.profileImage, firstname: s.firstname, surname: s.surname })}>
                               {s.profileImage ? (
                                 <img src={optimizeImage(s.profileImage, 80)} alt="" className="w-full h-full object-cover" loading="lazy" />
                               ) : (
@@ -491,7 +492,7 @@ function MemberDashboard() {
                                   {s.firstname?.[0]}{s.surname?.[0]}
                                 </div>
                               )}
-                            </Link>
+                            </div>
                           </div>
                         </div>
                         <Link to={`/member/${s._id}`} className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center hover:text-purple-600">
@@ -823,9 +824,9 @@ function MemberDashboard() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {friends.map((f) => (
                     <div key={f._id} className="bg-gray-50 rounded-xl p-4 flex flex-col items-center gap-2 hover:shadow-sm transition">
-                      <Link to={`/member/${f._id}`} className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+                      <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => f.profileImage && setViewingImage({ url: f.profileImage, firstname: f.firstname, surname: f.surname })}>
                         {f.profileImage ? <img src={optimizeImage(f.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-lg">{f.firstname?.[0]}{f.surname?.[0]}</span>}
-                      </Link>
+                      </div>
                       <Link to={`/member/${f._id}`} className="font-semibold text-sm text-center hover:text-purple-600">{f.firstname} {f.surname}</Link>
                       <p className="text-gray-400 text-[10px] text-center">{f.branch}</p>
                       <div className="flex gap-2 mt-1">
@@ -950,12 +951,12 @@ function MemberDashboard() {
       )}
 
       {/* Image Modal */}
-      {showImageModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4" onClick={() => setShowImageModal(false)}>
+      {(showImageModal || viewingImage) && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4" onClick={() => { setShowImageModal(false); setViewingImage(null); }}>
           <div className="relative max-w-3xl max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setShowImageModal(false)} className="absolute top-0 right-0 bg-white rounded-full p-2 hover:bg-gray-100"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-            <img src={optimizeImage(user.profileImage, 800)} alt="Profile" className="max-w-full max-h-[80vh] object-contain" loading="lazy" />
-            <button onClick={() => { const a = document.createElement('a'); a.href = user.profileImage; a.download = `${user.firstname}_${user.surname}_profile.jpg`; a.click(); }} className="mt-4 flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+            <button onClick={() => { setShowImageModal(false); setViewingImage(null); }} className="absolute top-0 right-0 bg-white rounded-full p-2 hover:bg-gray-100"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <img src={optimizeImage(viewingImage ? viewingImage.url : user.profileImage, 800)} alt="Profile" className="max-w-full max-h-[80vh] object-contain" loading="lazy" />
+            <button onClick={() => { const a = document.createElement('a'); a.href = viewingImage ? viewingImage.url : user.profileImage; a.download = `${viewingImage ? viewingImage.firstname : user.firstname}_${viewingImage ? viewingImage.surname : user.surname}_profile.jpg`; a.click(); }} className="mt-4 flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               Download Image
             </button>

@@ -404,11 +404,11 @@ export const verifyEmail = async (req, res) => {
 // GET CURRENT USER
 export const getCurrentUser = async (req, res) => {
   try {
-    if (req.user.role === "admin") {
+    if (req.user._id === "admin") {
       return res.status(200).json({ _id: "admin", firstname: "Admin", surname: "Admin", role: "admin" });
     }
 
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user._id).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
