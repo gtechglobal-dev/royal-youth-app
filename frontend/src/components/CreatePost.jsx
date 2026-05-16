@@ -79,8 +79,8 @@ function CreatePost({ onPostCreated }) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 mb-6">
-      <form onSubmit={handleSubmit}>
+    <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 mb-6 w-full">
+      <form onSubmit={handleSubmit} className="w-full">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}

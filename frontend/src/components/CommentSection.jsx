@@ -103,7 +103,7 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
           ))}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex gap-1 items-center min-w-0">
+      <form onSubmit={handleSubmit} className="flex gap-1 items-center w-full">
         <EmojiPicker onEmojiSelect={(emoji) => setText((prev) => prev + emoji)} />
         <input
           value={text}
