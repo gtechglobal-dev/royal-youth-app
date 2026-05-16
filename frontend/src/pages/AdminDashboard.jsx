@@ -7,6 +7,7 @@ import { OverlayLoader } from "../components/Loaders";
 import { optimizeImage } from "../utils/cloudinary";
 import siteLogo from "../assets/gdev logo.svg";
 import { connectSocket, getSocket } from "../services/socket";
+import EmojiPicker from "../components/EmojiPicker";
 
 const PLACARD_COLORS = [
   "#000000", "#1a1a2e", "#16213e", "#0f3460", "#533483",
@@ -983,13 +984,21 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   })()}
                 </select>
               </div>
-              <textarea
-                value={announcementText}
-                onChange={(e) => setAnnouncementText(e.target.value)}
-                placeholder="Write your announcement..."
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-adminBlue focus:outline-none resize-none"
-                rows={4}
-              />
+              <div className="relative">
+                <textarea
+                  value={announcementText}
+                  onChange={(e) => setAnnouncementText(e.target.value)}
+                  placeholder="Write your announcement..."
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-adminBlue focus:outline-none resize-none"
+                  rows={4}
+                />
+                <div className="absolute bottom-2 right-2">
+                  <EmojiPicker
+                    buttonLabel="😊"
+                    onEmojiSelect={(emoji) => setAnnouncementText((prev) => prev + emoji)}
+                  />
+                </div>
+              </div>
               {announcementText.trim().length > 0 && (
                 <div className="mt-3">
                   <p className="text-xs text-gray-500 mb-2 font-medium">Placard background</p>
@@ -1054,12 +1063,20 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                             <h3 className="text-sm font-bold text-adminBlue">Edit Announcement</h3>
                             <button onClick={handleCancelEdit} className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
                           </div>
-                          <textarea
-                            value={editingText}
-                            onChange={(e) => setEditingText(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-adminBlue"
-                            rows={3}
-                          />
+                          <div className="relative">
+                            <textarea
+                              value={editingText}
+                              onChange={(e) => setEditingText(e.target.value)}
+                              className="w-full border border-gray-300 rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-adminBlue"
+                              rows={3}
+                            />
+                            <div className="absolute bottom-2 right-2">
+                              <EmojiPicker
+                                buttonLabel="😊"
+                                onEmojiSelect={(emoji) => setEditingText((prev) => prev + emoji)}
+                              />
+                            </div>
+                          </div>
                           <div className="flex items-center gap-3">
                             <label className="cursor-pointer text-xs text-adminBlue hover:underline">
                               <input type="file" accept="image/*" className="hidden" onChange={(e) => setEditingImage(e.target.files[0])} />

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import API from "../services/api";
 import { timeAgo } from "../utils/formatTime";
 import { optimizeImage } from "../utils/cloudinary";
+import EmojiPicker from "./EmojiPicker";
 
 function CommentSection({ postId, currentUserId, onCommentCountChange }) {
   const [comments, setComments] = useState([]);
@@ -94,7 +95,8 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
           ))}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+        <EmojiPicker onEmojiSelect={(emoji) => setText((prev) => prev + emoji)} />
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
