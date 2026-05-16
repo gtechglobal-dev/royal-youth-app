@@ -51,7 +51,7 @@ function EmojiPicker({ onEmojiSelect, buttonLabel = "😊" }) {
         {buttonLabel}
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-xl shadow-xl p-2 z-50 w-72">
+        <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-xl shadow-xl p-2 z-50 w-72 max-w-[90vw]">
           <div className="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto">
             {EMOJIS.map((emoji) => (
               <button
