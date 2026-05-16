@@ -143,7 +143,7 @@ export const getSuggested = async (req, res) => {
       registrationStatus: "Approved",
       isDeleted: false,
     })
-      .select("firstname surname profileImage branch occupation")
+      .select("firstname surname profileImage branch occupation role")
       .limit(20);
 
     const enriched = suggested.map((s) => {

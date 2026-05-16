@@ -8,6 +8,12 @@ import { optimizeImage } from "../utils/cloudinary";
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const [userRole, setUserRole] = useState(null);
+  const [announcementText, setAnnouncementText] = useState("");
+  const [announcementImage, setAnnouncementImage] = useState(null);
+  const [announcements, setAnnouncements] = useState([]);
+  const [announcementSending, setAnnouncementSending] = useState(false);
+
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem("adminActiveTab");
     return savedTab && savedTab !== "null" ? savedTab : null;
@@ -95,9 +101,13 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
 
     try {
       const user = JSON.parse(userStr || "{}");
-      if (user.role !== "admin") {
+      if (user.role !== "admin" && user.role !== "youth_president") {
         navigate("/admin-login");
         return;
+      }
+      setUserRole(user.role);
+      if (user.role === "youth_president" && !localStorage.getItem("adminActiveTab")) {
+        setActiveTab("announcements");
       }
     } catch (e) {
       navigate("/admin-login");
@@ -212,6 +222,9 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       API.get("/auth/members").then(r => {
         setMembers(r.data);
       });
+    }
+    if (activeTab === "announcements") {
+      fetchAnnouncements();
     }
   }, [activeTab]);
 
@@ -593,6 +606,30 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     }
   };
 
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await API.get("/posts/pinned");
+      setAnnouncements(res.data.posts || []);
+    } catch (err) { console.error("Fetch announcements error:", err); }
+  };
+
+  const handleCreateAnnouncement = async () => {
+    if (!announcementText.trim()) return;
+    setAnnouncementSending(true);
+    try {
+      const form = new FormData();
+      form.append("text", announcementText.trim());
+      if (announcementImage) form.append("image", announcementImage);
+      await API.post("/posts/announcement", form);
+      setAnnouncementText("");
+      setAnnouncementImage(null);
+      setNotification({ open: true, type: "success", message: "Announcement sent!" });
+      fetchAnnouncements();
+    } catch (err) {
+      setNotification({ open: true, type: "error", message: "Failed to send announcement" });
+    } finally { setAnnouncementSending(false); }
+  };
+
   const deleteMember = async () => {
     try {
       await API.delete(`/auth/member/${deletingMemberId}`);
@@ -704,7 +741,10 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     }
   }, [loading, todayBirthdayMembers]);
 
-  const tabs = [
+  const tabs = userRole === "youth_president" ? [
+    { id: "announcements", label: "Announcements" },
+  ] : [
+    { id: "announcements", label: "Announcements" },
     { id: "members", label: "View Members" },
     { id: "pending", label: "Pending Registration" },
     { id: "dues", label: "Mark Dues" },
@@ -860,6 +900,68 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               </div>
             </>
           )}
+
+        {activeTab === "announcements" && (
+          <div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+              <h2 className="text-lg font-bold mb-4 text-adminBlue">Create Announcement</h2>
+              <textarea
+                value={announcementText}
+                onChange={(e) => setAnnouncementText(e.target.value)}
+                placeholder="Write your announcement..."
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-adminBlue focus:outline-none resize-none"
+                rows={4}
+              />
+              <div className="flex items-center gap-3 mt-3">
+                <label className="cursor-pointer text-sm text-adminBlue hover:underline">
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => setAnnouncementImage(e.target.files[0])} />
+                  {announcementImage ? announcementImage.name : "+ Add Image"}
+                </label>
+                {announcementImage && (
+                  <button onClick={() => setAnnouncementImage(null)} className="text-xs text-red-500 hover:underline">Remove</button>
+                )}
+                <button
+                  onClick={handleCreateAnnouncement}
+                  disabled={announcementSending || !announcementText.trim()}
+                  className="ml-auto bg-adminBlue text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {announcementSending ? "Sending..." : "Send Announcement"}
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-lg font-bold mb-4 text-adminBlue">Previous Announcements</h2>
+              {announcements.length === 0 ? (
+                <p className="text-gray-400 text-sm text-center py-8">No announcements yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {announcements.map((post) => (
+                    <div key={post._id} className="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0">
+                          {post.userId?.profileImage ? (
+                            <img src={post.userId.profileImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <span className="text-purple-600 font-bold text-xs">{post.userId?.firstname?.[0]}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold">{post.userId?.firstname} {post.userId?.surname}</p>
+                          <p className="text-xs text-gray-400">{new Date(post.pinnedAt).toLocaleString()}</p>
+                          <p className="text-sm mt-2 whitespace-pre-wrap">{post.text}</p>
+                          {post.imageUrl && (
+                            <img src={post.imageUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover" loading="lazy" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {activeTab === "members" && (
           <div>
