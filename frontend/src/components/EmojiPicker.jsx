@@ -28,7 +28,7 @@ const EMOJIS = [
   "⛪", "🕌", "🕍", "🛕", "⛩", "🕋", "⛲", "🎠", "🎡", "🎢",
 ];
 
-function EmojiPicker({ onEmojiSelect, buttonLabel = "😊" }) {
+function EmojiPicker({ onEmojiSelect, buttonLabel = "😊", align = "left" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -51,7 +51,7 @@ function EmojiPicker({ onEmojiSelect, buttonLabel = "😊" }) {
         {buttonLabel}
       </button>
       {open && (
-        <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-xl shadow-xl p-2 z-50 w-72 max-w-[90vw]">
+        <div className={`absolute bottom-full mb-2 bg-white border border-gray-200 rounded-xl shadow-xl p-2 z-50 w-72 max-w-[90vw] ${align === "right" ? "right-0" : "left-0"}`}>
           <div className="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto">
             {EMOJIS.map((emoji) => (
               <button

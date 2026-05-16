@@ -1017,6 +1017,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 <div className="absolute bottom-2 right-2">
                   <EmojiPicker
                     buttonLabel="😊"
+                    align="right"
                     onEmojiSelect={(emoji) => setAnnouncementText((prev) => prev + emoji)}
                   />
                 </div>
@@ -1095,6 +1096,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                             <div className="absolute bottom-2 right-2">
                               <EmojiPicker
                                 buttonLabel="😊"
+                                align="right"
                                 onEmojiSelect={(emoji) => setEditingText((prev) => prev + emoji)}
                               />
                             </div>
