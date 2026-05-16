@@ -561,7 +561,7 @@ function MemberDashboard() {
               {/* Suggested Members - Facebook style */}
               {suggested.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">People You May Know</h3>
+                  <h3 className="text-sm font-bold text-gray-700 mb-3">Meet Royalties of the Hub</h3>
                   <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
                       {suggested.map((s) => (
                         <div key={s._id} onClick={() => handleViewMember(s._id)} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition cursor-pointer">
