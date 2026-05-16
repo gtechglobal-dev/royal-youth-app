@@ -420,6 +420,30 @@ export const getCurrentUser = async (req, res) => {
   }
 };
 
+// UPDATE USER ROLE
+export const updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!["member", "admin", "youth_president"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { role },
+      { returnDocument: "after" }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // DELETE MEMBER (Hard delete from database)
 export const deleteMember = async (req, res) => {
   try {

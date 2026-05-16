@@ -3,6 +3,10 @@ import Notification from "../models/Notification.js";
 import User from "../models/user.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
 
+const shouldPin = (user) => {
+  return user.role === "admin" || user.role === "youth_president";
+};
+
 export const createPost = async (req, res) => {
   try {
     const { text, placardColor } = req.body;
@@ -21,6 +25,8 @@ export const createPost = async (req, res) => {
       text: text.trim(),
       imageUrl,
       placardColor: placardColor || "#000000",
+      isPinned: shouldPin(req.user),
+      pinnedAt: shouldPin(req.user) ? new Date() : null,
     });
 
     const populated = await Post.findById(post._id).populate("userId", "firstname surname profileImage branch");
@@ -286,6 +292,27 @@ export const getUserPosts = async (req, res) => {
     res.json({ posts });
   } catch (err) {
     console.error("Get user posts error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getPinnedPosts = async (req, res) => {
+  try {
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    const cutoff = new Date(Date.now() - TWENTY_FOUR_HOURS);
+
+    const posts = await Post.find({
+      isPinned: true,
+      pinnedAt: { $gte: cutoff },
+      isDeleted: false,
+    })
+      .sort({ pinnedAt: -1 })
+      .populate("userId", "firstname surname profileImage branch")
+      .populate("comments.userId", "firstname surname profileImage");
+
+    res.json({ posts });
+  } catch (err) {
+    console.error("Get pinned posts error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

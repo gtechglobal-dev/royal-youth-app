@@ -13,6 +13,7 @@ import {
   getMemberDues,
   updateProfile,
   uploadProfileImage,
+  updateUserRole,
 } from "../controllers/authController.js";
 import upload from "../config/cloudinary.js";
 import protect from "../middleware/authMiddleware.js";
@@ -44,6 +45,8 @@ router.put("/member-status/:id", protect, updateMembershipStatus);
 router.put("/dues/:id", protect, updateDues);
 
 router.delete("/member/:id", protect, deleteMember);
+
+router.put("/role/:id", protect, updateUserRole);
 
 router.put("/profile", protect, upload.single("profileImage"), updateProfile);
 

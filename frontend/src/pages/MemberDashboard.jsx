@@ -14,6 +14,7 @@ function MemberDashboard() {
 
   // Feed state
   const [posts, setPosts] = useState([]);
+  const [pinnedPosts, setPinnedPosts] = useState([]);
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedPage, setFeedPage] = useState(1);
   const [feedHasMore, setFeedHasMore] = useState(false);
@@ -119,6 +120,7 @@ function MemberDashboard() {
   useEffect(() => {
     if (!user?._id) return;
     fetchFeed(1, true);
+    fetchPinnedPosts();
     fetchFriendData();
     fetchNotifications();
     fetchLeaderboard();
@@ -147,6 +149,13 @@ function MemberDashboard() {
       setFeedPage(p);
     } catch (err) { console.error("Feed error:", err); }
     finally { setFeedLoading(false); setFeedLoadingMore(false); }
+  };
+
+  const fetchPinnedPosts = async () => {
+    try {
+      const res = await API.get("/posts/pinned");
+      setPinnedPosts(res.data.posts || []);
+    } catch (err) { console.error("Pinned posts error:", err); }
   };
 
   const fetchFriendData = async () => {
@@ -536,6 +545,35 @@ function MemberDashboard() {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+              {pinnedPosts.length > 0 && (
+                <div className="space-y-3 mb-4">
+                  {pinnedPosts.map((post) => (
+                    <div key={post._id} className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border-2 border-yellow-300 p-4 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v10l-5-3-5 3V5z" /></svg>
+                        <span className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Pinned Announcement</span>
+                        <span className="text-[10px] text-yellow-500 ml-auto">{new Date(post.pinnedAt).toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0">
+                          {post.userId?.profileImage ? (
+                            <img src={optimizeImage(post.userId.profileImage, 48)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <span className="text-purple-600 font-bold text-xs">{post.userId?.firstname?.[0]}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-gray-700">{post.userId?.firstname} {post.userId?.surname}</p>
+                          <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap">{post.text}</p>
+                          {post.imageUrl && (
+                            <img src={optimizeImage(post.imageUrl, 400)} alt="" className="mt-2 rounded-lg max-h-60 object-cover" loading="lazy" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
               <CreatePost onPostCreated={handlePostCreated} />

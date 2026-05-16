@@ -13,10 +13,12 @@ import {
   deleteComment,
   getSinglePost,
   getUserPosts,
+  getPinnedPosts,
 } from "../controllers/postController.js";
 
 const router = express.Router();
 
+router.get("/pinned", protect, getPinnedPosts);
 router.get("/feed", protect, getFeed);
 router.get("/friends-feed", protect, getFriendsFeed);
 router.get("/user/:userId", protect, getUserPosts);

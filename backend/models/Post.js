@@ -15,6 +15,8 @@ const postSchema = new mongoose.Schema(
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     comments: [commentSchema],
     isDeleted: { type: Boolean, default: false },
+    isPinned: { type: Boolean, default: false },
+    pinnedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

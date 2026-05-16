@@ -583,6 +583,16 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     }
   };
 
+  const updateUserRole = async (memberId, role) => {
+    try {
+      await API.put(`/auth/role/${memberId}`, { role });
+      setNotification({ open: true, type: "success", message: "Role updated" });
+      fetchData();
+    } catch (error) {
+      setNotification({ open: true, type: "error", message: "Error updating role" });
+    }
+  };
+
   const deleteMember = async () => {
     try {
       await API.delete(`/auth/member/${deletingMemberId}`);
@@ -870,6 +880,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                     <th className="border p-2 md:p-3 text-left">Phone</th>
                     <th className="border p-2 md:p-3 text-left">DOB</th>
                     <th className="border p-2 md:p-3 text-left">Status</th>
+                    <th className="border p-2 md:p-3 text-left">Role</th>
                     <th className="border p-2 md:p-3 text-left">Actions</th>
                   </tr>
                 </thead>
@@ -887,6 +898,20 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                           <span className={`px-2 py-1 rounded ${member.membershipStatus === "Active Member" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                             {member.membershipStatus}
                           </span>
+                        </td>
+                        <td className="border p-2 md:p-3">
+                          <select
+                            value={member.role || "member"}
+                            onChange={(e) => updateUserRole(member._id, e.target.value)}
+                            className={`border p-1 rounded text-xs ${
+                              member.role === "youth_president" ? "bg-yellow-50 border-yellow-300" :
+                              member.role === "admin" ? "bg-purple-50 border-purple-300" : ""
+                            }`}
+                          >
+                            <option value="member">Member</option>
+                            <option value="youth_president">Youth President</option>
+                            <option value="admin">Admin</option>
+                          </select>
                         </td>
                         <td className="border p-2 md:p-3">
                           <button
