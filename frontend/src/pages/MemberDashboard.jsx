@@ -42,6 +42,9 @@ function MemberDashboard() {
   const [attendance, setAttendance] = useState([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [viewingImage, setViewingImage] = useState(null);
+  const [viewingMemberId, setViewingMemberId] = useState(null);
+  const [viewedMember, setViewedMember] = useState(null);
+  const [viewingMemberLoading, setViewingMemberLoading] = useState(false);
   const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [showSpecialModal, setShowSpecialModal] = useState(false);
@@ -237,6 +240,27 @@ function MemberDashboard() {
   const handleShare = useCallback((post) => {
     navigate("/messages", { state: { sharedPost: { _id: post._id, text: post.text, imageUrl: post.imageUrl } } });
   }, [navigate]);
+
+  const handleViewMember = (id) => {
+    setViewingMemberId(id);
+    setViewedMember(null);
+    setActiveTab("viewing-member");
+  };
+
+  const closeViewMember = () => {
+    setViewingMemberId(null);
+    setViewedMember(null);
+    if (activeTab === "viewing-member") setActiveTab("feed");
+  };
+
+  useEffect(() => {
+    if (!viewingMemberId) return;
+    setViewingMemberLoading(true);
+    API.get(`/auth/member/${viewingMemberId}`)
+      .then((res) => setViewedMember(res.data))
+      .catch(() => setViewedMember(null))
+      .finally(() => setViewingMemberLoading(false));
+  }, [viewingMemberId]);
 
   const handleAcceptRequest = async (id) => {
     try { await API.put(`/friends/accept/${id}`); fetchFriendData(); }
@@ -481,7 +505,7 @@ function MemberDashboard() {
                   <h3 className="text-sm font-bold text-gray-700 mb-3">People You May Know</h3>
                   <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
                       {suggested.map((s) => (
-                        <Link key={s._id} to={`/member/${s._id}`} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition">
+                        <div key={s._id} onClick={() => handleViewMember(s._id)} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition cursor-pointer">
                           <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
                             <div className="w-full h-full rounded-full bg-white p-[2px]">
                               <div className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
@@ -537,7 +561,7 @@ function MemberDashboard() {
                             </button>
                           </div>
                         )}
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -601,6 +625,44 @@ function MemberDashboard() {
                 </div>
               )}
             </>
+          )}
+
+          {activeTab === "viewing-member" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-purple-700">Member Profile</h2>
+                <button onClick={closeViewMember} className="text-sm text-purple-600 hover:text-purple-800 font-semibold">&larr; Back to Feed</button>
+              </div>
+              {viewingMemberLoading ? (
+                <div className="animate-pulse space-y-4">
+                  <div className="flex items-center gap-4"><div className="w-20 h-20 rounded-full bg-gray-200" /><div className="h-5 w-48 bg-gray-200 rounded" /></div>
+                  <div className="h-4 w-32 bg-gray-200 rounded" /><div className="h-4 w-24 bg-gray-200 rounded" />
+                </div>
+              ) : viewedMember ? (
+                <>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => viewedMember.profileImage && setViewingImage({ url: viewedMember.profileImage, firstname: viewedMember.firstname, surname: viewedMember.surname })}>
+                      {viewedMember.profileImage ? <img src={optimizeImage(viewedMember.profileImage, 128)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-2xl">{viewedMember.firstname?.[0]}{viewedMember.surname?.[0]}</span>}
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold">{viewedMember.firstname} {viewedMember.surname} {viewedMember.othername}</p>
+                      <p className="text-gray-500">{viewedMember.occupation || "Not specified"}</p>
+                      <p className="text-gray-400 text-sm">{viewedMember.branch || "Plot C4/C5 Owerri"}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div><span className="font-semibold text-gray-600">Phone:</span> {viewedMember.phone}</div>
+                    <div><span className="font-semibold text-gray-600">Email:</span> {viewedMember.email || "Not provided"}</div>
+                    <div><span className="font-semibold text-gray-600">Occupation:</span> {viewedMember.occupation || "Not specified"}</div>
+                    <div><span className="font-semibold text-gray-600">Born Again:</span> {viewedMember.bornAgain}</div>
+                    <div><span className="font-semibold text-gray-600">Membership:</span> <span className={viewedMember.membershipStatus === "Active Member" ? "text-green-600 font-medium" : "text-red-500 font-medium"}>{viewedMember.membershipStatus}</span></div>
+                    <div><span className="font-semibold text-gray-600">Role:</span> <span className={`font-medium ${viewedMember.role === "youth_president" ? "text-yellow-600" : viewedMember.role === "admin" ? "text-purple-600" : ""}`}>{viewedMember.role === "youth_president" ? "Youth President" : viewedMember.role === "admin" ? "Admin" : "Member"}</span></div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-400 text-center py-8">Member not found</p>
+              )}
+            </div>
           )}
 
           {activeTab === "profile" && (
@@ -827,7 +889,7 @@ function MemberDashboard() {
                       <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => f.profileImage && setViewingImage({ url: f.profileImage, firstname: f.firstname, surname: f.surname })}>
                         {f.profileImage ? <img src={optimizeImage(f.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-lg">{f.firstname?.[0]}{f.surname?.[0]}</span>}
                       </div>
-                      <Link to={`/member/${f._id}`} className="font-semibold text-sm text-center hover:text-purple-600">{f.firstname} {f.surname}</Link>
+                      <span onClick={() => handleViewMember(f._id)} className="font-semibold text-sm text-center hover:text-purple-600 cursor-pointer">{f.firstname} {f.surname}</span>
                       <p className="text-gray-400 text-[10px] text-center">{f.branch}</p>
                       <div className="flex gap-2 mt-1">
                         <Link to={`/messages`} className="text-[11px] bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200">Message</Link>

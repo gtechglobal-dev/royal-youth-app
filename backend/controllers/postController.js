@@ -317,25 +317,28 @@ export const createAnnouncement = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    const { text, authorRole, placardColor } = req.body;
+    const { text, authorUserId, placardColor } = req.body;
     if (!text || !text.trim()) {
       return res.status(400).json({ message: "Announcement text is required" });
     }
 
-    const targetRole = authorRole === "admin" ? "admin" : "youth_president";
-
     let author;
-    if (req.user.role === targetRole) {
-      author = req.user;
-      if (author._id === "admin") {
-        author = await User.findOne({ role: "admin", isDeleted: false }).select("-password");
-      }
+    if (authorUserId && authorUserId !== "auto_admin" && authorUserId !== "auto_youth_president") {
+      author = await User.findById(authorUserId).select("-password");
     } else {
-      author = await User.findOne({ role: targetRole, isDeleted: false, registrationStatus: "Approved" }).select("-password");
+      const targetRole = authorUserId === "auto_admin" ? "admin" : "youth_president";
+      if (req.user.role === targetRole) {
+        author = req.user;
+        if (author._id === "admin") {
+          author = await User.findOne({ role: "admin", isDeleted: false }).select("-password");
+        }
+      } else {
+        author = await User.findOne({ role: targetRole, isDeleted: false, registrationStatus: "Approved" }).select("-password");
+      }
     }
 
     if (!author) {
-      return res.status(404).json({ message: `No user with role "${targetRole}" found` });
+      return res.status(404).json({ message: "No user found for announcement author" });
     }
 
     let imageUrl = null;

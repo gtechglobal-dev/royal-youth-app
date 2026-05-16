@@ -21,7 +21,7 @@ function AdminDashboard() {
   const [announcementImage, setAnnouncementImage] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
   const [announcementSending, setAnnouncementSending] = useState(false);
-  const [announcementAuthorRole, setAnnouncementAuthorRole] = useState("youth_president");
+  const [announcementAuthorId, setAnnouncementAuthorId] = useState("");
   const [announcementColor, setAnnouncementColor] = useState("#000000");
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -231,6 +231,14 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     });
     setIncomeRecords2027(duesIncome2027);
   }, [members]);
+
+  useEffect(() => {
+    if (!announcementAuthorId && members?.length > 0) {
+      const leadership = members.filter(m => m.role === "admin" || m.role === "youth_president");
+      if (leadership.length > 0) setAnnouncementAuthorId(leadership[0]._id);
+      else setAnnouncementAuthorId("auto_admin");
+    }
+  }, [members, announcementAuthorId]);
 
   useEffect(() => {
     if (activeTab === "members") {
@@ -634,7 +642,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     try {
       const form = new FormData();
       form.append("text", announcementText.trim());
-      form.append("authorRole", announcementAuthorRole);
+      form.append("authorUserId", announcementAuthorId);
       form.append("placardColor", announcementColor);
       if (announcementImage) form.append("image", announcementImage);
       await API.post("/posts/announcement", form);
@@ -968,12 +976,24 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               <div className="mb-3">
                 <label className="block text-sm font-medium text-gray-600 mb-1">Post as:</label>
                 <select
-                  value={announcementAuthorRole}
-                  onChange={(e) => setAnnouncementAuthorRole(e.target.value)}
-                  className="border p-2 rounded-lg focus:ring-2 focus:ring-adminBlue focus:outline-none text-sm"
+                  value={announcementAuthorId}
+                  onChange={(e) => setAnnouncementAuthorId(e.target.value)}
+                  className="border p-2 rounded-lg focus:ring-2 focus:ring-adminBlue focus:outline-none text-sm w-full"
                 >
-                  <option value="youth_president">Youth President</option>
-                  <option value="admin">Admin</option>
+                  {(() => {
+                    const leadership = (members || []).filter(m => m.role === "admin" || m.role === "youth_president");
+                    if (leadership.length === 0) {
+                      return (
+                        <>
+                          <option value="auto_admin">Admin (Auto)</option>
+                          <option value="auto_youth_president">Youth President (Auto)</option>
+                        </>
+                      );
+                    }
+                    return leadership.map(m => (
+                      <option key={m._id} value={m._id}>{m.firstname} {m.surname} — {m.role === "admin" ? "Admin" : "Youth President"}</option>
+                    ));
+                  })()}
                 </select>
               </div>
               <textarea

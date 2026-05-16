@@ -176,9 +176,19 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
                 </button>
               </div>
             </div>
+          ) : post.imageUrl ? (
+            <>
+              <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{postText}</p>
+              <img
+                src={post.imageUrl}
+                alt="Post"
+                className="mt-3 rounded-lg max-h-96 w-full object-cover cursor-pointer"
+                onClick={() => window.open(post.imageUrl, "_blank")}
+              />
+            </>
           ) : (
             <div
-              className="mt-2 rounded-xl px-5 py-8 text-center flex items-center justify-center min-h-[120px] relative overflow-hidden"
+              className="mt-2 rounded-xl px-5 py-8 text-center flex items-center justify-center relative overflow-y-auto max-w-xs mx-auto aspect-square"
               style={{
                 backgroundColor: post.placardColor || "#000000",
                 backgroundImage: `url("${siteLogo}")`,
@@ -187,16 +197,8 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
               }}
             >
               <div className="absolute inset-0 opacity-90" style={{ backgroundColor: post.placardColor || "#000000" }} />
-              <p className="text-white text-base font-bold leading-relaxed whitespace-pre-wrap relative z-10">{postText}</p>
+              <p className="text-white text-sm font-bold leading-relaxed whitespace-pre-wrap relative z-10">{postText}</p>
             </div>
-          )}
-          {post.imageUrl && (
-            <img
-              src={post.imageUrl}
-              alt="Post"
-              className="mt-3 rounded-lg max-h-96 w-full object-cover cursor-pointer"
-              onClick={() => window.open(post.imageUrl, "_blank")}
-            />
           )}
           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100">
             <button onClick={handleLike} className={`flex items-center gap-1 text-sm ${isLiked ? "text-purple-600" : "text-gray-500"} hover:text-purple-600`}>
