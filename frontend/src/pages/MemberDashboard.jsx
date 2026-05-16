@@ -81,6 +81,7 @@ function MemberDashboard() {
         }
 
         const userRes = await API.get("/auth/me");
+        if (userRes.data._id === "admin") { navigate("/admin"); return; }
         setUser(userRes.data);
 
         const cutoffDate = new Date(2026, 4, 4, 17, 0, 0);
@@ -480,7 +481,7 @@ function MemberDashboard() {
                   <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
                     {suggested.map((s) => (
                       <div key={s._id} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 via-cyan-400 to-teal-400 p-[2px]">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
                           <div className="w-full h-full rounded-full bg-white p-[2px]">
                             <Link to={`/member/${s._id}`} className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
                               {s.profileImage ? (
@@ -558,28 +559,13 @@ function MemberDashboard() {
               {pinnedPosts.length > 0 && (
                 <div className="space-y-3 mb-4">
                   {pinnedPosts.map((post) => (
-                    <div key={post._id} className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border-2 border-yellow-300 p-4 shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
+                    <div key={post._id} className="border-2 border-yellow-300 rounded-xl overflow-hidden">
+                      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 px-4 py-2 flex items-center gap-2 border-b border-yellow-200">
                         <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v10l-5-3-5 3V5z" /></svg>
                         <span className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Pinned Announcement</span>
                         <span className="text-[10px] text-yellow-500 ml-auto">{new Date(post.pinnedAt).toLocaleString()}</span>
                       </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0">
-                          {post.userId?.profileImage ? (
-                            <img src={optimizeImage(post.userId.profileImage, 48)} alt="" className="w-full h-full object-cover" loading="lazy" />
-                          ) : (
-                            <span className="text-purple-600 font-bold text-xs">{post.userId?.firstname?.[0]}</span>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-700">{post.userId?.firstname} {post.userId?.surname}</p>
-                          <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap">{post.text}</p>
-                          {post.imageUrl && (
-                            <img src={optimizeImage(post.imageUrl, 400)} alt="" className="mt-2 rounded-lg max-h-60 object-cover" loading="lazy" />
-                          )}
-                        </div>
-                      </div>
+                      <PostCard post={post} currentUserId={user._id} />
                     </div>
                   ))}
                 </div>
@@ -765,7 +751,7 @@ function MemberDashboard() {
                     return (
                       <>
                         <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 via-cyan-400 to-teal-400 p-[2px]">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
                             <div className="w-full h-full rounded-full bg-white p-[2px]">
                               <div className="w-full h-full rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
                                 {user.profileImage ? (

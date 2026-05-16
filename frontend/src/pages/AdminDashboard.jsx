@@ -5,6 +5,14 @@ import Notification from "../components/Notification";
 import Logo from "../assets/gdev logo.svg";
 import { OverlayLoader } from "../components/Loaders";
 import { optimizeImage } from "../utils/cloudinary";
+import siteLogo from "../assets/gdev logo.svg";
+
+const PLACARD_COLORS = [
+  "#000000", "#1a1a2e", "#16213e", "#0f3460", "#533483",
+  "#6a0572", "#9b2226", "#bb3e03", "#ca6702", "#ee9b00",
+  "#2d6a4f", "#1b4332", "#005f73", "#0a9396", "#264653",
+  "#2a9d8f", "#8ecae6", "#4a4e69", "#6c584c", "#7f5539",
+];
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -13,6 +21,8 @@ function AdminDashboard() {
   const [announcementImage, setAnnouncementImage] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
   const [announcementSending, setAnnouncementSending] = useState(false);
+  const [announcementAuthorRole, setAnnouncementAuthorRole] = useState("youth_president");
+  const [announcementColor, setAnnouncementColor] = useState("#000000");
 
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem("adminActiveTab");
@@ -619,10 +629,13 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     try {
       const form = new FormData();
       form.append("text", announcementText.trim());
+      form.append("authorRole", announcementAuthorRole);
+      form.append("placardColor", announcementColor);
       if (announcementImage) form.append("image", announcementImage);
       await API.post("/posts/announcement", form);
       setAnnouncementText("");
       setAnnouncementImage(null);
+      setAnnouncementColor("#000000");
       setNotification({ open: true, type: "success", message: "Announcement sent!" });
       fetchAnnouncements();
     } catch (err) {
@@ -905,6 +918,17 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
           <div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
               <h2 className="text-lg font-bold mb-4 text-adminBlue">Create Announcement</h2>
+              <div className="mb-3">
+                <label className="block text-sm font-medium text-gray-600 mb-1">Post as:</label>
+                <select
+                  value={announcementAuthorRole}
+                  onChange={(e) => setAnnouncementAuthorRole(e.target.value)}
+                  className="border p-2 rounded-lg focus:ring-2 focus:ring-adminBlue focus:outline-none text-sm"
+                >
+                  <option value="youth_president">Youth President</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
               <textarea
                 value={announcementText}
                 onChange={(e) => setAnnouncementText(e.target.value)}
@@ -912,6 +936,38 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-adminBlue focus:outline-none resize-none"
                 rows={4}
               />
+              {announcementText.trim().length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs text-gray-500 mb-2 font-medium">Placard background</p>
+                  <div className="flex flex-wrap gap-2">
+                    {PLACARD_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setAnnouncementColor(color)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                          announcementColor === color
+                            ? "ring-2 ring-adminBlue ring-offset-2 scale-110"
+                            : "hover:scale-110"
+                        }`}
+                        title={color}
+                      >
+                        <span className="w-full h-full rounded-full" style={{ backgroundColor: color }} />
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex items-center gap-3">
+                    <span className="text-xs text-gray-400">Preview:</span>
+                    <div
+                      className="rounded-lg px-4 py-3 flex items-center gap-2 min-h-[48px]"
+                      style={{ backgroundColor: announcementColor }}
+                    >
+                      <img src={siteLogo} alt="" className="w-5 h-5 opacity-30" />
+                      <span className="text-white text-xs font-bold opacity-60">Aa</span>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-3 mt-3">
                 <label className="cursor-pointer text-sm text-adminBlue hover:underline">
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => setAnnouncementImage(e.target.files[0])} />
