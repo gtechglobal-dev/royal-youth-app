@@ -95,19 +95,19 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
           ))}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+      <form onSubmit={handleSubmit} className="flex gap-1 items-center min-w-0">
         <EmojiPicker onEmojiSelect={(emoji) => setText((prev) => prev + emoji)} />
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Write a comment..."
           maxLength={500}
-          className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+          className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
         />
         <button
           type="submit"
           disabled={!text.trim()}
-          className="bg-purple-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
         >
           Send
         </button>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../services/api";
 import CommentSection from "./CommentSection";
+import ConfirmModal from "./ConfirmModal";
 import { timeAgo } from "../utils/formatTime";
 import siteLogo from "../assets/gdev logo.svg";
 import { optimizeImage } from "../utils/cloudinary";
@@ -25,6 +26,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
   const [saving, setSaving] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const isLiked = likes.some((id) => {
     if (typeof id === "string") return id === currentUserId;
@@ -50,7 +52,6 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Delete this post?")) return;
     setDeleting(true);
     try {
       await API.delete(`/posts/${post._id}`);
@@ -59,6 +60,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
       console.error("Delete error:", err);
     } finally {
       setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -252,7 +254,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
-                <button onClick={handleDelete} disabled={deleting} className="text-gray-400 hover:text-red-500 p-1 rounded hover:bg-gray-100" title="Delete">
+                <button onClick={() => setShowDeleteModal(true)} disabled={deleting} className="text-gray-400 hover:text-red-500 p-1 rounded hover:bg-gray-100" title="Delete">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
@@ -269,6 +271,15 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
           )}
         </div>
       </div>
+      <ConfirmModal
+        open={showDeleteModal}
+        title="Delete Post"
+        message="Are you sure you want to delete this post? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+        loading={deleting}
+      />
     </div>
   );
 }
