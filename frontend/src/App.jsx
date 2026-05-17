@@ -13,6 +13,7 @@ import MemberProfile from "./pages/MemberProfile";
 import EditProfile from "./pages/EditProfile";
 import CommunityFeed from "./pages/CommunityFeed";
 import DirectMessages from "./pages/DirectMessages";
+import SinglePost from "./pages/SinglePost";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="/community" element={<CommunityFeed />} />
         <Route path="/messages" element={<DirectMessages />} />
+        <Route path="/post/:id" element={<SinglePost />} />
       </Routes>
     </BrowserRouter>
   );

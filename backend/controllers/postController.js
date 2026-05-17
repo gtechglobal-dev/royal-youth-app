@@ -407,7 +407,7 @@ export const updateAnnouncement = async (req, res) => {
 
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Announcement not found" });
-    if (!post.isPinned) return res.status(400).json({ message: "Not an announcement" });
+    if (!post.pinnedAt) return res.status(400).json({ message: "Not an announcement" });
 
     post.text = text.trim();
     if (placardColor) post.placardColor = placardColor;
@@ -432,6 +432,34 @@ export const updateAnnouncement = async (req, res) => {
   }
 };
 
+export const repostAnnouncement = async (req, res) => {
+  try {
+    if (req.user.role !== "admin" && req.user.role !== "youth_president") {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Announcement not found" });
+    if (!post.pinnedAt) return res.status(400).json({ message: "Not an announcement" });
+    if (post.isPinned) return res.status(400).json({ message: "Already pinned" });
+
+    post.isPinned = true;
+    post.pinnedAt = new Date();
+
+    await post.save();
+
+     const populated = await Post.findById(post._id)
+       .populate("userId", "firstname surname profileImage branch role");
+
+     try { getIO().emit("newAnnouncement", populated.toObject()); } catch (e) {}
+     try { getIO().emit("postUpdated", populated.toObject()); } catch (e) {}
+     res.json(populated);
+  } catch (err) {
+    console.error("Repost announcement error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const deleteAnnouncement = async (req, res) => {
   try {
     if (req.user.role !== "admin" && req.user.role !== "youth_president") {
@@ -440,7 +468,7 @@ export const deleteAnnouncement = async (req, res) => {
 
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Announcement not found" });
-    if (!post.isPinned) return res.status(400).json({ message: "Not an announcement" });
+    if (!post.pinnedAt) return res.status(400).json({ message: "Not an announcement" });
 
      await deleteFromCloudinary(post.imageUrl);
      post.isDeleted = true;

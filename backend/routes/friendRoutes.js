@@ -4,6 +4,7 @@ import {
   sendRequest,
   acceptRequest,
   rejectRequest,
+  cancelRequest,
   removeFriend,
   getFriendRequests,
   getFriends,
@@ -21,5 +22,6 @@ router.post("/request", protect, sendRequest);
 router.put("/accept/:id", protect, acceptRequest);
 router.put("/reject/:id", protect, rejectRequest);
 router.put("/remove", protect, removeFriend);
+router.put("/cancel", protect, cancelRequest);
 
 export default router;

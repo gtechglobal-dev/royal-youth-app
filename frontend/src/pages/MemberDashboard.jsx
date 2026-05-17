@@ -324,6 +324,11 @@ function MemberDashboard() {
     catch (err) { console.error(err); }
   };
 
+  const handleCancelRequest = async (userId) => {
+    try { await API.put("/friends/cancel", { userId }); fetchFriendData(); }
+    catch (err) { console.error(err); }
+  };
+
   const handleLogout = () => { localStorage.removeItem("token"); localStorage.removeItem("user"); navigate("/"); };
 
   const calculateAge = (dob) => {
@@ -599,8 +604,8 @@ function MemberDashboard() {
                         )}
                         {s.friendStatus === "pending_sent" && (
                           <button
-                            disabled
-                            className="mt-1 w-full text-[11px] bg-gray-200 text-gray-400 px-3 py-1.5 rounded-lg font-semibold cursor-not-allowed"
+                            onClick={(e) => { e.stopPropagation(); handleCancelRequest(s._id); }}
+                            className="mt-1 w-full text-[11px] bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-orange-200 transition"
                           >
                             Pending
                           </button>

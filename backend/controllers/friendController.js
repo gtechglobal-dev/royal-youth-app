@@ -173,6 +173,23 @@ export const getSuggested = async (req, res) => {
   }
 };
 
+export const cancelRequest = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const request = await FriendRequest.findOneAndDelete({
+      from: req.user._id,
+      to: userId,
+      status: "pending",
+    });
+    if (!request) return res.status(404).json({ message: "No pending request found" });
+    try { getIO().to(`user:${userId}`).emit("friendRequestUpdate", {}); } catch (e) {}
+    res.json({ message: "Friend request cancelled" });
+  } catch (err) {
+    console.error("Cancel request error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const getFriendStatus = async (req, res) => {
   try {
     const { userId } = req.params;

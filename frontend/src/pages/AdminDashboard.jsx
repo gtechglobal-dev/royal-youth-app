@@ -666,8 +666,13 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
 
   const fetchAnnouncements = async () => {
     try {
-      const res = await API.get("/posts/pinned");
-      setAnnouncements(res.data.posts || []);
+      const [pinnedRes, pastRes] = await Promise.all([
+        API.get("/posts/pinned"),
+        API.get("/posts/announcements/past"),
+      ]);
+      const active = (pinnedRes.data.posts || []).map((p) => ({ ...p, _announcementType: "active" }));
+      const past = (pastRes.data.posts || []).map((p) => ({ ...p, _announcementType: "past" }));
+      setAnnouncements([...active, ...past]);
     } catch (err) { console.error("Fetch announcements error:", err); }
   };
 
@@ -757,6 +762,27 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
           fetchAnnouncements();
         } catch (err) {
           setNotification({ open: true, type: "error", message: "Failed to unpin announcement" });
+        } finally {
+          setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false });
+        }
+      },
+    });
+  };
+
+  const handleRepostAnnouncement = async (id) => {
+    setConfirmState({
+      open: true,
+      title: "Repost Announcement",
+      message: "Repost this announcement? It will appear again as a pinned announcement for all members.",
+      loading: false,
+      onConfirm: async () => {
+        setConfirmState((prev) => ({ ...prev, loading: true }));
+        try {
+          await API.put(`/posts/announcement/repost/${id}`);
+          setNotification({ open: true, type: "success", message: "Announcement reposted!" });
+          fetchAnnouncements();
+        } catch (err) {
+          setNotification({ open: true, type: "error", message: "Failed to repost announcement" });
         } finally {
           setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false });
         }
@@ -1103,7 +1129,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               ) : (
                 <div className="space-y-4">
                   {announcements.map((post) => (
-                    <div key={post._id} className="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
+                    <div key={post._id} className={`rounded-lg p-4 ${post._announcementType === "past" ? "border border-gray-200 bg-gray-50" : "border border-yellow-200 bg-yellow-50"}`}>
                       {editingAnnouncement?._id === post._id ? (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
@@ -1166,13 +1192,23 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                                 >
                                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                 </button>
-                                <button
-                                  onClick={() => handleUnpinAnnouncement(post._id)}
-                                  className="text-xs text-gray-400 hover:text-amber-500 p-1"
-                                  title="Unpin"
-                                >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
-                                </button>
+                                {post._announcementType === "past" ? (
+                                  <button
+                                    onClick={() => handleRepostAnnouncement(post._id)}
+                                    className="text-xs text-gray-400 hover:text-green-600 p-1"
+                                    title="Repost"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => handleUnpinAnnouncement(post._id)}
+                                    className="text-xs text-gray-400 hover:text-amber-500 p-1"
+                                    title="Unpin"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                                  </button>
+                                )}
                                 <button
                                   onClick={() => handleDeleteAnnouncement(post._id)}
                                   className="text-xs text-gray-400 hover:text-red-500 p-1"
@@ -1182,7 +1218,15 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                                 </button>
                               </div>
                             </div>
-                            <p className="text-xs text-gray-400">{new Date(post.pinnedAt).toLocaleString()}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs text-gray-400">{new Date(post.pinnedAt).toLocaleString()}</p>
+                              {post._announcementType === "past" && (
+                                <span className="text-[10px] text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">Past</span>
+                              )}
+                              {post._announcementType === "active" && (
+                                <span className="text-[10px] text-green-600 bg-green-100 px-1.5 py-0.5 rounded">Active</span>
+                              )}
+                            </div>
                             <p className="text-sm mt-2 whitespace-pre-wrap">{post.text}</p>
                             {post.imageUrl && (
                               <img src={post.imageUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover" loading="lazy" />

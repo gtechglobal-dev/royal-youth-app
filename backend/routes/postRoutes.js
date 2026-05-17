@@ -19,6 +19,7 @@ import {
   updateAnnouncement,
   deleteAnnouncement,
   unpinAnnouncement,
+  repostAnnouncement,
 } from "../controllers/postController.js";
 
 const router = express.Router();
@@ -27,11 +28,13 @@ router.get("/pinned", protect, getPinnedPosts);
 router.get("/announcements/past", protect, getPastAnnouncements);
 router.post("/announcement", protect, uploadMiddleware.single("image"), createAnnouncement);
 router.put("/announcement/unpin/:id", protect, unpinAnnouncement);
+router.put("/announcement/repost/:id", protect, repostAnnouncement);
 router.put("/announcement/:id", protect, uploadMiddleware.single("image"), updateAnnouncement);
 router.delete("/announcement/:id", protect, deleteAnnouncement);
 router.get("/feed", protect, getFeed);
 router.get("/friends-feed", protect, getFriendsFeed);
 router.get("/user/:userId", protect, getUserPosts);
+router.get("/public/:id", getSinglePost);
 router.get("/:id", protect, getSinglePost);
 router.post("/", protect, uploadMiddleware.single("image"), createPost);
 router.put("/:id/like", protect, likePost);
