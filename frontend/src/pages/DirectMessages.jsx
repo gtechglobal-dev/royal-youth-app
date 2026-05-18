@@ -8,6 +8,7 @@ function DirectMessages() {
   const navigate = useNavigate();
   const location = useLocation();
   const sharedPost = location.state?.sharedPost || null;
+  const directUserId = location.state?.directUserId || null;
   const [user, setUser] = useState(null);
   const [selectedConv, setSelectedConv] = useState(null);
   const [showList, setShowList] = useState(true);
@@ -23,6 +24,18 @@ function DirectMessages() {
     };
     fetchUser();
   }, [navigate]);
+
+  useEffect(() => {
+    if (!user || !directUserId) return;
+    if (directUserId === user._id) return;
+    API.get(`/messages/conversation/${directUserId}`)
+      .then((res) => {
+        setSelectedConv(res.data);
+        setShowList(false);
+        window.history.replaceState({}, "", "/messages");
+      })
+      .catch(console.error);
+  }, [user, directUserId]);
 
   const handleSelect = (conv) => {
     setSelectedConv(conv);
@@ -62,9 +75,9 @@ function DirectMessages() {
                 </svg>
               </button>
             )}
-            <Link to="/community" className="text-sm font-medium text-gray-500 hover:text-purple-600 transition-colors">
-              &larr; Community
-            </Link>
+            <button onClick={() => navigate(-1)} className="text-sm font-medium text-gray-500 hover:text-purple-600 transition-colors">
+              &larr; Back
+            </button>
             <h1 className="text-lg font-bold text-purple-700">Messages</h1>
           </div>
         </div>

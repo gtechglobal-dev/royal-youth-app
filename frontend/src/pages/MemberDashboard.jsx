@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
@@ -327,6 +327,10 @@ function MemberDashboard() {
   const handleCancelRequest = async (userId) => {
     try { await API.put("/friends/cancel", { userId }); fetchFriendData(); }
     catch (err) { console.error(err); }
+  };
+
+  const handleMessageFriend = (friendId) => {
+    navigate("/messages", { state: { directUserId: friendId } });
   };
 
   const handleLogout = () => { localStorage.removeItem("token"); localStorage.removeItem("user"); navigate("/"); };
@@ -956,9 +960,9 @@ function MemberDashboard() {
                       </div>
                       <span onClick={() => handleViewMember(f._id)} className="font-semibold text-sm text-center hover:text-purple-600 cursor-pointer">{f.firstname} {f.surname}</span>
                       <p className="text-gray-400 text-[10px] text-center">{f.branch}</p>
-                      <div className="flex gap-2 mt-1">
-                        <Link to={`/messages`} className="text-[11px] bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200">Message</Link>
-                        <button onClick={() => handleSendRequest(f._id)} className="text-[11px] bg-red-50 text-red-600 px-3 py-1 rounded-full hover:bg-red-100">Remove</button>
+                      <div className="flex flex-col gap-1.5 w-full mt-2">
+                        <button onClick={() => handleMessageFriend(f._id)} className="w-full text-xs bg-purple-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-purple-700 text-center transition">Send Message</button>
+                        <button onClick={() => handleSendRequest(f._id)} className="w-full text-xs bg-red-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-red-600 text-center transition">Remove Friend</button>
                       </div>
                     </div>
                   ))}
