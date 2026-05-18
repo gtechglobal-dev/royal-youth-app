@@ -87,8 +87,8 @@ app.use((err, req, res, next) => {
 const frontendDist = path.resolve(__dirname, "..", "frontend", "dist");
 app.use(express.static(frontendDist));
 
-// ✅ SPA catch-all — serve index.html for any unmatched route
-app.get("*", (req, res) => {
+// ✅ SPA catch-all — serve index.html for unmatched GET routes
+app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
 });
 
