@@ -1,7 +1,7 @@
 name = "royal-youth-app"
 compatibility_date = "2026-05-18"
+compatibility_flags = ["nodejs_compat"]
+account_id = "3312cf2b90681f22d90439794a7db3d4"
 
-pages_build_output_dir = "dist"
-
-[env.production]
-routes = [{ pattern = "/*", zone_id = "", custom_domain = "" }]
+main = "worker.js"
+assets = { directory = "dist", not_found_handling = "none" }
