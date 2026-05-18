@@ -3,6 +3,7 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
+import compression from "compression";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import { initSocket } from "./socket.js";
@@ -31,6 +32,8 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
+
+app.use(compression());
 
 // ✅ Connect DB
 connectDB();

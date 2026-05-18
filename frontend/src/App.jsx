@@ -1,43 +1,46 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
+import { PageLoader } from "./components/Loaders";
 
 const InstallPrompt = lazy(() => import("./components/InstallPrompt"));
 const PushNotificationManager = lazy(() => import("./components/PushNotificationManager"));
 
-import LandingPage from "./pages/landingPage";
-import Register from "./pages/Register";
-import RegistrationSuccess from "./pages/RegistrationSuccess";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import AdminLogin from "./pages/AdminLogin";
-import MemberDashboard from "./pages/MemberDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import Members from "./pages/Members";
-import MemberProfile from "./pages/MemberProfile";
-import EditProfile from "./pages/EditProfile";
-import CommunityFeed from "./pages/CommunityFeed";
-import DirectMessages from "./pages/DirectMessages";
-import SinglePost from "./pages/SinglePost";
+const LandingPage = lazy(() => import("./pages/landingPage"));
+const Register = lazy(() => import("./pages/Register"));
+const RegistrationSuccess = lazy(() => import("./pages/RegistrationSuccess"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const MemberDashboard = lazy(() => import("./pages/MemberDashboard"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Members = lazy(() => import("./pages/Members"));
+const MemberProfile = lazy(() => import("./pages/MemberProfile"));
+const EditProfile = lazy(() => import("./pages/EditProfile"));
+const CommunityFeed = lazy(() => import("./pages/CommunityFeed"));
+const DirectMessages = lazy(() => import("./pages/DirectMessages"));
+const SinglePost = lazy(() => import("./pages/SinglePost"));
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/registration-success" element={<RegistrationSuccess />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/dashboard" element={<MemberDashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/member/:id" element={<MemberProfile />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
-        <Route path="/community" element={<CommunityFeed />} />
-        <Route path="/messages" element={<DirectMessages />} />
-        <Route path="/post/:id" element={<SinglePost />} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/registration-success" element={<RegistrationSuccess />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/dashboard" element={<MemberDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/members" element={<Members />} />
+          <Route path="/member/:id" element={<MemberProfile />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/community" element={<CommunityFeed />} />
+          <Route path="/messages" element={<DirectMessages />} />
+          <Route path="/post/:id" element={<SinglePost />} />
+        </Routes>
+      </Suspense>
       <Suspense fallback={null}>
         <InstallPrompt />
         <PushNotificationManager />

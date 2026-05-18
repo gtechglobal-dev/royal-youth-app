@@ -57,7 +57,18 @@ export default defineConfig({
     })
   ],
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/react-router-dom')) return 'vendor';
+          if (id.includes('node_modules/axios') || id.includes('node_modules/socket.io-client')) return 'ui';
+        }
+      }
+    },
+    cssMinify: true,
+    sourcemap: false,
+    target: 'es2020'
   },
   server: {
     historyApiFallback: true

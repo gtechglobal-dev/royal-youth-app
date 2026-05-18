@@ -4,7 +4,7 @@ import BannerGallery from "../components/BannerGallery";
 import ContactSection from "../components/ContactSection";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import Logo from "../assets/gdev logo.svg";
-import PresidentImage from "../assets/president.png";
+import PresidentImage from "../assets/president.jpg";
 import { PageLoader } from "../components/Loaders";
 
 function ScrollSection({ children, className = "", delay = 0 }) {
