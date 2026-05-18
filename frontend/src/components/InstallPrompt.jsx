@@ -9,8 +9,8 @@ export default function InstallPrompt() {
 
   if (isIOS) {
     return (
-      <div className="fixed bottom-4 left-4 right-4 z-50 max-w-sm mx-auto">
-        <div className="bg-white rounded-xl shadow-lg border border-purple-100 p-4 animate-slide-up">
+      <div className="fixed top-4 left-4 right-4 z-50 max-w-sm mx-auto">
+        <div className="bg-white rounded-xl shadow-lg border border-purple-100 p-4 animate-slide-down">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
               <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,8 +38,8 @@ export default function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 max-w-sm mx-auto">
-      <div className="bg-white rounded-xl shadow-lg border border-purple-100 p-4 animate-slide-up">
+    <div className="fixed top-4 left-4 right-4 z-50 max-w-sm mx-auto">
+        <div className="bg-white rounded-xl shadow-lg border border-purple-100 p-4 animate-slide-down">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,11 +75,11 @@ export default function InstallPrompt() {
         </div>
       </div>
       <style>{`
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(20px); }
+        @keyframes slide-down {
+          from { opacity: 0; transform: translateY(-20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .animate-slide-up { animation: slide-up 0.3s ease-out; }
+        .animate-slide-down { animation: slide-down 0.3s ease-out; }
       `}</style>
     </div>
   );
