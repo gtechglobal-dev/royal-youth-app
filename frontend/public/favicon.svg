@@ -1,37 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<!-- Creator: CorelDRAW X7 -->
-<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="309.161mm" height="309.161mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
-viewBox="0 0 74072 74072"
- xmlns:xlink="http://www.w3.org/1999/xlink">
- <defs>
-  <style type="text/css">
-   <![CDATA[
-    .str0 {stroke:#373435;stroke-width:42.2634}
-    .fil0 {fill:none}
-   ]]>
-  </style>
-    <clipPath id="id0">
-     <path d="M37036 2773c18923,0 34263,15340 34263,34263 0,18923 -15340,34263 -34263,34263 -18923,0 -34263,-15340 -34263,-34263 0,-18923 15340,-34263 34263,-34263z"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 640 640" width="640" height="640">
+  <defs>
+    <clipPath id="circle">
+      <circle cx="320" cy="320" r="296" />
     </clipPath>
-     <clipPath id="id1">
-      <path d="M37036 2773c18923,0 34263,15340 34263,34263 0,17290 -12808,31586 -29453,33925l-9620 0c-16646,-2339 -29453,-16635 -29453,-33925 0,-18923 15340,-34263 34263,-34263z"/>
-     </clipPath>
-     <clipPath id="id2">
-      <path d="M37036 2773c18923,0 34263,15340 34263,34263 0,18923 -15340,34263 -34263,34263 -18923,0 -34263,-15340 -34263,-34263 0,-18923 15340,-34263 34263,-34263z"/>
-     </clipPath>
- </defs>
- <g id="Layer_x0020_1">
-  <metadata id="CorelCorpID_0Corel-Layer"/>
-  <g id="_399599152">
-   <rect class="fil0" width="74072" height="74072"/>
-   <g>
-   </g>
-   <g style="clip-path:url(#id0)">
-    <g id="_399598600">
-    </g>
-    <g style="clip-path:url(#id1)">
-     <image x="2695" y="2218" width="68743" height="68743" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAKACAIAAAH0qG7iAAAACXBIWXMA
+  </defs>
+  <g clip-path="url(#circle)">
+    <image x="23" y="19" width="594" height="594" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAKACAIAAAH0qG7iAAAACXBIWXMA
 AAsSAAALEgHS3X78AAAgAElEQVR4nOx9B2AUxff/zJbrd8kld0lIQu8ggiIgvUgvCoIFpIkCoigI
 0hEQBZRmAwSkSm8KSu+9d6QFAqmkl0uubpv/zO7dESAJCSL+/vodMbns7c7Om/fmtZn5DFOlSlXw
 XyrMP92AZ13+R/C/vfyP4GdQIP4PIPQPvBn8IwRjap+von2hVIllu+48+7f/AwRj3nato3eKORQE
@@ -4504,12 +4479,7 @@ cZvT2sv1gqkdd5p3jGgEUAIEMFA+W22lCjtzDzsTiQuUFgEMlMi9pVL7JiID+N8hgIEy2XO/2Dzo
 gAUEMAAAFhDAAABYQAADAGABAQwAgAUEMAAAFhDAAABYQAADAGABAQwAgAUEMAAAFhDAAABYQAAD
 AGABAQwAgAUEMAAAFhDAAABYQAADAGABAQwAgAUEMAAAFhDAAABYQAADAGABAQwAgAUEMAAAFhDA
 AABYQAADAGABAQwAgAUEMAAAFhDAwFMi9ryv/9OrAOAQwAAAWEEA40kT+1aElgh52AXp9F9aulr6
-O2hW3njC/gZXWxDQAXCM8AAAAABJRU5ErkJggg=="/>
-    </g>
-    <g style="clip-path:url(#id2)">
-    </g>
-   </g>
-   <path class="fil0 str0" d="M37036 2773c18923,0 34263,15340 34263,34263 0,18923 -15340,34263 -34263,34263 -18923,0 -34263,-15340 -34263,-34263 0,-18923 15340,-34263 34263,-34263z"/>
+O2hW3njC/gZXWxDQAXCM8AAAAABJRU5ErkJggg==
+" />
   </g>
- </g>
 </svg>
