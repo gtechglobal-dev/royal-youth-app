@@ -1,5 +1,7 @@
 import express from "express";
 import { createServer } from "http";
+import path from "path";
+import { fileURLToPath } from "url";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
@@ -20,6 +22,9 @@ import messageRoutes from "./routes/messageRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import friendRoutes from "./routes/friendRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -78,10 +83,27 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-// ✅ Test route
-app.get("/", (req, res) => {
-  res.send("Royal Youth API running...");
+// ✅ Serve frontend in production
+const frontendDist = path.resolve(__dirname, "..", "frontend", "dist");
+app.use(express.static(frontendDist));
+
+// ✅ SPA catch-all — serve index.html for any unmatched route
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
 });
+
+// ✅ Keep free Render instance awake
+const SELF_URL = process.env.SELF_URL;
+if (SELF_URL) {
+  setInterval(async () => {
+    try {
+      await fetch(SELF_URL);
+      console.log("🔄 Self-ping kept alive");
+    } catch (err) {
+      console.log("Self-ping failed (expected on free tier)");
+    }
+  }, 5 * 60 * 1000); // every 5 minutes
+}
 
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
