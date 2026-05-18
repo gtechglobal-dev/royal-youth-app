@@ -90,13 +90,33 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-// ✅ Serve frontend in production
+// ✅ Serve frontend in production with CDN-friendly caching
 const frontendDist = path.resolve(__dirname, "..", "frontend", "dist");
-app.use(express.static(frontendDist));
+const oneYear = 365 * 24 * 60 * 60;
+
+app.use(express.static(frontendDist, {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    } else {
+      res.setHeader('Cache-Control', `public, max-age=${oneYear}, immutable`);
+    }
+  }
+}));
 
 // ✅ SPA catch-all — serve index.html for unmatched GET routes
 app.get("/{*splat}", (req, res) => {
-  res.sendFile(path.join(frontendDist, "index.html"));
+  res.sendFile(path.join(frontendDist, "index.html"), {
+    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+  });
+});
+
+// ✅ API caching: allow CDN to cache GET responses briefly
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'no-cache, private, max-age=60');
+  }
+  next();
 });
 
 // ✅ Keep free Render instance awake

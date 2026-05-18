@@ -1,0 +1,7 @@
+name = "royal-youth-app"
+compatibility_date = "2026-05-18"
+
+pages_build_output_dir = "dist"
+
+[env.production]
+routes = [{ pattern = "/*", zone_id = "", custom_domain = "" }]

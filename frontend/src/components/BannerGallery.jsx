@@ -1,6 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import API from "../services/api";
 
+function optimizeCloudinaryUrl(url, width = 1200) {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  return url.replace('/image/upload/', `/image/upload/w_${width},q_auto,f_auto/`);
+}
+
 function BannerGallery() {
   const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,7 +43,7 @@ function BannerGallery() {
     if (banners.length > 0 && banners[0]?.image) {
       const img = new Image();
       img.src = banners[0].image.startsWith("http")
-        ? banners[0].image
+        ? optimizeCloudinaryUrl(banners[0].image, 400)
         : `${import.meta.env.VITE_API_URL}${banners[0].image}`;
       img.onload = () => setFirstImageLoaded(true);
     }
@@ -98,7 +103,7 @@ function BannerGallery() {
         <>
           {banners[currentIndex] && (
             <img
-              src={banners[currentIndex].image.startsWith("http") ? banners[currentIndex].image : `${import.meta.env.VITE_API_URL}${banners[currentIndex].image}`}
+              src={banners[currentIndex].image.startsWith("http") ? optimizeCloudinaryUrl(banners[currentIndex].image) : `${import.meta.env.VITE_API_URL}${banners[currentIndex].image}`}
               className="w-full opacity-0 block"
               aria-hidden="true"
             />
@@ -111,7 +116,7 @@ function BannerGallery() {
               }`}
             >
               <img
-                src={banner.image.startsWith("http") ? banner.image : `${import.meta.env.VITE_API_URL}${banner.image}`}
+                src={banner.image.startsWith("http") ? optimizeCloudinaryUrl(banner.image) : `${import.meta.env.VITE_API_URL}${banner.image}`}
                 alt={banner.title}
                 className="w-full h-full object-contain"
               />
