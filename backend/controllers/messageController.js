@@ -3,6 +3,7 @@ import Message from "../models/Message.js";
 import Notification from "../models/Notification.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
 import { getIO } from "../socket.js";
+import { sendPushNotification } from "./pushController.js";
 
 export const getConversations = async (req, res) => {
   try {
@@ -127,6 +128,7 @@ export const sendMessage = async (req, res) => {
         referenceId: conversation._id.toString(),
       });
       try { getIO().to(`user:${receiverId}`).emit("newNotification", {}); } catch (e) {}
+      try { sendPushNotification(receiverId, "Royal Youth Hub", `${req.user.firstname || "Someone"} sent you a message`, "/messages"); } catch (e) {}
     }
 
     res.status(201).json(populated);

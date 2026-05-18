@@ -22,6 +22,8 @@ import messageRoutes from "./routes/messageRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import friendRoutes from "./routes/friendRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
+import pushRoutes from "./routes/pushRoutes.js";
+import reminderRoutes from "./routes/reminderRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,6 +76,8 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api/push", pushRoutes);
+app.use("/api/reminders", reminderRoutes);
 
 // ✅ Error handler
 app.use((err, req, res, next) => {

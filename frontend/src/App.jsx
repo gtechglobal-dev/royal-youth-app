@@ -1,4 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense, lazy } from "react";
+
+const InstallPrompt = lazy(() => import("./components/InstallPrompt"));
+const PushNotificationManager = lazy(() => import("./components/PushNotificationManager"));
 
 import LandingPage from "./pages/landingPage";
 import Register from "./pages/Register";
@@ -34,6 +38,10 @@ function App() {
         <Route path="/messages" element={<DirectMessages />} />
         <Route path="/post/:id" element={<SinglePost />} />
       </Routes>
+      <Suspense fallback={null}>
+        <InstallPrompt />
+        <PushNotificationManager />
+      </Suspense>
     </BrowserRouter>
   );
 }

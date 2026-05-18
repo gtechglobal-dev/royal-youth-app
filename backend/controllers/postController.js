@@ -3,6 +3,7 @@ import Notification from "../models/Notification.js";
 import User from "../models/user.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
 import { getIO } from "../socket.js";
+import { sendPushNotification } from "./pushController.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -44,7 +45,8 @@ export const getFeed = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .populate("userId", "firstname surname profileImage branch role")
-      .populate("comments.userId", "firstname surname profileImage");
+      .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
 
     const total = await Post.countDocuments({ isDeleted: false });
 
@@ -84,6 +86,7 @@ export const likePost = async (req, res) => {
         referenceId: post._id.toString(),
       });
       try { getIO().to(`user:${post.userId}`).emit("newNotification", {}); } catch (e) {}
+      try { sendPushNotification(post.userId, "Royal Youth Hub", `${req.user.firstname} liked your post`, "/community"); } catch (e) {}
     }
 
     try { getIO().emit("postLiked", { postId: post._id.toString(), userId: userId.toString(), likeCount: post.likes.length }); } catch (e) {}
@@ -140,7 +143,8 @@ export const commentOnPost = async (req, res) => {
 
     const savedComment = post.comments[post.comments.length - 1];
     const populated = await Post.findById(post._id)
-      .populate("comments.userId", "firstname surname profileImage");
+      .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
 
     const addedComment = populated.comments.find(
       (c) => c._id.toString() === savedComment._id.toString()
@@ -154,6 +158,7 @@ export const commentOnPost = async (req, res) => {
         referenceId: post._id.toString(),
       });
       try { getIO().to(`user:${post.userId}`).emit("newNotification", {}); } catch (e) {}
+      try { sendPushNotification(post.userId, "Royal Youth Hub", `${req.user.firstname || "Admin"} commented: ${text.trim().slice(0, 50)}`, `/post/${post._id}`); } catch (e) {}
     }
 
     try { getIO().emit("newComment", { postId: post._id.toString(), comment: addedComment.toObject() }); } catch (e) {}
@@ -183,7 +188,8 @@ export const updatePost = async (req, res) => {
 
      const populated = await Post.findById(post._id)
        .populate("userId", "firstname surname profileImage branch role")
-       .populate("comments.userId", "firstname surname profileImage");
+       .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
 
      try { getIO().emit("postUpdated", populated.toObject()); } catch (e) {}
      res.json(populated);
@@ -210,6 +216,80 @@ export const deletePost = async (req, res) => {
     res.json({ message: "Post deleted" });
   } catch (err) {
     console.error("Delete post error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const likeComment = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post || post.isDeleted) return res.status(404).json({ message: "Post not found" });
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const userId = req.user._id;
+    const idx = comment.likes.findIndex((id) => id.toString() === userId.toString());
+    if (idx !== -1) return res.status(400).json({ message: "Already liked" });
+
+    comment.likes.push(userId);
+    await post.save();
+
+    res.json({ likes: comment.likes, likeCount: comment.likes.length });
+  } catch (err) {
+    console.error("Like comment error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const unlikeComment = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post || post.isDeleted) return res.status(404).json({ message: "Post not found" });
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const userId = req.user._id;
+    const idx = comment.likes.findIndex((id) => id.toString() === userId.toString());
+    if (idx === -1) return res.status(400).json({ message: "Not liked yet" });
+
+    comment.likes.splice(idx, 1);
+    await post.save();
+
+    res.json({ likes: comment.likes, likeCount: comment.likes.length });
+  } catch (err) {
+    console.error("Unlike comment error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const replyToComment = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ message: "Reply text is required" });
+
+    const post = await Post.findById(req.params.postId);
+    if (!post || post.isDeleted) return res.status(404).json({ message: "Post not found" });
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    const reply = { userId: req.user._id, text: text.trim() };
+    comment.replies.push(reply);
+    await post.save();
+
+    const savedReply = comment.replies[comment.replies.length - 1];
+    const populated = await Post.findById(post._id)
+      .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
+
+    const populatedComment = populated.comments.id(comment._id);
+    const addedReply = populatedComment.replies.id(savedReply._id);
+
+    res.status(201).json({ reply: addedReply, commentId: comment._id.toString() });
+  } catch (err) {
+    console.error("Reply to comment error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -251,7 +331,8 @@ export const getFriendsFeed = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .populate("userId", "firstname surname profileImage branch role")
-      .populate("comments.userId", "firstname surname profileImage");
+      .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
 
     const total = await Post.countDocuments({ isDeleted: false, userId: { $in: friendIds } });
 
@@ -272,7 +353,8 @@ export const getSinglePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
       .populate("userId", "firstname surname profileImage branch role")
-      .populate("comments.userId", "firstname surname profileImage");
+      .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
 
     if (!post || post.isDeleted) {
       return res.status(404).json({ message: "Post not found" });
@@ -291,7 +373,8 @@ export const getUserPosts = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(20)
       .populate("userId", "firstname surname profileImage branch role")
-      .populate("comments.userId", "firstname surname profileImage");
+      .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
 
     res.json({ posts });
   } catch (err) {
@@ -308,7 +391,8 @@ export const getPinnedPosts = async (req, res) => {
     })
       .sort({ pinnedAt: -1 })
       .populate("userId", "firstname surname profileImage branch role")
-      .populate("comments.userId", "firstname surname profileImage");
+      .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
 
     res.json({ posts });
   } catch (err) {
@@ -330,7 +414,8 @@ export const getPastAnnouncements = async (req, res) => {
     })
       .sort({ pinnedAt: -1 })
       .populate("userId", "firstname surname profileImage branch role")
-      .populate("comments.userId", "firstname surname profileImage");
+      .populate("comments.userId", "firstname surname profileImage")
+      .populate("comments.replies.userId", "firstname surname profileImage");
 
     res.json({ posts });
   } catch (err) {

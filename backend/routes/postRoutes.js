@@ -8,6 +8,9 @@ import {
   likePost,
   unlikePost,
   commentOnPost,
+  likeComment,
+  unlikeComment,
+  replyToComment,
   updatePost,
   deletePost,
   deleteComment,
@@ -40,6 +43,9 @@ router.post("/", protect, uploadMiddleware.single("image"), createPost);
 router.put("/:id/like", protect, likePost);
 router.put("/:id/unlike", protect, unlikePost);
 router.post("/:id/comment", protect, commentOnPost);
+router.put("/:postId/comment/:commentId/like", protect, likeComment);
+router.put("/:postId/comment/:commentId/unlike", protect, unlikeComment);
+router.post("/:postId/comment/:commentId/reply", protect, replyToComment);
 router.put("/:id", protect, updatePost);
 router.delete("/:id", protect, deletePost);
 router.delete("/:postId/comment/:commentId", protect, deleteComment);
