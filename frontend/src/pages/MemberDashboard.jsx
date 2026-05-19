@@ -954,15 +954,15 @@ function MemberDashboard() {
               {!friendLoading && friends.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {friends.map((f) => (
-                    <div key={f._id} className="bg-gray-50 rounded-xl p-4 flex flex-col items-center gap-2 hover:shadow-sm transition">
-                      <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => f.profileImage && setViewingImage({ url: f.profileImage, firstname: f.firstname, surname: f.surname })}>
+                    <div key={f._id} className="bg-gray-50 rounded-xl p-4 flex flex-col items-center gap-2 hover:shadow-sm transition h-full">
+                      <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer" onClick={() => f.profileImage && setViewingImage({ url: f.profileImage, firstname: f.firstname, surname: f.surname })}>
                         {f.profileImage ? <img src={optimizeImage(f.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-lg">{f.firstname?.[0]}{f.surname?.[0]}</span>}
                       </div>
-                      <span onClick={() => handleViewMember(f._id)} className="font-semibold text-sm text-center hover:text-purple-600 cursor-pointer">{f.firstname} {f.surname}</span>
+                      <span onClick={() => handleViewMember(f._id)} className="font-semibold text-sm text-center hover:text-purple-600 cursor-pointer truncate w-full">{f.firstname} {f.surname}</span>
                       <p className="text-gray-400 text-[10px] text-center">{f.branch}</p>
-                      <div className="flex flex-col gap-1.5 w-full mt-2">
-                        <button onClick={() => handleMessageFriend(f._id)} className="w-full text-xs bg-purple-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-purple-700 text-center transition">Send Message</button>
-                        <button onClick={() => handleSendRequest(f._id)} className="w-full text-xs bg-red-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-red-600 text-center transition">Remove Friend</button>
+                      <div className="flex flex-col gap-1.5 w-full mt-auto">
+                        <button onClick={() => handleMessageFriend(f._id)} className="w-full text-[11px] bg-purple-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-700 text-center transition">Send Message</button>
+                        <button onClick={() => handleSendRequest(f._id)} className="w-full text-[11px] bg-red-500 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-red-600 text-center transition">Remove Friend</button>
                       </div>
                     </div>
                   ))}

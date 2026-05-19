@@ -1,14 +1,14 @@
 import webpush from "web-push";
 import PushSubscription from "../models/PushSubscription.js";
 
-const vapidKeys = webpush.generateVAPIDKeys();
-
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+  const vapidKeys = webpush.generateVAPIDKeys();
   webpush.setVapidDetails(
     "mailto:royalyouthsc4c5@gmail.com",
     vapidKeys.publicKey,
     vapidKeys.privateKey
   );
+  console.warn("VAPID keys not set in env. Generated fresh keys. Existing subscriptions will be invalidated on restart.");
 } else {
   webpush.setVapidDetails(
     "mailto:royalyouthsc4c5@gmail.com",
@@ -18,9 +18,11 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 }
 
 export const getVapidPublicKey = (req, res) => {
-  res.json({
-    publicKey: process.env.VAPID_PUBLIC_KEY || vapidKeys.publicKey,
-  });
+  const key = process.env.VAPID_PUBLIC_KEY;
+  if (!key) {
+    return res.status(500).json({ message: "VAPID public key not configured" });
+  }
+  res.json({ publicKey: key });
 };
 
 export const subscribe = async (req, res) => {
@@ -67,4 +69,23 @@ export const sendPushNotification = async (userId, title, body, url) => {
       await PushSubscription.findOneAndDelete({ userId });
     }
   }
+};
+
+export const sendPushToAllUsers = async (title, body, url) => {
+  const subs = await PushSubscription.find({});
+  let sent = 0;
+  for (const sub of subs) {
+    try {
+      await webpush.sendNotification(
+        { endpoint: sub.endpoint, keys: sub.keys },
+        JSON.stringify({ title, body, url })
+      );
+      sent++;
+    } catch (err) {
+      if (err.statusCode === 410 || err.statusCode === 404) {
+        await PushSubscription.findOneAndDelete({ userId: sub.userId });
+      }
+    }
+  }
+  return sent;
 };

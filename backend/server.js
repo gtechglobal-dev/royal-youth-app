@@ -5,8 +5,10 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import compression from "compression";
 import dotenv from "dotenv";
+import cron from "node-cron";
 import connectDB from "./config/db.js";
 import { initSocket } from "./socket.js";
+import { runDuesReminderCycle } from "./controllers/reminderController.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -132,6 +134,17 @@ if (SELF_URL) {
     }
   }, 5 * 60 * 1000); // every 5 minutes
 }
+
+// ✅ Daily dues/youth day reminder cron at 9:00 AM
+cron.schedule("0 9 * * *", async () => {
+  console.log("⏰ Running daily dues reminder cron...");
+  try {
+    const result = await runDuesReminderCycle();
+    console.log(`✅ Daily reminder: ${result.duesSent} dues reminders sent. Unpaid: ${result.unpaidCount}/${result.totalMembers}`);
+  } catch (err) {
+    console.error("❌ Daily reminder cron failed:", err);
+  }
+});
 
 // ✅ Start server
 const PORT = process.env.PORT || 5000;

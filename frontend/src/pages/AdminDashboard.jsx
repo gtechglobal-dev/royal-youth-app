@@ -83,6 +83,18 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   const [pendingMembers, setPendingMembers] = useState([]);
   const [meetingResponses, setMeetingResponses] = useState([]);
   const [loadingAction, setLoadingAction] = useState({ id: null, type: null });
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushBody, setPushBody] = useState("");
+  const [pushTarget, setPushTarget] = useState("all");
+  const [pushCreateInApp, setPushCreateInApp] = useState(true);
+  const [pushScheduledAt, setPushScheduledAt] = useState("");
+  const [pushSelectedMembers, setPushSelectedMembers] = useState([]);
+  const [pushMemberSearch, setPushMemberSearch] = useState("");
+  const [pushDuesMonth, setPushDuesMonth] = useState("");
+  const [pushDuesYear, setPushDuesYear] = useState("2026");
+  const [pushMembers, setPushMembers] = useState([]);
+  const [pushSending, setPushSending] = useState(false);
+  const [pushResult, setPushResult] = useState(null);
   const [counts, setCounts] = useState({
     members: 0,
     pending: 0,
@@ -271,6 +283,11 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
         setMembers(r.data);
       });
     }
+    if (activeTab === "push-notifications") {
+      API.get("/auth/members").then(r => {
+        setPushMembers(r.data);
+      }).catch(() => {});
+    }
     if (activeTab === "announcements") {
       fetchAnnouncements();
     }
@@ -367,6 +384,48 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSendPushNotification = async (e) => {
+    e.preventDefault();
+    setPushSending(true);
+    setPushResult(null);
+    try {
+      const payload = {
+        title: pushTitle,
+        body: pushBody,
+        createInAppNotifications: pushCreateInApp,
+      };
+      if (pushTarget === "subscribed") {
+        payload.target = "subscribed";
+      } else if (pushTarget === "specific") {
+        payload.target = "specific";
+        payload.targetUserIds = pushSelectedMembers;
+      } else if (pushTarget === "unpaid") {
+        payload.target = "unpaid";
+        payload.duesMonth = pushDuesMonth;
+        payload.duesYear = pushDuesYear;
+      } else {
+        payload.target = "all";
+      }
+      if (pushScheduledAt) {
+        payload.scheduledAt = new Date(pushScheduledAt).toISOString();
+      }
+      const res = await API.post("/notifications/admin-send", payload);
+      if (res.data.scheduled) {
+        setPushResult({ type: "success", message: `Scheduled! Will send at ${new Date(pushScheduledAt).toLocaleString()}.` });
+      } else {
+        setPushResult({ type: "success", message: `Sent! ${res.data.pushSent} push notifications delivered, ${res.data.inAppNotificationsCreated} in-app notifications created.` });
+      }
+      setPushTitle("");
+      setPushBody("");
+      setPushScheduledAt("");
+      setPushSelectedMembers([]);
+      setPushDuesMonth("");
+    } catch (err) {
+      setPushResult({ type: "error", message: err.response?.data?.message || "Failed to send push notification" });
+    }
+    setPushSending(false);
   };
 
   const handleLogout = () => {
@@ -916,6 +975,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     { id: "testimony", label: "Testimony" },
     { id: "complaint", label: "Complaints" },
     { id: "meeting-responses", label: "Meeting Responses" },
+    { id: "push-notifications", label: "Push Notifications" },
   ];
 
   if (loading) {
@@ -2277,6 +2337,92 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 ))
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === "push-notifications" && (
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+            <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">Send Push Notification</h2>
+            <form onSubmit={handleSendPushNotification} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Title</label>
+                <input type="text" value={pushTitle} onChange={e => setPushTitle(e.target.value)} placeholder="e.g. Dues Reminder" className="border p-2 w-full rounded" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Message Body</label>
+                <textarea value={pushBody} onChange={e => setPushBody(e.target.value)} placeholder="Type your message..." className="border p-2 w-full rounded h-24 resize-none" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Target</label>
+                <select value={pushTarget} onChange={e => { setPushTarget(e.target.value); setPushSelectedMembers([]); setPushMemberSearch(""); setPushDuesMonth(""); }} className="border p-2 w-full rounded">
+                  <option value="all">All Active Members</option>
+                  <option value="subscribed">Only Users with Push Enabled</option>
+                  <option value="specific">Specific Members</option>
+                  <option value="unpaid">Members Not Paid (Dues)</option>
+                </select>
+              </div>
+              {pushTarget === "specific" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Select Members ({pushSelectedMembers.length} selected)</label>
+                  <input type="text" placeholder="Search members..." value={pushMemberSearch} onChange={e => setPushMemberSearch(e.target.value)} className="border p-2 w-full rounded mb-2 text-sm" />
+                  <div className="border rounded max-h-40 overflow-y-auto">
+                    {pushMembers.length === 0 ? (
+                      <p className="text-gray-400 text-sm p-3 text-center">Loading members...</p>
+                    ) : (
+                      pushMembers.filter(m => `${m.firstname} ${m.surname}`.toLowerCase().includes(pushMemberSearch.toLowerCase())).map(m => {
+                        const checked = pushSelectedMembers.includes(m._id);
+                        return (
+                          <label key={m._id} className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 ${checked ? "bg-blue-50" : ""}`}>
+                            <input type="checkbox" checked={checked} onChange={() => setPushSelectedMembers(prev => checked ? prev.filter(id => id !== m._id) : [...prev, m._id])} className="w-4 h-4" />
+                            <span className="flex-1">{m.firstname} {m.surname}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${m.registrationStatus === "Approved" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{m.registrationStatus}</span>
+                          </label>
+                        );
+                      })
+                    )}
+                    {pushMembers.length > 0 && pushMembers.filter(m => `${m.firstname} ${m.surname}`.toLowerCase().includes(pushMemberSearch.toLowerCase())).length === 0 && (
+                      <p className="text-gray-400 text-sm p-3 text-center">No members found</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              {pushTarget === "unpaid" && (
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Month</label>
+                    <select value={pushDuesMonth} onChange={e => setPushDuesMonth(e.target.value)} className="border p-2 w-full rounded">
+                      <option value="">Select month</option>
+                      {["January","February","March","April","May","June","July","August","September","October","November","December"].map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="w-28">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Year</label>
+                    <select value={pushDuesYear} onChange={e => setPushDuesYear(e.target.value)} className="border p-2 w-full rounded">
+                      <option value="2026">2026</option>
+                      <option value="2027">2027</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Schedule (optional — leave blank to send now)</label>
+                <input type="datetime-local" value={pushScheduledAt} onChange={e => setPushScheduledAt(e.target.value)} className="border p-2 w-full rounded" />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="pushCreateInApp" checked={pushCreateInApp} onChange={e => setPushCreateInApp(e.target.checked)} className="w-4 h-4" />
+                <label htmlFor="pushCreateInApp" className="text-sm text-gray-600">Also create in-app notifications</label>
+              </div>
+              <button type="submit" disabled={pushSending} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition disabled:opacity-50">
+                {pushSending ? "Sending..." : "Send Push Notification"}
+              </button>
+              {pushResult && (
+                <div className={`p-3 rounded-lg text-sm ${pushResult.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                  {pushResult.message}
+                </div>
+              )}
+            </form>
           </div>
         )}
 
