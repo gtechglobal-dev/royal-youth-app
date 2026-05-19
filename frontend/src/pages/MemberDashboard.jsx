@@ -103,6 +103,9 @@ function MemberDashboard() {
   const [monthlyStats, setMonthlyStats] = useState([]);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsYear, setStatsYear] = useState(new Date().getFullYear());
+  const [externalFeed, setExternalFeed] = useState([]);
+  const [externalLoading, setExternalLoading] = useState(false);
+  const [feedCategory, setFeedCategory] = useState("all");
 
   // Existing features state
   const [attendance, setAttendance] = useState([]);
@@ -201,6 +204,10 @@ function MemberDashboard() {
   useEffect(() => {
     if (activeTab === "statistics") fetchMonthlyStats(statsYear);
   }, [activeTab, statsYear]);
+
+  useEffect(() => {
+    if (activeTab === "inspiration") fetchExternalFeed();
+  }, [activeTab]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -344,6 +351,17 @@ function MemberDashboard() {
       console.error("Monthly stats error:", err);
     }
     setStatsLoading(false);
+  };
+
+  const fetchExternalFeed = async () => {
+    setExternalLoading(true);
+    try {
+      const res = await API.get("/feeds/external");
+      setExternalFeed(res.data.posts || []);
+    } catch (err) {
+      console.error("External feed error:", err);
+    }
+    setExternalLoading(false);
   };
 
   const fetchLbMemberPosts = async (userId) => {
@@ -507,6 +525,10 @@ function MemberDashboard() {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
           Community
         </Link>
+        <button onClick={() => { setActiveTab("inspiration"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+          Inspiration
+        </button>
         <Link to="/messages" className="flex items-center gap-3 p-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
           Messages
@@ -1126,6 +1148,66 @@ function MemberDashboard() {
                 </div>
               ) : (
                 <p className="text-gray-400 text-sm text-center py-16">No data available for {statsYear}</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === "inspiration" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-purple-700">Inspiration</h2>
+              </div>
+              <div className="flex gap-2 mb-6">
+                {["all", "spiritual", "business"].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setFeedCategory(cat)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition capitalize ${
+                      feedCategory === cat
+                        ? "bg-purple-600 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {cat === "all" ? "All" : cat}
+                  </button>
+                ))}
+              </div>
+              {externalLoading ? (
+                <div className="space-y-4">
+                  {Array.from({length:4}).map((_,i) => (
+                    <div key={i} className="bg-gray-50 rounded-xl p-4 animate-pulse">
+                      <div className="h-3 w-24 bg-gray-200 rounded mb-2" />
+                      <div className="h-4 w-3/4 bg-gray-200 rounded mb-2" />
+                      <div className="h-3 w-full bg-gray-200 rounded" />
+                    </div>
+                  ))}
+                </div>
+              ) : externalFeed.length === 0 ? (
+                <p className="text-gray-400 text-sm text-center py-16">No inspiration posts available right now.</p>
+              ) : (
+                <div className="space-y-3">
+                  {externalFeed
+                    .filter((p) => feedCategory === "all" || p.category === feedCategory)
+                    .map((post, i) => (
+                      <a
+                        key={post.id || i}
+                        href={post.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block bg-gray-50 rounded-xl p-4 hover:bg-purple-50 transition border border-gray-100"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm">{post.sourceIcon}</span>
+                          <span className="text-[11px] font-semibold text-purple-600 uppercase tracking-wide">{post.sourceLabel}</span>
+                          {post.date && (
+                            <span className="text-[10px] text-gray-400 ml-auto">{new Date(post.date).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                        <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">{post.title}</h3>
+                        <p className="text-xs text-gray-500 line-clamp-3">{post.content}</p>
+                      </a>
+                    ))}
+                </div>
               )}
             </div>
           )}

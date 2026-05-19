@@ -25,6 +25,9 @@ import friendRoutes from "./routes/friendRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import pushRoutes from "./routes/pushRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
+import feedRoutes from "./routes/feedRoutes.js";
+import feedSourceRoutes from "./routes/feedSourceRoutes.js";
+import { seedFeedSources } from "./controllers/feedSourceController.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +40,7 @@ app.use(compression());
 
 // ✅ Connect DB
 connectDB();
+seedFeedSources();
 
 // ✅ CORS CONFIG
 const corsOptions = {
@@ -82,6 +86,8 @@ app.use("/api/friends", friendRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/feeds", feedRoutes);
+app.use("/api/admin/feed-sources", feedSourceRoutes);
 // ✅ Error handler
 app.use((err, req, res, next) => {
   console.error("Server error:", err);

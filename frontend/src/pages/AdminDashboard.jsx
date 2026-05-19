@@ -96,6 +96,9 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   const [pushMembers, setPushMembers] = useState([]);
   const [pushSending, setPushSending] = useState(false);
   const [pushResult, setPushResult] = useState(null);
+  const [feedSources, setFeedSources] = useState([]);
+  const [feedSourcesLoading, setFeedSourcesLoading] = useState(false);
+  const [togglingSource, setTogglingSource] = useState(null);
   const [pushBannerFile, setPushBannerFile] = useState(null);
   const [pushBannerPreview, setPushBannerPreview] = useState(null);
   const [counts, setCounts] = useState({
@@ -293,6 +296,9 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     }
     if (activeTab === "announcements") {
       fetchAnnouncements();
+    }
+    if (activeTab === "external-links") {
+      fetchFeedSources();
     }
   }, [activeTab]);
 
@@ -755,6 +761,24 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     } catch (err) { console.error("Fetch announcements error:", err); }
   };
 
+  const fetchFeedSources = async () => {
+    setFeedSourcesLoading(true);
+    try {
+      const res = await API.get("/admin/feed-sources");
+      setFeedSources(res.data);
+    } catch (err) { console.error("Fetch feed sources error:", err); }
+    setFeedSourcesLoading(false);
+  };
+
+  const handleToggleSource = async (id) => {
+    setTogglingSource(id);
+    try {
+      const res = await API.patch(`/admin/feed-sources/${id}/toggle`);
+      setFeedSources((prev) => prev.map((s) => (s._id === id ? res.data : s)));
+    } catch (err) { console.error("Toggle source error:", err); }
+    setTogglingSource(null);
+  };
+
   const handleCreateAnnouncement = async () => {
     if (!announcementText.trim()) return;
     setAnnouncementSending(true);
@@ -999,6 +1023,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     { id: "complaint", label: "Complaints" },
     { id: "meeting-responses", label: "Meeting Responses" },
     { id: "push-notifications", label: "Push Notifications" },
+    { id: "external-links", label: "External Links" },
   ];
 
   if (loading) {
@@ -2460,6 +2485,54 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 </div>
               )}
             </form>
+          </div>
+        )}
+
+        {activeTab === "external-links" && (
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+            <h2 className="text-lg md:text-xl font-bold mb-4 text-adminBlue">External RSS Links</h2>
+            <p className="text-sm text-gray-500 mb-6">Toggle external feed sources on/off. Disabled sources will not appear in the Inspiration tab.</p>
+            {feedSourcesLoading ? (
+              <div className="space-y-3">
+                {[1,2,3,4].map((i) => (
+                  <div key={i} className="animate-pulse flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-gray-200 rounded" />
+                    <div className="flex-1 space-y-2"><div className="h-4 bg-gray-200 rounded w-1/3" /><div className="h-3 bg-gray-100 rounded w-2/3" /></div>
+                  </div>
+                ))}
+              </div>
+            ) : feedSources.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-8">No feed sources configured.</p>
+            ) : (
+              <div className="space-y-2">
+                {feedSources.map((source) => (
+                  <div key={source._id} className="flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition">
+                    <span className="text-2xl">{source.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-sm font-bold text-gray-800">{source.label}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                          source.category === "spiritual" ? "bg-purple-100 text-purple-700" : "bg-amber-100 text-amber-700"
+                        }`}>{source.category}</span>
+                      </div>
+                      <p className="text-xs text-gray-400 truncate">{source.url}</p>
+                      <p className="text-[10px] text-gray-300">ID: {source.sourceId}</p>
+                    </div>
+                    <button
+                      onClick={() => handleToggleSource(source._id)}
+                      disabled={togglingSource === source._id}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                        source.enabled ? "bg-green-500" : "bg-gray-300"
+                      } ${togglingSource === source._id ? "opacity-50" : ""}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        source.enabled ? "translate-x-6" : "translate-x-1"
+                      }`} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
