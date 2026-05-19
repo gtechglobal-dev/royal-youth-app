@@ -109,6 +109,22 @@ export const likePost = async (req, res) => {
   }
 };
 
+export const getPostLikes = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id).populate(
+      "likes",
+      "nickname firstname surname profileImage"
+    );
+    if (!post || post.isDeleted) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    res.json(post.likes);
+  } catch (err) {
+    console.error("Get post likes error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const unlikePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);

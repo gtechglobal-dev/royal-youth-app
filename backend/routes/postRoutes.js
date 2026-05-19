@@ -6,6 +6,7 @@ import {
   getFeed,
   getFriendsFeed,
   likePost,
+  getPostLikes,
   unlikePost,
   commentOnPost,
   likeComment,
@@ -40,6 +41,7 @@ router.get("/user/:userId", protect, getUserPosts);
 router.get("/public/:id", getSinglePost);
 router.get("/:id", protect, getSinglePost);
 router.post("/", protect, uploadMiddleware.single("image"), createPost);
+router.get("/:id/likes", protect, getPostLikes);
 router.put("/:id/like", protect, likePost);
 router.put("/:id/unlike", protect, unlikePost);
 router.post("/:id/comment", protect, commentOnPost);

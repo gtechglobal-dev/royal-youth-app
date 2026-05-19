@@ -28,6 +28,9 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
+  const [likedUsers, setLikedUsers] = useState([]);
+  const [loadingLikes, setLoadingLikes] = useState(false);
 
   const isLiked = likes.some((id) => {
     if (typeof id === "string") return id === currentUserId;
@@ -37,6 +40,20 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
   const likeCount = likes.length;
   const isOwner = post.userId?._id === currentUserId;
   const timestamp = timeAgo(post.createdAt);
+
+  const handleViewLikes = async () => {
+    if (likeCount === 0) return;
+    setLoadingLikes(true);
+    setShowLikesModal(true);
+    try {
+      const res = await API.get(`/posts/${post._id}/likes`);
+      setLikedUsers(res.data);
+    } catch (err) {
+      console.error("Fetch likes error:", err);
+    } finally {
+      setLoadingLikes(false);
+    }
+  };
 
   const handleLike = async () => {
     const wasLiked = isLiked;
@@ -212,8 +229,12 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
               <svg className="w-5 h-5" fill={isLiked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
-              {likeCount}
             </button>
+            {likeCount > 0 && (
+              <button onClick={handleViewLikes} className="text-xs text-gray-400 hover:text-purple-600 hover:underline -ml-2">
+                {likeCount} {likeCount === 1 ? "like" : "likes"}
+              </button>
+            )}
             <button onClick={() => setShowComments(!showComments)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -285,6 +306,37 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
         onCancel={() => setShowDeleteModal(false)}
         loading={deleting}
       />
+      {showLikesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowLikesModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm max-h-[70vh] overflow-y-auto p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Likes</h3>
+              <button onClick={() => setShowLikesModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            {loadingLikes ? (
+              <div className="flex justify-center py-8">
+                <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : likedUsers.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-6">No likes yet</p>
+            ) : (
+              <div className="space-y-3">
+                {likedUsers.map((u) => (
+                  <Link key={u._id} to={`/member/${u._id}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 -mx-2" onClick={() => setShowLikesModal(false)}>
+                    <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0">
+                      {u.profileImage ? <img src={u.profileImage} alt="" className="w-full h-full object-cover" /> : <span className="text-purple-600 font-bold text-xs">{u.firstname?.[0]}{u.surname?.[0]}</span>}
+                    </div>
+                    <p className="text-sm font-medium text-gray-800">{displayName(u)}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
