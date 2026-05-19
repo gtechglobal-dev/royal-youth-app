@@ -236,28 +236,32 @@ function CommunityFeed() {
                   {(showAllNotifs ? notifications : notifications.slice(0, 2)).map((n) => {
                     const isExpanded = expandedNotif === n._id;
                     return (
-                      <div key={n._id} className={`p-3 border-b border-gray-50 text-sm ${n.read ? "" : "bg-purple-50"}`}>
-                        <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
-                          <div className="flex-1 min-w-0">
-                            {n.type === "reminder" ? (
-                              <div>
-                                <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">Royal Youth Hub</span></p>
-                                {n.referenceId && <p className={`text-xs truncate ${n.read ? "text-gray-400" : "text-gray-500"}`}>{n.referenceId}</p>}
-                              </div>
-                            ) : (
-                              <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{displayName(n.fromUserId)}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
-                            )}
-                          </div>
-                          <button onClick={(e) => deleteNotif(n._id, e)} className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                          </button>
-                        </div>
-                        {isExpanded && (
-                          <div className="mt-2 pl-2">
-                            {n.image && <img src={n.image} alt="" className="w-full rounded-lg mb-2 max-h-48 object-cover" />}
-                            <p className="text-gray-500 text-sm whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: n.body ? linkifyText(n.body) : "No additional details" }} />
-                          </div>
+                      <div key={n._id} className={`text-sm ${n.read ? "" : "bg-purple-50"}`}>
+                        {n.image && (
+                          <img src={n.image} alt="" className="w-full h-28 object-cover" loading="lazy" />
                         )}
+                        <div className="p-3 border-b border-gray-50">
+                          <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
+                            <div className="flex-1 min-w-0">
+                              {n.type === "reminder" ? (
+                                <div>
+                                  <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">Royal Youth Hub</span></p>
+                                  {n.referenceId && <p className={`text-xs truncate ${n.read ? "text-gray-400" : "text-gray-500"}`}>{n.referenceId}</p>}
+                                </div>
+                              ) : (
+                                <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{displayName(n.fromUserId)}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                              )}
+                            </div>
+                            <button onClick={(e) => deleteNotif(n._id, e)} className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                          </div>
+                          {isExpanded && (
+                            <div className="mt-2">
+                              <p className="text-gray-500 text-sm whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: n.body ? linkifyText(n.body) : "No additional details" }} />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
