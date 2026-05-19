@@ -484,7 +484,10 @@ function MemberDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     {n.type === "reminder" ? (
-                      <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">Royal Youth Hub</span></p>
+                      <div>
+                        <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">Royal Youth Hub</span></p>
+                        {n.referenceId && <p className={`text-xs truncate ${n.read ? "text-gray-400" : "text-gray-500"}`}>{n.referenceId}</p>}
+                      </div>
                     ) : (
                       <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                     )}
