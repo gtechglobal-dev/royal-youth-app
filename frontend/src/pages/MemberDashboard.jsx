@@ -4,6 +4,11 @@ import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
+
+const linkifyText = (text) => {
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline break-all">$1</a>');
+};
 import { connectSocket, getSocket } from "../services/socket";
 
 function MemberDashboard() {
@@ -495,7 +500,7 @@ function MemberDashboard() {
                 </div>
                 {isExpanded && (
                   <div className="mt-2 pl-9">
-                    <p className="text-gray-500 text-sm">{n.body || "No additional details"}</p>
+                    <p className="text-gray-500 text-sm whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: n.body ? linkifyText(n.body) : "No additional details" }} />
                   </div>
                 )}
               </div>

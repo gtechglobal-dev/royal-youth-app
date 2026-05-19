@@ -2361,6 +2361,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Message Body</label>
                 <textarea value={pushBody} onChange={e => setPushBody(e.target.value)} placeholder="Type your message..." className="border p-2 w-full rounded h-24 resize-none" required />
+                <p className="text-xs text-gray-400 mt-1">URLs will be clickable. Supports: https://example.com</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Target</label>
