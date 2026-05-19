@@ -63,7 +63,7 @@ self.addEventListener("push", (event) => {
     icon: "/icon-192x192.png",
     badge: "/favicon-192x192.png",
     vibrate: [200, 100, 200],
-    data: { url: data.url || "/dashboard" },
+    data: { url: data.url || "/dashboard", notificationId: data.notificationId },
   };
 
   event.waitUntil(
@@ -76,12 +76,17 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || "/dashboard";
+  let url = event.notification.data?.url || "/dashboard";
+  const notifId = event.notification.data?.notificationId;
+  if (notifId) {
+    const separator = url.includes("?") ? "&" : "?";
+    url = `${url}${separator}notif=${notifId}`;
+  }
   event.waitUntil(
     Promise.all([
       clearBadge(),
       clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-        const matching = windowClients.find((c) => c.url.includes(url));
+        const matching = windowClients.find((c) => c.url.includes(url.split("?")[0]));
         if (matching) {
           matching.focus();
         } else {

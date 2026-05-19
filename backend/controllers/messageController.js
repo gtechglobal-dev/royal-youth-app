@@ -121,14 +121,14 @@ export const sendMessage = async (req, res) => {
       .populate("sharedPostId");
 
     if (receiverId.toString() !== senderId.toString()) {
-      await Notification.create({
+      const notif = await Notification.create({
         userId: receiverId,
         fromUserId: senderId,
         type: "message",
         referenceId: conversation._id.toString(),
       });
       try { getIO().to(`user:${receiverId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(receiverId, "Royal Youth Hub", `${req.user.firstname || "Someone"} sent you a message`, "/messages"); } catch (e) {}
+      try { sendPushNotification(receiverId, "Royal Youth Hub", `${req.user.firstname || "Someone"} sent you a message`, "/messages", notif._id.toString()); } catch (e) {}
     }
 
     res.status(201).json(populated);

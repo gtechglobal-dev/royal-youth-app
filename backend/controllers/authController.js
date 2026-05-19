@@ -353,7 +353,7 @@ export const updateDues = async (req, res) => {
     if (status === "Paid") {
       const fromId = await resolveUserId(req.user?._id || "admin");
       const targetId = String(req.params.id).length < 10 ? await resolveUserId(req.params.id) : req.params.id;
-      await Notification.create({
+      const notif = await Notification.create({
         userId: targetId,
         fromUserId: fromId,
         type: "reminder",
@@ -361,7 +361,7 @@ export const updateDues = async (req, res) => {
         body: `Your dues for ${month} have been marked as paid`,
       });
       try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(targetId, "Royal Youth Hub", `Your ${month} dues have been marked as paid`, "/dashboard"); } catch (e) {}
+      try { sendPushNotification(targetId, "Royal Youth Hub", `Your ${month} dues have been marked as paid`, "/dashboard", notif._id.toString()); } catch (e) {}
     }
 
     res.status(200).json(member);

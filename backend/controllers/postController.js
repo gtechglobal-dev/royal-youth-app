@@ -91,14 +91,14 @@ export const likePost = async (req, res) => {
     if (post.userId.toString() !== userId.toString()) {
       const fromId = await resolveUserId(userId);
       const targetId = post.userId.toString().length < 10 ? await resolveUserId(post.userId) : post.userId;
-      await Notification.create({
+      const notif = await Notification.create({
         userId: targetId,
         fromUserId: fromId,
         type: "like",
         referenceId: post._id.toString(),
       });
       try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(targetId, "Royal Youth Hub", `${req.user.firstname || "Admin"} liked your post`, "/community"); } catch (e) {}
+      try { sendPushNotification(targetId, "Royal Youth Hub", `${req.user.firstname || "Admin"} liked your post`, "/community", notif._id.toString()); } catch (e) {}
     }
 
     try { getIO().emit("postLiked", { postId: post._id.toString(), userId: userId.toString(), likeCount: post.likes.length }); } catch (e) {}
@@ -165,14 +165,14 @@ export const commentOnPost = async (req, res) => {
     if (post.userId.toString() !== req.user._id.toString()) {
       const fromId = await resolveUserId(req.user._id);
       const targetId = post.userId.toString().length < 10 ? await resolveUserId(post.userId) : post.userId;
-      await Notification.create({
+      const notif = await Notification.create({
         userId: targetId,
         fromUserId: fromId,
         type: "comment",
         referenceId: post._id.toString(),
       });
       try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(targetId, "Royal Youth Hub", `${req.user.firstname || "Admin"} commented: ${text.trim().slice(0, 50)}`, `/post/${post._id}`); } catch (e) {}
+      try { sendPushNotification(targetId, "Royal Youth Hub", `${req.user.firstname || "Admin"} commented: ${text.trim().slice(0, 50)}`, `/post/${post._id}`, notif._id.toString()); } catch (e) {}
     }
 
     try { getIO().emit("newComment", { postId: post._id.toString(), comment: addedComment.toObject() }); } catch (e) {}

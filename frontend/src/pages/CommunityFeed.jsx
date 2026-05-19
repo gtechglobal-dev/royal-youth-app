@@ -83,6 +83,18 @@ function CommunityFeed() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const notifId = params.get("notif");
+    if (notifId) {
+      setShowNotif(true);
+      setExpandedNotif(notifId);
+      const url = new URL(window.location);
+      url.searchParams.delete("notif");
+      window.history.replaceState({}, "", url);
+    }
+  }, []);
+
   // Close notification dropdown when clicking/tapping outside, swipe left/right
   useEffect(() => {
     if (!showNotif) return;
