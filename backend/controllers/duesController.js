@@ -1,4 +1,18 @@
 import Dues from "../models/dues.js";
+import Notification from "../models/Notification.js";
+import { getIO } from "../socket.js";
+import { sendPushNotification } from "./pushController.js";
+
+const resolveUserId = async (id) => {
+  if (!id || id === "admin" || String(id).length < 10) {
+    const { default: User } = await import("../models/user.js");
+    const adminUser = await User.findOne({ role: "admin", isDeleted: false }).select("_id").lean();
+    if (adminUser) return adminUser._id;
+    const anyUser = await User.findOne({ isDeleted: false }).select("_id").lean();
+    return anyUser?._id || id;
+  }
+  return id;
+};
 
 // ADMIN MARK DUES
 
@@ -25,6 +39,18 @@ export const markDues = async (req, res) => {
 
       await record.save();
     }
+
+    const fromId = await resolveUserId(req.user?._id || "admin");
+    const targetId = String(userId).length < 10 ? await resolveUserId(userId) : userId;
+    await Notification.create({
+      userId: targetId,
+      fromUserId: fromId,
+      type: "reminder",
+      referenceId: `${month} Dues`,
+      body: `Your dues for ${month} have been marked as ${status}`,
+    });
+    try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
+    try { sendPushNotification(targetId, "Royal Youth Hub", `Your ${month} dues have been marked as ${status}`, "/dashboard"); } catch (e) {}
 
     res.json({ message: "Dues updated successfully", record });
   } catch (error) {
