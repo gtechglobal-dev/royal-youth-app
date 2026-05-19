@@ -458,34 +458,39 @@ function MemberDashboard() {
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {notifications.slice(0, 8).map((n) => {
             const isExpanded = expandedNotif === n._id;
-            const navUrl = n.type === "like" || n.type === "comment" ? `/post/${n.referenceId}` : n.type === "message" ? "/messages" : "/dashboard";
+            let touchStartX = 0;
+            const deleteNotif = () => API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {});
             return (
-              <div key={n._id} className={`p-2 rounded-lg text-xs cursor-pointer hover:bg-gray-100 ${n.read ? "" : "bg-purple-50"}`}>
-                <div className="flex items-start gap-2" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
-                  <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div
+                key={n._id}
+                className={`relative p-2.5 rounded-lg text-sm cursor-pointer hover:bg-gray-100 overflow-hidden ${n.read ? "" : "bg-purple-50"}`}
+                onTouchStart={(e) => { touchStartX = e.touches[0].clientX; }}
+                onTouchEnd={(e) => { if (touchStartX - e.changedTouches[0].clientX > 80) deleteNotif(); }}
+              >
+                <div className="flex items-start gap-2 relative z-10" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
+                  <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                     {n.type === "reminder" ? (
-                      <svg className="w-3.5 h-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                      <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                     ) : n.fromUserId?.profileImage ? (
                       <img src={optimizeImage(n.fromUserId.profileImage, 32)} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
-                      <span className="text-purple-600 font-bold text-[9px]">{n.fromUserId?.firstname?.[0]}</span>
+                      <span className="text-purple-600 font-bold text-xs">{n.fromUserId?.firstname?.[0]}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     {n.type === "reminder" ? (
-                      <p className="text-gray-700 truncate"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
+                      <p className="text-gray-700 truncate"><span className="font-semibold">Royal Youth Hub</span></p>
                     ) : (
                       <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                     )}
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {}); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <button onClick={(e) => { e.stopPropagation(); deleteNotif(); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
                 {isExpanded && (
-                  <div className="mt-1.5 pl-8">
-                    <p className="text-gray-500 text-[11px]">{n.body || "No additional details"}</p>
-                    <button onClick={(e) => { e.stopPropagation(); setExpandedNotif(null); navigate(navUrl); }} className="text-purple-600 text-xs font-semibold mt-1 hover:underline">View</button>
+                  <div className="mt-2 pl-9 relative z-10">
+                    <p className="text-gray-500 text-sm">{n.body || "No additional details"}</p>
                   </div>
                 )}
               </div>

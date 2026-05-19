@@ -176,19 +176,19 @@ function CommunityFeed() {
             &larr; Dashboard
           </Link>
           <h1 className="text-lg font-bold text-purple-700">Community</h1>
-          <div className="flex items-center gap-3">
-            <Link to="/messages" className="relative text-gray-500 hover:text-purple-600">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex items-center gap-1">
+            <Link to="/messages" className="relative p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </Link>
             <div className="relative" ref={notifRef}>
-              <button onClick={() => { setShowNotif(!showNotif); if (!showNotif) { if (unreadCount > 0) markNotifRead(); navigator.serviceWorker?.ready?.then(r => r.active?.postMessage({ type: "CLEAR_BADGE" })).catch(() => {}); } }} className="relative text-gray-500 hover:text-purple-600">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button onClick={() => { setShowNotif(!showNotif); if (!showNotif) { if (unreadCount > 0) markNotifRead(); navigator.serviceWorker?.ready?.then(r => r.active?.postMessage({ type: "CLEAR_BADGE" })).catch(() => {}); } }} className="relative p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">{unreadCount}</span>
+                  <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">{unreadCount}</span>
                 )}
               </button>
               {showNotif && (
@@ -199,25 +199,30 @@ function CommunityFeed() {
                   {notifications.length === 0 && <p className="text-gray-400 text-sm text-center p-4">No notifications</p>}
                   {notifications.map((n) => {
                     const isExpanded = expandedNotif === n._id;
-                    const navUrl = n.type === "like" || n.type === "comment" ? `/post/${n.referenceId}` : n.type === "message" ? "/messages" : "/dashboard";
+                    let touchStartX = 0;
+                    const deleteNotif = () => API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {});
                     return (
-                      <div key={n._id} className={`p-3 border-b border-gray-50 text-sm ${n.read ? "" : "bg-purple-50"}`}>
-                        <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
+                      <div
+                        key={n._id}
+                        className={`relative p-3 border-b border-gray-50 text-sm overflow-hidden ${n.read ? "" : "bg-purple-50"}`}
+                        onTouchStart={(e) => { touchStartX = e.touches[0].clientX; }}
+                        onTouchEnd={(e) => { if (touchStartX - e.changedTouches[0].clientX > 80) deleteNotif(); }}
+                      >
+                        <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50 relative z-10" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
                           <div className="flex-1 min-w-0">
                             {n.type === "reminder" ? (
-                              <p className="text-gray-700 truncate"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
+                              <p className="text-gray-700 truncate"><span className="font-semibold">Royal Youth Hub</span></p>
                             ) : (
                               <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                             )}
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {}); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                          <button onClick={(e) => { e.stopPropagation(); deleteNotif(); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                           </button>
                         </div>
                         {isExpanded && (
-                          <div className="mt-1.5 pl-2">
-                            <p className="text-gray-500 text-xs">{n.body || "No additional details"}</p>
-                            <button onClick={(e) => { e.stopPropagation(); setExpandedNotif(null); setShowNotif(false); navigate(navUrl); }} className="text-purple-600 text-xs font-semibold mt-1 hover:underline">View</button>
+                          <div className="mt-2 pl-2 relative z-10">
+                            <p className="text-gray-500 text-sm">{n.body || "No additional details"}</p>
                           </div>
                         )}
                       </div>
