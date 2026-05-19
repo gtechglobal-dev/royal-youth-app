@@ -8,6 +8,13 @@ const DEFAULT_SOURCES = [
   { sourceId: "forbes-innovation", url: "https://www.forbes.com/innovation/feed/", label: "Forbes Innovation", category: "business", icon: "💡", order: 5 },
   { sourceId: "inc", url: "https://www.inc.com/rss/", label: "Inc.com", category: "business", icon: "📈", order: 6 },
   { sourceId: "smallbiz-trends", url: "https://smallbiztrends.com/feed", label: "Small Business Trends", category: "business", icon: "🚀", order: 7 },
+  { sourceId: "punch", url: "https://punchng.com/feed/", label: "Punch Newspapers", category: "nigeria", icon: "🇳🇬", order: 8 },
+  { sourceId: "premium-times", url: "https://www.premiumtimesng.com/feed", label: "Premium Times", category: "nigeria", icon: "🗞️", order: 9 },
+  { sourceId: "businessday", url: "https://businessday.ng/feed/", label: "BusinessDay", category: "nigeria", icon: "📊", order: 10 },
+  { sourceId: "techcabal", url: "https://techcabal.com/feed/", label: "TechCabal", category: "nigeria", icon: "💻", order: 11 },
+  { sourceId: "africanews", url: "https://www.africanews.com/feed/", label: "Africanews", category: "africa", icon: "🌍", order: 12 },
+  { sourceId: "africa-report", url: "https://www.theafricareport.com/feed/", label: "The Africa Report", category: "africa", icon: "🌐", order: 13 },
+  { sourceId: "mg", url: "https://mg.co.za/rss/", label: "Mail & Guardian", category: "africa", icon: "🗺️", order: 14 },
 ];
 
 export const seedFeedSources = async () => {

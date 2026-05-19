@@ -1161,8 +1161,8 @@ function MemberDashboard() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-purple-700">Inspiration</h2>
               </div>
-              <div className="flex gap-2 mb-6">
-                {["all", "spiritual", "business"].map((cat) => (
+              <div className="flex gap-2 mb-6 flex-wrap">
+                {["all", "spiritual", "business", "nigeria", "africa"].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setFeedCategory(cat)}
