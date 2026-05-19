@@ -102,16 +102,18 @@ function LandingPage() {
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (token && user.role !== "admin") {
-      setIsLoggedIn(true);
-    }
+    try {
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (token && user.role !== "admin") {
+        setIsLoggedIn(true);
+      }
+    } catch (_) {}
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    try { localStorage.removeItem("token"); } catch (_) {}
+    try { localStorage.removeItem("user"); } catch (_) {}
     setIsLoggedIn(false);
     navigate("/");
   };

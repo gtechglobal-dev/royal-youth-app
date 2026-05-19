@@ -6,10 +6,12 @@ const API = axios.create({
 });
 
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  try {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (_) {}
   if (config.data instanceof FormData) {
     delete config.headers['Content-Type'];
   }
@@ -29,16 +31,12 @@ API.interceptors.response.use(
 
       if (error.response.status === 401 && !isLoginRequest && !isOnLoginPage) {
         console.log("401 error in interceptor - redirecting to login");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        const userStr = localStorage.getItem("user");
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          if (user.role === "admin") {
-            window.location.href = "/admin-login";
-          } else {
-            window.location.href = "/login";
-          }
+        try { localStorage.removeItem("token"); } catch (_) {}
+        try { localStorage.removeItem("user"); } catch (_) {}
+        let role;
+        try { role = JSON.parse(localStorage.getItem("user") || "{}").role; } catch (_) {}
+        if (role === "admin") {
+          window.location.href = "/admin-login";
         } else {
           window.location.href = "/login";
         }

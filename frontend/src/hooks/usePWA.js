@@ -4,7 +4,9 @@ import API from "../services/api";
 export function usePWA() {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [notificationPermission, setNotificationPermission] = useState(
+    typeof Notification !== "undefined" ? Notification.permission : "denied"
+  );
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
     && !window.MSStream;

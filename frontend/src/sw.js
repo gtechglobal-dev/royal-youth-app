@@ -1,6 +1,6 @@
 import { precacheAndRoute } from "workbox-precaching";
-import { registerRoute } from "workbox-routing";
-import { NetworkFirst } from "workbox-strategies";
+import { registerRoute, setDefaultHandler, setCatchHandler } from "workbox-routing";
+import { NetworkFirst, NetworkOnly } from "workbox-strategies";
 
 precacheAndRoute(self.__WB_MANIFEST);
 
@@ -11,6 +11,16 @@ registerRoute(
     networkTimeoutSeconds: 10,
   })
 );
+
+// Fallback for navigation requests — iOS home screen requires a response
+setDefaultHandler(new NetworkOnly());
+
+setCatchHandler(async ({ event }) => {
+  if (event.request.mode === "navigate") {
+    return caches.match("/index.html") || Response.error();
+  }
+  return Response.error();
+});
 
 const BADGE_CACHE = "push-badge-count";
 
