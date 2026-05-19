@@ -505,7 +505,14 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       });
       setNotification({ open: true, type: "success", message: "Special donation added" });
       setSpecialDonation({ memberId: "", purpose: "", amount: "", date: "" });
-      fetchData();
+      const [incomeRes, donationsRes, balanceRes] = await Promise.all([
+        API.get("/finance/income/all"),
+        API.get("/payment/all-special-donations"),
+        API.get("/finance/balance-sheet")
+      ]);
+      setOtherIncome(incomeRes.data);
+      setSpecialDonations(donationsRes.data || []);
+      setBalance(balanceRes.data);
     } catch (error) {
       setNotification({ open: true, type: "error", message: "Error adding donation" });
     }
