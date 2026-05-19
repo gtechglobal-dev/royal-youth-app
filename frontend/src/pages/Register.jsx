@@ -66,7 +66,7 @@ function Register() {
   const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState({ open: false, type: "", message: "" });
   const [formData, setFormData] = useState({
-    surname: "", firstname: "", othername: "", email: "", phone: "",
+    surname: "", firstname: "", othername: "", nickname: "", gender: "", email: "", phone: "",
     dob: "", address: "", stateOfOrigin: "", lga: "", branch: "Plot C4/C5 Owerri", occupation: "",
     hobbies: "", serviceUnit: "", serviceUnitLove: "", bornAgain: "",
     password: "", confirmPassword: "",
@@ -94,6 +94,8 @@ function Register() {
     else if (!/^[a-zA-Z'-]+$/.test(formData.surname.trim().replace(/ /g, ""))) errs.surname = "Surname must contain letters only";
     if (!formData.firstname.trim()) errs.firstname = "First name is required";
     else if (!/^[a-zA-Z'-]+$/.test(formData.firstname.trim().replace(/ /g, ""))) errs.firstname = "First name must contain letters only";
+    if (!formData.nickname.trim()) errs.nickname = "Nickname is required";
+    if (!formData.gender) errs.gender = "Gender is required";
     if (!formData.email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = "Enter a valid email";
     if (!formData.phone.trim()) errs.phone = "Phone number is required";
@@ -127,6 +129,7 @@ function Register() {
     let { name, value } = e.target;
     if (name === "phone") value = value.replace(/\D/g, "").slice(0, 11);
     if (name === "surname" || name === "firstname" || name === "othername") value = value.toUpperCase();
+    if (name === "nickname") value = value.trim();
     if (name === "stateOfOrigin") {
       setSelectedState(value);
       setFormData((prev) => ({ ...prev, [name]: value, lga: "" }));
@@ -245,6 +248,21 @@ function Register() {
             </div>
 
             <input type="text" name="othername" placeholder="OTHER NAME (OPTIONAL)" value={formData.othername} style={{ textTransform: "uppercase" }} className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none transition-all" onChange={handleChange} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <input type="text" name="nickname" placeholder="NICKNAME * (Name that appears in conversations/posts)" required value={formData.nickname} className={`w-full p-4 rounded-xl border-2 transition-all focus:outline-none focus:border-indigo-500 ${errors.nickname ? "border-red-500" : "border-gray-200"}`} onChange={handleChange} />
+                {errors.nickname && <p className="text-red-500 text-sm mt-1">{errors.nickname}</p>}
+              </div>
+              <div>
+                <select name="gender" required value={formData.gender} className={`w-full p-4 rounded-xl border-2 transition-all focus:outline-none focus:border-indigo-500 ${errors.gender ? "border-red-500" : "border-gray-200"} bg-white`} onChange={handleChange}>
+                  <option value="">SELECT GENDER *</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+                {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>

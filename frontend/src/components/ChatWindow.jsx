@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import API from "../services/api";
 import { optimizeImage } from "../utils/cloudinary";
+import { displayName } from "../utils/displayName";
 
 function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
   const [messages, setMessages] = useState([]);
@@ -121,7 +122,7 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
           )}
         </div>
         <div>
-          <p className="font-semibold text-sm">{otherUser?.firstname} {otherUser?.surname}</p>
+          <p className="font-semibold text-sm">{displayName(otherUser)}</p>
           <p className="text-gray-400 text-xs">{otherUser?.branch}</p>
         </div>
       </div>

@@ -5,6 +5,7 @@ import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
 import ConfirmModal from "../components/ConfirmModal";
+import { displayName } from "../utils/displayName";
 
 const linkifyText = (text) => {
   const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -33,6 +34,9 @@ function MemberDashboard() {
   const [expandedNotif, setExpandedNotif] = useState(null);
   const [showAllNotifs, setShowAllNotifs] = useState(false);
   const [clearAllConfirm, setClearAllConfirm] = useState(false);
+  const [showNicknamePrompt, setShowNicknamePrompt] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState("");
+  const [genderInput, setGenderInput] = useState("");
 
   // Friends
   const [friends, setFriends] = useState([]);
@@ -96,6 +100,7 @@ function MemberDashboard() {
         const userRes = await API.get("/auth/me");
         if (userRes.data._id === "admin" && userRes.data.role === "admin") { navigate("/admin"); return; }
         setUser(userRes.data);
+        if (!userRes.data.nickname) { setNicknameInput(""); setGenderInput(""); setShowNicknamePrompt(true); }
 
         const cutoffDate = new Date(2026, 4, 4, 17, 0, 0);
         if (new Date() < cutoffDate) {
@@ -411,7 +416,7 @@ function MemberDashboard() {
         <div className="w-16 h-16 rounded-full bg-purple-100 mx-auto flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => user.profileImage && setShowImageModal(true)}>
           {user.profileImage ? <img src={optimizeImage(user.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-xl">{user.firstname?.[0]}{user.surname?.[0]}</span>}
         </div>
-        <p className="font-semibold mt-2">{user.firstname} {user.surname}</p>
+        <p className="font-semibold mt-2">{displayName(user)}</p>
         <p className="text-gray-400 text-xs">{user.branch}</p>
         <p className={`text-xs mt-1 font-medium ${user.membershipStatus === "Active Member" ? "text-green-600" : "text-red-500"}`}>{user.membershipStatus}</p>
         <p className={`text-xs mt-0.5 font-medium ${
@@ -549,7 +554,7 @@ function MemberDashboard() {
                 {r.from?.profileImage ? <img src={optimizeImage(r.from.profileImage, 48)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-xs">{r.from?.firstname?.[0]}</span>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold truncate">{r.from?.firstname} {r.from?.surname}</p>
+                <p className="text-xs font-semibold truncate">{displayName(r.from)}</p>
               </div>
               <div className="flex gap-1">
                 <button onClick={() => handleAcceptRequest(r._id)} className="bg-purple-600 text-white text-[10px] px-2 py-1 rounded hover:bg-purple-700">Accept Royalty</button>
@@ -651,7 +656,7 @@ function MemberDashboard() {
                             </div>
                           </div>
                           <span className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center">
-                            {s.surname} {s.firstname}
+                            {displayName(s)}
                           </span>
                         {s.branch && (
                           <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.branch}</span>
@@ -776,7 +781,7 @@ function MemberDashboard() {
                       {viewedMember.profileImage ? <img src={optimizeImage(viewedMember.profileImage, 128)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-2xl">{viewedMember.firstname?.[0]}{viewedMember.surname?.[0]}</span>}
                     </div>
                     <div>
-                      <p className="text-lg font-bold">{viewedMember.firstname} {viewedMember.surname} {viewedMember.othername}</p>
+                      <p className="text-lg font-bold">{displayName(viewedMember)}</p>
                       <p className="text-gray-500">{viewedMember.occupation || "Not specified"}</p>
                       <p className="text-gray-400 text-sm">{viewedMember.branch || "Plot C4/C5 Owerri"}</p>
                     </div>
@@ -804,7 +809,7 @@ function MemberDashboard() {
                   {user.profileImage ? <img src={optimizeImage(user.profileImage, 128)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-2xl">{user.firstname?.[0]}{user.surname?.[0]}</span>}
                 </div>
                 <div>
-                  <p className="text-lg font-bold">{user.firstname} {user.surname} {user.othername}</p>
+                  <p className="text-lg font-bold">{displayName(user)}</p>
                   <p className="text-gray-500">{user.occupation || "Not specified"}</p>
                   <Link to="/edit-profile" className="text-purple-600 text-sm hover:underline">Edit Profile</Link>
                 </div>
@@ -919,7 +924,7 @@ function MemberDashboard() {
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-gray-700 truncate">{u.surname} {u.firstname}</p>
+                              <p className="text-sm font-semibold text-gray-700 truncate">{displayName(u)}</p>
                               <p className="text-[11px] text-gray-400">Posts: {u.posts} · Attendance: {u.attendance}</p>
                             </div>
                             <span className="text-sm font-bold text-purple-600">{u.score}</span>
@@ -958,7 +963,7 @@ function MemberDashboard() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-lg font-bold text-gray-800">{user.surname} {user.firstname}</p>
+                              <p className="text-lg font-bold text-gray-800">{displayName(user)}</p>
                               <span className="text-2xl">{badge}</span>
                             </div>
                             <p className="text-sm text-gray-500">Rank #{user.rank} · Score: {user.score}</p>
@@ -1020,7 +1025,7 @@ function MemberDashboard() {
                       <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer" onClick={() => f.profileImage && setViewingImage({ url: f.profileImage, firstname: f.firstname, surname: f.surname })}>
                         {f.profileImage ? <img src={optimizeImage(f.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-lg">{f.firstname?.[0]}{f.surname?.[0]}</span>}
                       </div>
-                      <span onClick={() => handleViewMember(f._id)} className="font-semibold text-sm text-center hover:text-purple-600 cursor-pointer truncate w-full">{f.firstname} {f.surname}</span>
+                      <span onClick={() => handleViewMember(f._id)} className="font-semibold text-sm text-center hover:text-purple-600 cursor-pointer truncate w-full">{displayName(f)}</span>
                       <p className="text-gray-400 text-[10px] text-center">{f.branch}</p>
                       <div className="flex flex-col gap-1.5 w-full mt-auto">
                         <button onClick={() => handleMessageFriend(f._id)} className="w-full text-[11px] bg-purple-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-700 text-center transition">Send Message</button>
@@ -1126,6 +1131,26 @@ function MemberDashboard() {
                 Download Image
               </button>
             )}
+          </div>
+        </div>
+      )}
+      {showNicknamePrompt && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative z-10">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">Complete Your Profile</h3>
+              <p className="text-sm text-gray-500 mb-4">Please set your nickname and gender to continue.</p>
+              <input type="text" placeholder="Nickname *" value={nicknameInput} onChange={e => setNicknameInput(e.target.value)} className="w-full p-3 border rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+              <select value={genderInput} onChange={e => setGenderInput(e.target.value)} className="w-full p-3 border rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white" required>
+                <option value="">Select Gender *</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              <button onClick={async () => { if (!nicknameInput.trim() || !genderInput) return; try { await API.put("/auth/profile", { nickname: nicknameInput.trim(), gender: genderInput }); setUser(prev => ({ ...prev, nickname: nicknameInput.trim(), gender: genderInput })); setShowNicknamePrompt(false); } catch (e) { console.error(e); } }} className="w-full px-4 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors">Save</button>
+            </div>
           </div>
         </div>
       )}

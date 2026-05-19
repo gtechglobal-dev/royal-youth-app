@@ -5,6 +5,7 @@ import { timeAgo } from "../utils/formatTime";
 import { optimizeImage } from "../utils/cloudinary";
 import EmojiPicker from "./EmojiPicker";
 import ConfirmModal from "./ConfirmModal";
+import { displayName } from "../utils/displayName";
 
 function CommentSection({ postId, currentUserId, onCommentCountChange }) {
   const [comments, setComments] = useState([]);
@@ -147,7 +148,7 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
                   <div className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5">
                     <div className="flex items-center justify-between">
                       <Link to={`/member/${comment.userId?._id}`} className="font-semibold text-xs hover:text-purple-600">
-                        {comment.userId?.firstname} {comment.userId?.surname}
+                        {displayName(comment.userId)}
                       </Link>
                       <div className="flex items-center gap-2">
                         <span className="text-gray-400 text-[10px]">{timeAgo(comment.createdAt)}</span>
@@ -225,7 +226,7 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
                         <div className="flex-1 bg-blue-50 rounded-lg px-2.5 py-1.5">
                           <div className="flex items-center gap-1.5">
                             <Link to={`/member/${reply.userId?._id}`} className="font-semibold text-[11px] hover:text-blue-600">
-                              {reply.userId?.firstname} {reply.userId?.surname}
+                              {displayName(reply.userId)}
                             </Link>
                             <span className="text-gray-400 text-[9px]">{timeAgo(reply.createdAt)}</span>
                           </div>

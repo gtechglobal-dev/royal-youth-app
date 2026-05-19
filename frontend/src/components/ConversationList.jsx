@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import API from "../services/api";
 import { optimizeImage } from "../utils/cloudinary";
+import { displayName } from "../utils/displayName";
 
 function ConversationList({ currentUserId, onSelect, selectedId, onMessageReceived }) {
   const [conversations, setConversations] = useState([]);
@@ -56,7 +57,7 @@ function ConversationList({ currentUserId, onSelect, selectedId, onMessageReceiv
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm truncate">
-                {conv.otherUser?.firstname} {conv.otherUser?.surname}
+                {displayName(conv.otherUser)}
               </p>
               <p className="text-gray-500 text-xs truncate">
                 {conv.lastSenderId?._id === currentUserId ? "You: " : ""}

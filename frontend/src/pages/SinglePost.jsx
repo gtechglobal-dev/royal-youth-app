@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import PostCard from "../components/PostCard";
+import { displayName } from "../utils/displayName";
 
 function SinglePost() {
   const { id } = useParams();
@@ -125,7 +126,7 @@ function SinglePost() {
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <Link to={`/member/${post.userId?._id}`} className="font-semibold text-sm hover:text-purple-600 whitespace-nowrap">
-                      {post.userId?.firstname} {post.userId?.surname}
+                      {displayName(post.userId)}
                     </Link>
                     {post.userId?.role && post.userId.role !== "member" && (
                       <span className="ml-1.5 text-[10px] font-medium text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded whitespace-nowrap">{post.userId.role === "youth_president" ? "Youth President" : post.userId.role === "admin" ? "Admin" : post.userId.role}</span>

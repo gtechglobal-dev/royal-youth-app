@@ -5,6 +5,7 @@ import Notification from "../components/Notification";
 import Logo from "../assets/gdev logo.svg";
 import { OverlayLoader } from "../components/Loaders";
 import { optimizeImage } from "../utils/cloudinary";
+import { displayName } from "../utils/displayName";
 import siteLogo from "../assets/gdev logo.svg";
 import { connectSocket, getSocket } from "../services/socket";
 import EmojiPicker from "../components/EmojiPicker";
@@ -693,7 +694,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       if (status === "Paid" && amount > 0) {
         const member = members.find(m => m._id === memberId);
         await API.post("/finance/income", {
-          purpose: `${year} Dues - ${month} (${member?.firstname} ${member?.surname})`,
+          purpose: `${year} Dues - ${month} (${displayName(member)})`,
           amount: amount,
           date: new Date().toISOString().split('T')[0],
           memberId: memberId
@@ -1015,7 +1016,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
           <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 40s linear infinite" }}>
             {[...Array(8)].map((_, i) => (
               <span key={i} className="text-white text-sm md:text-base font-bold mx-4 flex-shrink-0">
-                🎉 Birthday Celebrant{todayBirthdayMembers.length > 1 ? "s" : ""}: {todayBirthdayMembers.map(m => `${m.firstname} ${m.surname}`).join(", ")}! 🎂 We celebrate with them today! 🎁✨
+                🎉 Birthday Celebrant{todayBirthdayMembers.length > 1 ? "s" : ""}: {todayBirthdayMembers.map(m => `${displayName(m)}`).join(", ")}! 🎂 We celebrate with them today! 🎁✨
               </span>
             ))}
           </div>
@@ -1085,7 +1086,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                         <tbody>
                           {getUpcomingBirthdays().map((member) => (
                             <tr key={member._id}>
-                              <td className="border p-2 md:p-3">{member.firstname} {member.surname}</td>
+                              <td className="border p-2 md:p-3">{displayName(member)}</td>
                               <td className="border p-2 md:p-3">{formatDateWithOrdinal(member.day, member.month)}</td>
                               <td className="border p-2 md:p-3">{member.phone}</td>
                             </tr>
@@ -1121,7 +1122,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                       );
                     }
                     return leadership.map(m => (
-                      <option key={m._id} value={m._id}>{m.firstname} {m.surname} — {m.role === "admin" ? "Admin" : "Youth President"}</option>
+                      <option key={m._id} value={m._id}>{displayName(m)} — {m.role === "admin" ? "Admin" : "Youth President"}</option>
                     ));
                   })()}
                 </select>
@@ -1249,7 +1250,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <p className="text-sm font-semibold">{post.userId?.firstname} {post.userId?.surname}
+                              <p className="text-sm font-semibold">{displayName(post.userId)}
                                 {post.userId?.role && post.userId.role !== "member" && (
                                   <span className="ml-1.5 text-[10px] font-medium text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">{post.userId.role === "youth_president" ? "Youth President" : post.userId.role === "admin" ? "Admin" : post.userId.role}</span>
                                 )}
@@ -1339,11 +1340,11 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                 <tbody>
                   {members
                     .filter((member) =>
-                      `${member.firstname} ${member.surname} ${member.othername}`.toLowerCase().includes(memberSearch.toLowerCase())
+                      displayName(member).toLowerCase().includes(memberSearch.toLowerCase())
                     )
                     .map((member) => (
                       <tr key={member._id}>
-                        <td className="border p-2 md:p-3">{member.firstname} {member.surname}</td>
+                        <td className="border p-2 md:p-3">{displayName(member)}</td>
                         <td className="border p-2 md:p-3">{member.phone}</td>
                         <td className="border p-2 md:p-3">{member.dob ? new Date(member.dob).toLocaleDateString() : '-'}</td>
                         <td className="border p-2 md:p-3">
@@ -1429,7 +1430,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold">{selectedMember.firstname} {selectedMember.surname} {selectedMember.othername}</p>
+                    <p className="font-semibold">{displayName(selectedMember)}</p>
                     <p className="text-sm text-gray-500">{selectedMember.occupation || 'No occupation'}</p>
                   </div>
                 </div>
@@ -1459,7 +1460,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   <div key={m._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex flex-col gap-3">
                       <div className="min-w-0">
-                        <p className="font-semibold truncate">{m.firstname} {m.surname} {m.othername}</p>
+                        <p className="font-semibold truncate">{displayName(m)}</p>
                         <p className="text-sm text-gray-500 truncate">{m.phone}</p>
                         <p className="text-sm text-gray-500 truncate">{m.email}</p>
                         <p className="text-sm mt-1 break-words"><span className="font-medium">Occupation:</span> {m.occupation}</p>
@@ -1565,12 +1566,12 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                     <tbody>
                       {members.filter(m => 
                         m.registrationStatus === "Approved" && 
-                        `${m.firstname} ${m.surname}`.toLowerCase().includes(duesSearch.toLowerCase())
+                        `${displayName(m)}`.toLowerCase().includes(duesSearch.toLowerCase())
                       ).map((member) => {
                         const duesField = duesYear === "2027" ? member.dues2027 : member.dues;
                         return (
                         <tr key={member._id}>
-                          <td className="border p-2 md:p-3">{member.firstname} {member.surname}</td>
+                          <td className="border p-2 md:p-3">{displayName(member)}</td>
                           <td className="border p-2 md:p-3">
                             <input
                               type="number"
@@ -1735,7 +1736,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                       const meetingRecord = member.attendance?.[selectedAttendanceMember.currentMeeting];
                       return (
                         <tr key={member._id}>
-                          <td className="border p-2">{member.firstname} {member.surname}</td>
+                          <td className="border p-2">{displayName(member)}</td>
                           <td className="border p-2">
                             <button
                               onClick={() => markAttendance(member._id, selectedAttendanceMember.currentMeeting, meetingRecord?.status === "Present" ? "Absent" : "Present")}
@@ -1810,7 +1811,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   <option value="">Select Member</option>
                   {members.filter(m => m.registrationStatus === "Approved").map((member) => (
                     <option key={member._id} value={member._id}>
-                      {member.firstname} {member.surname}
+                      {displayName(member)}
                     </option>
                   ))}
                 </select>
@@ -1955,7 +1956,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   <tbody>
                     {specialDonations.map((donation, idx) => (
                       <tr key={donation._id || idx}>
-                        <td className="border p-2 md:p-3">{donation.memberId?.firstname} {donation.memberId?.surname}</td>
+                        <td className="border p-2 md:p-3">{displayName(donation.memberId)}</td>
                         <td className="border p-2 md:p-3">{donation.purpose}</td>
                         <td className="border p-2 md:p-3">N{parseInt(donation.amount || 0).toLocaleString()}</td>
                         <td className="border p-2 md:p-3">{donation.date ? new Date(donation.date).toLocaleDateString('en-GB') : '-'}</td>
@@ -2037,7 +2038,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                      <option value="">Select Member</option>
                      {members.filter(m => m.registrationStatus === "Approved").map((member) => (
                        <option key={member._id} value={member._id}>
-                         {member.firstname} {member.surname}
+                         {displayName(member)}
                        </option>
                      ))}
                    </select>
@@ -2204,7 +2205,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                       <tbody>
                         {meetingResponses.map((response) => (
                           <tr key={response._id}>
-                            <td className="border p-2 md:p-3">{response.user?.firstname} {response.user?.surname}</td>
+                            <td className="border p-2 md:p-3">{displayName(response.user)}</td>
                             <td className="border p-2 md:p-3">{response.user?.phone}</td>
                             <td className="border p-2 md:p-3">{response.meetingTitle}</td>
                             <td className="border p-2 md:p-3">
@@ -2380,18 +2381,18 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                     {pushMembers.length === 0 ? (
                       <p className="text-gray-400 text-sm p-3 text-center">Loading members...</p>
                     ) : (
-                      pushMembers.filter(m => `${m.firstname} ${m.surname}`.toLowerCase().includes(pushMemberSearch.toLowerCase())).map(m => {
+                      pushMembers.filter(m => `${displayName(m)}`.toLowerCase().includes(pushMemberSearch.toLowerCase())).map(m => {
                         const checked = pushSelectedMembers.includes(m._id);
                         return (
                           <label key={m._id} className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 ${checked ? "bg-blue-50" : ""}`}>
                             <input type="checkbox" checked={checked} onChange={() => setPushSelectedMembers(prev => checked ? prev.filter(id => id !== m._id) : [...prev, m._id])} className="w-4 h-4" />
-                            <span className="flex-1">{m.firstname} {m.surname}</span>
+                            <span className="flex-1">{displayName(m)}</span>
                             <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${m.registrationStatus === "Approved" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{m.registrationStatus}</span>
                           </label>
                         );
                       })
                     )}
-                    {pushMembers.length > 0 && pushMembers.filter(m => `${m.firstname} ${m.surname}`.toLowerCase().includes(pushMemberSearch.toLowerCase())).length === 0 && (
+                    {pushMembers.length > 0 && pushMembers.filter(m => `${displayName(m)}`.toLowerCase().includes(pushMemberSearch.toLowerCase())).length === 0 && (
                       <p className="text-gray-400 text-sm p-3 text-center">No members found</p>
                     )}
                   </div>

@@ -5,6 +5,7 @@ import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
 import ConfirmModal from "../components/ConfirmModal";
+import { displayName } from "../utils/displayName";
 
 const linkifyText = (text) => {
   const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -244,7 +245,7 @@ function CommunityFeed() {
                                 {n.referenceId && <p className={`text-xs truncate ${n.read ? "text-gray-400" : "text-gray-500"}`}>{n.referenceId}</p>}
                               </div>
                             ) : (
-                              <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                              <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{displayName(n.fromUserId)}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                             )}
                           </div>
                           <button onClick={(e) => deleteNotif(n._id, e)} className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
@@ -281,7 +282,7 @@ function CommunityFeed() {
             )}
           </div>
           <div>
-            <p className="font-semibold text-sm">{user.firstname} {user.surname}</p>
+            <p className="font-semibold text-sm">{displayName(user)}</p>
             <p className="text-gray-400 text-xs">{user.branch}</p>
           </div>
         </div>

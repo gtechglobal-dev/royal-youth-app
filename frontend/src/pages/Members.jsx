@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { displayName } from "../utils/displayName";
 
 function Members() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ function Members() {
             className="border-b p-3 flex justify-between cursor-pointer hover:bg-gray-100"
           >
             <span>
-              {index + 1}. {member.firstname} {member.surname}
+              {index + 1}. {displayName(member)}
             </span>
 
             <span className="text-gray-500">{member.membershipStatus}</span>

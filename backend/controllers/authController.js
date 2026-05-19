@@ -67,6 +67,8 @@ export const registerUser = async (req, res) => {
       surname,
       firstname,
       othername,
+      nickname,
+      gender,
       email,
       phone,
       dob,
@@ -183,6 +185,8 @@ export const registerUser = async (req, res) => {
       surname,
       firstname,
       othername,
+      nickname,
+      gender,
       email,
       phone,
       dob,
@@ -506,13 +510,15 @@ export const getMemberDues = async (req, res) => {
 // UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
-    const { occupation, hobbies, address, branch } = req.body;
+    const { occupation, hobbies, address, branch, nickname, gender } = req.body;
     const updateData = {};
 
     if (occupation) updateData.occupation = occupation;
     if (hobbies) updateData.hobbies = hobbies;
     if (address !== undefined) updateData.address = address;
     if (branch) updateData.branch = branch;
+    if (nickname !== undefined) updateData.nickname = nickname;
+    if (gender !== undefined) updateData.gender = gender;
 
     if (req.file && req.file.buffer && req.file.buffer.length > 0) {
       try {

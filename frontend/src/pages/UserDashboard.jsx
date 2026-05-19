@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import API from "../services/api";
+import { displayName } from "../utils/displayName";
 
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
@@ -60,7 +61,7 @@ function UserDashboard() {
       {/* User Info */}
       <div style={{ background: "white", padding: "24px", borderRadius: "8px", marginBottom: "20px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
         <h2 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "16px" }}>Member Information</h2>
-        <p><strong>Name:</strong> {userData.firstname} {userData.surname}</p>
+        <p><strong>Name:</strong> {displayName(userData)}</p>
         <p><strong>Phone:</strong> {userData.phone}</p>
         <p><strong>Email:</strong> {userData.email}</p>
         <p><strong>Status:</strong> {userData.membershipStatus}</p>

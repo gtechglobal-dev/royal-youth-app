@@ -16,6 +16,8 @@ function EditProfile() {
     email: "",
     phone: "",
     branch: "",
+    nickname: "",
+    gender: "",
   });
 
   const [image, setImage] = useState(null);
@@ -33,6 +35,8 @@ function EditProfile() {
           email: user.email || "",
           phone: user.phone || "",
           branch: user.branch || "Plot C4/C5 Owerri",
+          nickname: user.nickname || "",
+          gender: user.gender || "",
         });
         setCurrentImage(user.profileImage);
       } catch (error) {
@@ -60,6 +64,8 @@ function EditProfile() {
       const data = new FormData();
 
       data.append("occupation", formData.occupation);
+      data.append("nickname", formData.nickname);
+      data.append("gender", formData.gender);
       
       if (formData.hobbies) {
         data.append("hobbies", formData.hobbies);
@@ -149,6 +155,26 @@ function EditProfile() {
               className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
               onChange={handleChange}
             />
+
+            <input
+              type="text"
+              name="nickname"
+              placeholder="Nickname (Name that appears in conversations/posts)"
+              value={formData.nickname}
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none"
+              onChange={handleChange}
+            />
+
+            <select
+              name="gender"
+              value={formData.gender}
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-memberBlue focus:outline-none bg-white"
+              onChange={handleChange}
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
 
             <div className="p-3 border rounded-lg bg-gray-100">
               <p className="text-sm text-gray-500">Soulwinners Branch</p>

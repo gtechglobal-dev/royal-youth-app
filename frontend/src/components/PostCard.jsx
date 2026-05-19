@@ -6,6 +6,7 @@ import ConfirmModal from "./ConfirmModal";
 import { timeAgo } from "../utils/formatTime";
 import siteLogo from "../assets/gdev logo.svg";
 import { optimizeImage } from "../utils/cloudinary";
+import { displayName } from "../utils/displayName";
 
 const PLACARD_COLORS = [
   "#000000", "#1a1a2e", "#16213e", "#0f3460", "#533483",
@@ -134,7 +135,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <Link to={`/member/${post.userId?._id}`} className="font-semibold text-sm hover:text-purple-600 whitespace-nowrap">
-                  {post.userId?.firstname} {post.userId?.surname}
+                  {displayName(post.userId)}
                 </Link>
                 {post.userId?.role && post.userId.role !== "member" && (
                   <span className="ml-1.5 text-[10px] font-medium text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded whitespace-nowrap">{post.userId.role === "youth_president" ? "Youth President" : post.userId.role === "admin" ? "Admin" : post.userId.role}</span>
