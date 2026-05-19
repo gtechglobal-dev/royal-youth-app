@@ -323,7 +323,6 @@ function CommunityFeed() {
           </div>
         )}
       </main>
-    </div>
       <ConfirmModal
         open={clearAllConfirm}
         title="Clear All Notifications"
@@ -331,6 +330,7 @@ function CommunityFeed() {
         onConfirm={() => { API.delete("/notifications/clear-all").then(() => { setNotifications([]); setUnreadCount(0); updateBadge(0); }).catch(() => {}); setClearAllConfirm(false); }}
         onCancel={() => setClearAllConfirm(false)}
       />
+    </div>
   );
 }
 
