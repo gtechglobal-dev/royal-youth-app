@@ -12,6 +12,34 @@ registerRoute(
   })
 );
 
+const BADGE_CACHE = "push-badge-count";
+
+async function getBadgeCount() {
+  const cache = await caches.open(BADGE_CACHE);
+  const res = await cache.match("count");
+  return res ? parseInt(await res.text(), 10) : 0;
+}
+
+async function setBadgeCount(count) {
+  const cache = await caches.open(BADGE_CACHE);
+  await cache.put("count", new Response(String(count)));
+  try {
+    await self.registration.setAppBadge(count);
+  } catch (_) {}
+}
+
+async function incrementBadge() {
+  const count = await getBadgeCount();
+  await setBadgeCount(count + 1);
+}
+
+async function clearBadge() {
+  await setBadgeCount(0);
+  try {
+    await self.registration.clearAppBadge();
+  } catch (_) {}
+}
+
 self.addEventListener("push", (event) => {
   let data = { title: "Royal Youth Hub", body: "", url: "/dashboard" };
   try {
@@ -23,25 +51,42 @@ self.addEventListener("push", (event) => {
   const options = {
     body: data.body,
     icon: "/icon-192x192.png",
-    badge: "/favicon.svg",
+    badge: "/favicon-192x192.png",
     vibrate: [200, 100, 200],
     data: { url: data.url || "/dashboard" },
   };
 
-  event.waitUntil(self.registration.showNotification(data.title, options));
+  event.waitUntil(
+    Promise.all([
+      self.registration.showNotification(data.title, options),
+      incrementBadge(),
+    ])
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = event.notification.data?.url || "/dashboard";
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-      const matching = windowClients.find((c) => c.url.includes(url));
-      if (matching) {
-        matching.focus();
-      } else {
-        clients.openWindow(url);
-      }
-    })
+    Promise.all([
+      clearBadge(),
+      clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+        const matching = windowClients.find((c) => c.url.includes(url));
+        if (matching) {
+          matching.focus();
+        } else {
+          clients.openWindow(url);
+        }
+      }),
+    ])
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SET_BADGE") {
+    setBadgeCount(Number(event.data.count) || 0);
+  }
+  if (event.data?.type === "CLEAR_BADGE") {
+    clearBadge();
+  }
 });

@@ -139,16 +139,33 @@ function MemberDashboard() {
     return () => clearInterval(interval);
   }, [user?._id]);
 
-  // Close notification dropdown when clicking outside
+  // Close notification dropdown when clicking/tapping outside, swipe left/right
   useEffect(() => {
     if (!showNotif) return;
-    const handler = (e) => {
+    let startX = 0;
+    const clickHandler = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) {
         setShowNotif(false);
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    const touchStartHandler = (e) => {
+      startX = e.touches[0].clientX;
+    };
+    const touchEndHandler = (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const diff = startX - endX;
+      if (Math.abs(diff) > 60) {
+        setShowNotif(false);
+      }
+    };
+    document.addEventListener("mousedown", clickHandler);
+    document.addEventListener("touchstart", touchStartHandler);
+    document.addEventListener("touchend", touchEndHandler);
+    return () => {
+      document.removeEventListener("mousedown", clickHandler);
+      document.removeEventListener("touchstart", touchStartHandler);
+      document.removeEventListener("touchend", touchEndHandler);
+    };
   }, [showNotif]);
 
   useEffect(() => {
@@ -283,6 +300,7 @@ function MemberDashboard() {
       const res = await API.get("/notifications");
       setNotifications(res.data.notifications);
       setUnreadCount(res.data.unreadCount);
+      navigator.serviceWorker?.ready?.then(r => r.active?.postMessage({ type: "SET_BADGE", count: res.data.unreadCount })).catch(() => {});
     } catch (err) { console.error("Notif error:", err); }
   };
 
@@ -467,12 +485,22 @@ function MemberDashboard() {
         {notifications.length === 0 && <p className="text-gray-400 text-xs text-center py-3">No notifications</p>}
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {notifications.slice(0, 8).map((n) => (
-            <div key={n._id} className={`flex items-start gap-2 p-2 rounded-lg text-xs ${n.read ? "" : "bg-purple-50"}`}>
+            <div key={n._id} className={`flex items-start gap-2 p-2 rounded-lg text-xs cursor-pointer hover:bg-gray-100 ${n.read ? "" : "bg-purple-50"}`} onClick={() => { if (n.type === "reminder") navigate("/dashboard"); else if (n.type === "message") navigate("/messages"); else navigate("/community"); }}>
               <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {n.fromUserId?.profileImage ? <img src={optimizeImage(n.fromUserId.profileImage, 32)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-[9px]">{n.fromUserId?.firstname?.[0]}</span>}
+                {n.type === "reminder" ? (
+                  <svg className="w-3.5 h-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                ) : n.fromUserId?.profileImage ? (
+                  <img src={optimizeImage(n.fromUserId.profileImage, 32)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <span className="text-purple-600 font-bold text-[9px]">{n.fromUserId?.firstname?.[0]}</span>
+                )}
               </div>
               <div>
-                <p className="text-gray-700"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked" : n.type === "comment" ? "commented on" : "messaged"} you</p>
+                {n.type === "reminder" ? (
+                  <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
+                ) : (
+                  <p className="text-gray-700"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked" : n.type === "comment" ? "commented on" : "messaged"} you</p>
+                )}
               </div>
             </div>
           ))}
@@ -528,7 +556,7 @@ function MemberDashboard() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
             </Link>
             <div className="relative" ref={notifRef}>
-              <button onClick={() => { setShowNotif(!showNotif); if (!showNotif && unreadCount > 0) markNotifRead(); }} className="relative p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
+              <button onClick={() => { setShowNotif(!showNotif); if (!showNotif) { if (unreadCount > 0) markNotifRead(); navigator.serviceWorker?.ready?.then(r => r.active?.postMessage({ type: "CLEAR_BADGE" })).catch(() => {}); } }} className="relative p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                 {unreadCount > 0 && <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{unreadCount}</span>}
               </button>
@@ -537,8 +565,12 @@ function MemberDashboard() {
                   <div className="p-3 border-b border-gray-100"><p className="font-semibold text-sm">Notifications</p></div>
                   {notifications.length === 0 && <p className="text-gray-400 text-xs text-center p-4">No notifications</p>}
                   {notifications.map((n) => (
-                    <div key={n._id} className={`p-3 border-b border-gray-50 text-xs ${n.read ? "" : "bg-purple-50"}`}>
-                      <p className="text-gray-700"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                    <div key={n._id} className={`p-3 border-b border-gray-50 text-xs cursor-pointer hover:bg-gray-50 ${n.read ? "" : "bg-purple-50"}`} onClick={() => { setShowNotif(false); if (n.type === "reminder") navigate("/dashboard"); else if (n.type === "message") navigate("/messages"); else navigate("/community"); }}>
+                      {n.type === "reminder" ? (
+                        <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
+                      ) : (
+                        <p className="text-gray-700"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -812,6 +812,9 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       open: true,
       title: "Unpin Announcement",
       message: "Unpin this announcement? It will become a regular feed post that members can view and comment on.",
+      confirmLabel: "Unpin",
+      iconType: "unpin",
+      confirmColor: "amber",
       loading: false,
       onConfirm: async () => {
         setConfirmState((prev) => ({ ...prev, loading: true }));

@@ -38,16 +38,18 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
   const timestamp = timeAgo(post.createdAt);
 
   const handleLike = async () => {
+    const wasLiked = isLiked;
+    const prevLikes = likes;
+    setLikes(prev => wasLiked
+      ? prev.filter(id => (typeof id === "string" ? id !== currentUserId : id._id !== currentUserId))
+      : [...prev, currentUserId]
+    );
     try {
-      if (isLiked) {
-        const res = await API.put(`/posts/${post._id}/unlike`);
-        setLikes(res.data.likes);
-      } else {
-        const res = await API.put(`/posts/${post._id}/like`);
-        setLikes(res.data.likes);
-      }
+      const res = await API.put(`/posts/${post._id}/${wasLiked ? "unlike" : "like"}`);
+      setLikes(res.data.likes);
     } catch (err) {
       console.error("Like error:", err);
+      setLikes(prevLikes);
     }
   };
 

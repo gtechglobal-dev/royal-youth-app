@@ -5,6 +5,16 @@ import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.j
 import { getIO } from "../socket.js";
 import { sendPushNotification } from "./pushController.js";
 
+const resolveUserId = async (id) => {
+  if (!id || id === "admin" || String(id).length < 10) {
+    const adminUser = await User.findOne({ role: "admin", isDeleted: false }).select("_id").lean();
+    if (adminUser) return adminUser._id;
+    const anyUser = await User.findOne({ isDeleted: false }).select("_id").lean();
+    return anyUser?._id || id;
+  }
+  return id;
+};
+
 export const createPost = async (req, res) => {
   try {
     const { text, placardColor } = req.body;
@@ -79,14 +89,16 @@ export const likePost = async (req, res) => {
     await post.save();
 
     if (post.userId.toString() !== userId.toString()) {
+      const fromId = await resolveUserId(userId);
+      const targetId = post.userId.toString().length < 10 ? await resolveUserId(post.userId) : post.userId;
       await Notification.create({
-        userId: post.userId,
-        fromUserId: userId,
+        userId: targetId,
+        fromUserId: fromId,
         type: "like",
         referenceId: post._id.toString(),
       });
       try { getIO().to(`user:${post.userId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(post.userId, "Royal Youth Hub", `${req.user.firstname} liked your post`, "/community"); } catch (e) {}
+      try { sendPushNotification(post.userId, "Royal Youth Hub", `${req.user.firstname || "Admin"} liked your post`, "/community"); } catch (e) {}
     }
 
     try { getIO().emit("postLiked", { postId: post._id.toString(), userId: userId.toString(), likeCount: post.likes.length }); } catch (e) {}
@@ -151,9 +163,11 @@ export const commentOnPost = async (req, res) => {
     );
 
     if (post.userId.toString() !== req.user._id.toString()) {
+      const fromId = await resolveUserId(req.user._id);
+      const targetId = post.userId.toString().length < 10 ? await resolveUserId(post.userId) : post.userId;
       await Notification.create({
-        userId: post.userId,
-        fromUserId: req.user._id,
+        userId: targetId,
+        fromUserId: fromId,
         type: "comment",
         referenceId: post._id.toString(),
       });

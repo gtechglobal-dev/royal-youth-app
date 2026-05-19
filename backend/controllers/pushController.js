@@ -1,12 +1,15 @@
 import webpush from "web-push";
 import PushSubscription from "../models/PushSubscription.js";
 
-if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-  const vapidKeys = webpush.generateVAPIDKeys();
+const fallbackKeys = !process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY
+  ? webpush.generateVAPIDKeys()
+  : null;
+
+if (fallbackKeys) {
   webpush.setVapidDetails(
     "mailto:royalyouthsc4c5@gmail.com",
-    vapidKeys.publicKey,
-    vapidKeys.privateKey
+    fallbackKeys.publicKey,
+    fallbackKeys.privateKey
   );
   console.warn("VAPID keys not set in env. Generated fresh keys. Existing subscriptions will be invalidated on restart.");
 } else {
@@ -18,7 +21,7 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 }
 
 export const getVapidPublicKey = (req, res) => {
-  const key = process.env.VAPID_PUBLIC_KEY;
+  const key = process.env.VAPID_PUBLIC_KEY || fallbackKeys?.publicKey;
   if (!key) {
     return res.status(500).json({ message: "VAPID public key not configured" });
   }
