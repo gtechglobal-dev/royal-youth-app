@@ -113,7 +113,7 @@ export const removeFriend = async (req, res) => {
 export const getFriendRequests = async (req, res) => {
   try {
     const requests = await FriendRequest.find({ to: req.user._id, status: "pending" })
-      .populate("from", "firstname surname profileImage branch")
+      .populate("from", "nickname firstname surname profileImage branch")
       .sort({ createdAt: -1 });
     res.json(requests);
   } catch (err) {
@@ -124,7 +124,7 @@ export const getFriendRequests = async (req, res) => {
 
 export const getFriends = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate("friends", "firstname surname profileImage branch");
+    const user = await User.findById(req.user._id).populate("friends", "nickname firstname surname profileImage branch");
     res.json(user.friends || []);
   } catch (err) {
     console.error("Get friends error:", err);

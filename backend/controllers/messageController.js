@@ -11,8 +11,8 @@ export const getConversations = async (req, res) => {
       participants: req.user._id,
     })
       .sort({ updatedAt: -1 })
-      .populate("participants", "firstname surname profileImage branch")
-      .populate("lastSenderId", "firstname surname");
+      .populate("participants", "nickname firstname surname profileImage branch")
+      .populate("lastSenderId", "nickname firstname surname");
 
     const mapped = conversations.map((c) => {
       const other = c.participants.find(
@@ -54,7 +54,7 @@ export const getMessages = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("senderId", "firstname surname profileImage")
+      .populate("senderId", "nickname firstname surname profileImage")
       .populate("sharedPostId");
 
     const total = await Message.countDocuments({ conversationId });
@@ -117,7 +117,7 @@ export const sendMessage = async (req, res) => {
     await conversation.save();
 
     const populated = await Message.findById(message._id)
-      .populate("senderId", "firstname surname profileImage")
+      .populate("senderId", "nickname firstname surname profileImage")
       .populate("sharedPostId");
 
     if (receiverId.toString() !== senderId.toString()) {
@@ -148,13 +148,13 @@ export const getOrCreateConversation = async (req, res) => {
 
     let conversation = await Conversation.findOne({
       participants: { $all: [req.user._id, userId], $size: 2 },
-    }).populate("participants", "firstname surname profileImage branch");
+    }).populate("participants", "nickname firstname surname profileImage branch");
 
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [req.user._id, userId],
       });
-      conversation = await conversation.populate("participants", "firstname surname profileImage branch");
+      conversation = await conversation.populate("participants", "nickname firstname surname profileImage branch");
     }
 
     const other = conversation.participants.find(

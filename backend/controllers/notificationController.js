@@ -9,7 +9,7 @@ export const getNotifications = async (req, res) => {
     const notifications = await Notification.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
       .limit(50)
-      .populate("fromUserId", "firstname surname profileImage");
+      .populate("fromUserId", "nickname firstname surname profileImage");
 
     const unreadCount = await Notification.countDocuments({
       userId: req.user._id,

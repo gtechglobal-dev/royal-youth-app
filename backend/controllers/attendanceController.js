@@ -84,7 +84,7 @@ export const getMeetingAttendance = async (req, res) => {
 
     const attendance = await Attendance.findById(meetingId).populate(
       "user",
-      "firstname surname"
+      "nickname firstname surname"
     );
 
     res.json(attendance);

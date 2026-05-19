@@ -310,7 +310,7 @@ export const getAllSpecialDonations = async (req, res) => {
     const specialDonations = await Income.find({
       memberId: { $exists: true, $ne: null },
       purpose: { $not: /2026 Dues|Dues -/ }
-    }).populate("memberId", "firstname surname").sort({ createdAt: -1 });
+    }).populate("memberId", "nickname firstname surname").sort({ createdAt: -1 });
     
     res.status(200).json(specialDonations);
   } catch (error) {

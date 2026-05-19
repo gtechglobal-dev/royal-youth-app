@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
 router.get("/all", async (req, res) => {
   try {
     const responses = await MeetingResponse.find()
-      .populate("user", "firstname surname phone")
+      .populate("user", "nickname firstname surname phone")
       .sort({ createdAt: -1 });
     res.json(responses);
   } catch (error) {
@@ -45,7 +45,7 @@ router.get("/meeting", async (req, res) => {
     const { title } = req.query;
     const query = title ? { meetingTitle: title } : {};
     const responses = await MeetingResponse.find(query)
-      .populate("user", "firstname surname phone")
+      .populate("user", "nickname firstname surname phone")
       .sort({ createdAt: -1 });
     res.json(responses);
   } catch (error) {
