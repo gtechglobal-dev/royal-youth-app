@@ -3,6 +3,19 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
+import Notification from "../models/Notification.js";
+import { getIO } from "../socket.js";
+import { sendPushNotification } from "./pushController.js";
+
+const resolveUserId = async (id) => {
+  if (!id || id === "admin" || String(id).length < 10) {
+    const adminUser = await User.findOne({ role: "admin", isDeleted: false }).select("_id").lean();
+    if (adminUser) return adminUser._id;
+    const anyUser = await User.findOne({ isDeleted: false }).select("_id").lean();
+    return anyUser?._id || id;
+  }
+  return id;
+};
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -336,6 +349,20 @@ export const updateDues = async (req, res) => {
     }
 
     await member.save();
+
+    if (status === "Paid") {
+      const fromId = await resolveUserId(req.user?._id || "admin");
+      const targetId = String(req.params.id).length < 10 ? await resolveUserId(req.params.id) : req.params.id;
+      await Notification.create({
+        userId: targetId,
+        fromUserId: fromId,
+        type: "reminder",
+        referenceId: `${month} Dues`,
+        body: `Your dues for ${month} have been marked as paid`,
+      });
+      try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
+      try { sendPushNotification(targetId, "Royal Youth Hub", `Your ${month} dues have been marked as paid`, "/dashboard"); } catch (e) {}
+    }
 
     res.status(200).json(member);
   } catch (error) {
