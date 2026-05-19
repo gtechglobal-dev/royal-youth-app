@@ -1142,8 +1142,9 @@ function MemberDashboard() {
                 <svg className="w-7 h-7 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-1">Complete Your Profile</h3>
-              <p className="text-sm text-gray-500 mb-4">Please set your nickname and gender to continue.</p>
-              <input type="text" placeholder="Nickname *" value={nicknameInput} onChange={e => setNicknameInput(e.target.value)} className="w-full p-3 border rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+               <p className="text-sm text-gray-500 mb-4">Please set your nickname and gender to continue.</p>
+               <input type="text" placeholder="Nickname *" title="Name you want others to see in Chats/Posts" value={nicknameInput} onChange={e => setNicknameInput(e.target.value)} className="w-full p-3 border rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+               <p className="text-[11px] text-gray-400 -mt-2 mb-3 text-left w-full">Name you want others to see in Chats/Posts</p>
               <select value={genderInput} onChange={e => setGenderInput(e.target.value)} className="w-full p-3 border rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white" required>
                 <option value="">Select Gender *</option>
                 <option value="Male">Male</option>
