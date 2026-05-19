@@ -254,6 +254,7 @@ function CommunityFeed() {
                         </div>
                         {isExpanded && (
                           <div className="mt-2 pl-2">
+                            {n.image && <img src={n.image} alt="" className="w-full rounded-lg mb-2 max-h-48 object-cover" />}
                             <p className="text-gray-500 text-sm whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: n.body ? linkifyText(n.body) : "No additional details" }} />
                           </div>
                         )}

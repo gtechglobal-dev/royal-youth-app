@@ -3,6 +3,7 @@ import PushSubscription from "../models/PushSubscription.js";
 import User from "../models/user.js";
 import Dues from "../models/dues.js";
 import { sendPushNotification, sendPushToAllUsers } from "./pushController.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 export const getNotifications = async (req, res) => {
   try {
@@ -63,15 +64,16 @@ export const clearAllNotifications = async (req, res) => {
 const executeAdminPush = async (title, body, target, createInAppNotifications, adminId, extra = {}) => {
   let sent = 0;
   let targetUsers = [];
+  const image = extra.image || null;
 
   if (target === "subscribed") {
-    sent = await sendPushToAllUsers(title, body, "/dashboard");
+    sent = await sendPushToAllUsers(title, body, "/dashboard", image);
   } else if (target === "specific") {
     const userIds = extra.targetUserIds || [];
     if (userIds.length === 0) return { sent: 0, inAppCount: 0 };
     for (const uid of userIds) {
       try {
-        await sendPushNotification(uid, title, body, "/dashboard");
+        await sendPushNotification(uid, title, body, "/dashboard", null, image);
         sent++;
       } catch (_) {}
     }
@@ -92,7 +94,7 @@ const executeAdminPush = async (title, body, target, createInAppNotifications, a
     });
     for (const user of targetUsers) {
       try {
-        await sendPushNotification(user._id, title, body, "/dashboard");
+        await sendPushNotification(user._id, title, body, "/dashboard", null, image);
         sent++;
       } catch (_) {}
     }
@@ -104,7 +106,7 @@ const executeAdminPush = async (title, body, target, createInAppNotifications, a
     }).select("_id");
     for (const user of targetUsers) {
       try {
-        await sendPushNotification(user._id, title, body, "/dashboard");
+        await sendPushNotification(user._id, title, body, "/dashboard", null, image);
         sent++;
       } catch (_) {}
     }
@@ -118,6 +120,7 @@ const executeAdminPush = async (title, body, target, createInAppNotifications, a
       type: "reminder",
       referenceId: title,
       body,
+      ...(image && { image }),
     }));
     await Notification.insertMany(notifications);
     inAppCount = notifications.length;
@@ -131,6 +134,7 @@ const executeAdminPush = async (title, body, target, createInAppNotifications, a
       type: "reminder",
       referenceId: title,
       body,
+      ...(image && { image }),
     }));
     if (notifications.length > 0) {
       await Notification.insertMany(notifications);
@@ -160,8 +164,14 @@ export const sendAdminPushNotification = async (req, res) => {
       return res.status(400).json({ message: "Title and body are required" });
     }
 
+    let image = null;
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
+      image = result?.secure_url || null;
+    }
+
     const adminId = await resolveAdminUserId(req.user?._id || "admin");
-    const extra = { targetUserIds, duesMonth, duesYear };
+    const extra = { targetUserIds, duesMonth, duesYear, image };
 
     // If scheduledAt is provided and in the future, schedule it
     if (scheduledAt) {

@@ -58,7 +58,7 @@ export const unsubscribe = async (req, res) => {
   }
 };
 
-export const sendPushNotification = async (userId, title, body, url, notificationId) => {
+export const sendPushNotification = async (userId, title, body, url, notificationId, image) => {
   try {
     const sub = await PushSubscription.findOne({ userId });
     if (!sub) {
@@ -68,7 +68,7 @@ export const sendPushNotification = async (userId, title, body, url, notificatio
 
     await webpush.sendNotification(
       { endpoint: sub.endpoint, keys: sub.keys },
-      JSON.stringify({ title, body, url, notificationId })
+      JSON.stringify({ title, body, url, notificationId, image })
     );
   } catch (err) {
     if (err.statusCode === 410 || err.statusCode === 404) {
@@ -80,7 +80,7 @@ export const sendPushNotification = async (userId, title, body, url, notificatio
   }
 };
 
-export const sendPushToAllUsers = async (title, body, url) => {
+export const sendPushToAllUsers = async (title, body, url, image) => {
   const subs = await PushSubscription.find({});
   console.log(`  📋 Found ${subs.length} push subscriptions`);
   let sent = 0;
@@ -88,7 +88,7 @@ export const sendPushToAllUsers = async (title, body, url) => {
     try {
       await webpush.sendNotification(
         { endpoint: sub.endpoint, keys: sub.keys },
-        JSON.stringify({ title, body, url })
+        JSON.stringify({ title, body, url, image })
       );
       sent++;
     } catch (err) {

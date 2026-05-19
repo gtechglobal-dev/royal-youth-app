@@ -96,6 +96,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
   const [pushMembers, setPushMembers] = useState([]);
   const [pushSending, setPushSending] = useState(false);
   const [pushResult, setPushResult] = useState(null);
+  const [pushBannerFile, setPushBannerFile] = useState(null);
+  const [pushBannerPreview, setPushBannerPreview] = useState(null);
   const [counts, setCounts] = useState({
     members: 0,
     pending: 0,
@@ -392,27 +394,29 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     setPushSending(true);
     setPushResult(null);
     try {
-      const payload = {
-        title: pushTitle,
-        body: pushBody,
-        createInAppNotifications: pushCreateInApp,
-      };
+      const fd = new FormData();
+      fd.append("title", pushTitle);
+      fd.append("body", pushBody);
+      fd.append("createInAppNotifications", pushCreateInApp);
       if (pushTarget === "subscribed") {
-        payload.target = "subscribed";
+        fd.append("target", "subscribed");
       } else if (pushTarget === "specific") {
-        payload.target = "specific";
-        payload.targetUserIds = pushSelectedMembers;
+        fd.append("target", "specific");
+        fd.append("targetUserIds", JSON.stringify(pushSelectedMembers));
       } else if (pushTarget === "unpaid") {
-        payload.target = "unpaid";
-        payload.duesMonth = pushDuesMonth;
-        payload.duesYear = pushDuesYear;
+        fd.append("target", "unpaid");
+        fd.append("duesMonth", pushDuesMonth);
+        fd.append("duesYear", pushDuesYear);
       } else {
-        payload.target = "all";
+        fd.append("target", "all");
       }
       if (pushScheduledAt) {
-        payload.scheduledAt = new Date(pushScheduledAt).toISOString();
+        fd.append("scheduledAt", new Date(pushScheduledAt).toISOString());
       }
-      const res = await API.post("/notifications/admin-send", payload);
+      if (pushBannerFile) {
+        fd.append("image", pushBannerFile);
+      }
+      const res = await API.post("/notifications/admin-send", fd);
       if (res.data.scheduled) {
         setPushResult({ type: "success", message: `Scheduled! Will send at ${new Date(pushScheduledAt).toLocaleString()}.` });
       } else {
@@ -423,6 +427,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       setPushScheduledAt("");
       setPushSelectedMembers([]);
       setPushDuesMonth("");
+      setPushBannerFile(null);
+      setPushBannerPreview(null);
     } catch (err) {
       setPushResult({ type: "error", message: err.response?.data?.message || "Failed to send push notification" });
     }
@@ -2421,6 +2427,16 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                   </div>
                 </div>
               )}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Banner Image (optional — 1200×600 recommended)</label>
+                <input type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) { setPushBannerFile(file); const reader = new FileReader(); reader.onload = () => setPushBannerPreview(reader.result); reader.readAsDataURL(file); } }} className="border p-2 w-full rounded text-sm" />
+                {pushBannerPreview && (
+                  <div className="relative mt-2 inline-block">
+                    <img src={pushBannerPreview} alt="Banner preview" className="rounded-lg max-h-32 w-auto" />
+                    <button type="button" onClick={() => { setPushBannerFile(null); setPushBannerPreview(null); }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">×</button>
+                  </div>
+                )}
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Schedule (optional — leave blank to send now)</label>
                 <input type="datetime-local" value={pushScheduledAt} onChange={e => setPushScheduledAt(e.target.value)} className="border p-2 w-full rounded" />
