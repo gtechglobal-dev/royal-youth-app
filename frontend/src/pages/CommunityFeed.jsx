@@ -145,7 +145,7 @@ function CommunityFeed() {
   };
 
   const updateBadge = (count) => {
-    try { navigator.setAppBadge?.(count); } catch (_) {}
+    if (count > 0) { try { navigator.setAppBadge?.(count); } catch (_) {} } else { try { navigator.clearAppBadge?.(); } catch (_) {} }
     navigator.serviceWorker?.ready?.then(r => r.active?.postMessage({ type: "SET_BADGE", count })).catch(() => {});
   };
 

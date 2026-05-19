@@ -34,7 +34,11 @@ async function setBadgeCount(count) {
   const cache = await caches.open(BADGE_CACHE);
   await cache.put("count", new Response(String(count)));
   try {
-    await self.registration.setAppBadge(count);
+    if (count > 0) {
+      await self.registration.setAppBadge(count);
+    } else {
+      await self.registration.clearAppBadge();
+    }
   } catch (_) {}
 }
 
