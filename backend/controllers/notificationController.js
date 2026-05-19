@@ -159,10 +159,14 @@ const resolveAdminUserId = async (adminId) => {
 
 export const sendAdminPushNotification = async (req, res) => {
   try {
-    const { title, body, createInAppNotifications, target, scheduledAt, targetUserIds, duesMonth, duesYear } = req.body;
+    let { title, body, createInAppNotifications, target, scheduledAt, targetUserIds, duesMonth, duesYear } = req.body;
     if (!title || !body) {
       return res.status(400).json({ message: "Title and body are required" });
     }
+
+    // Handle FormData string conversions
+    if (typeof createInAppNotifications === "string") createInAppNotifications = createInAppNotifications === "true";
+    if (typeof targetUserIds === "string") { try { targetUserIds = JSON.parse(targetUserIds); } catch (_) {} }
 
     let image = null;
     if (req.file) {

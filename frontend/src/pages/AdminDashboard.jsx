@@ -394,29 +394,35 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
     setPushSending(true);
     setPushResult(null);
     try {
-      const fd = new FormData();
-      fd.append("title", pushTitle);
-      fd.append("body", pushBody);
-      fd.append("createInAppNotifications", pushCreateInApp);
+      const payload = {
+        title: pushTitle,
+        body: pushBody,
+        createInAppNotifications: pushCreateInApp,
+      };
       if (pushTarget === "subscribed") {
-        fd.append("target", "subscribed");
+        payload.target = "subscribed";
       } else if (pushTarget === "specific") {
-        fd.append("target", "specific");
-        fd.append("targetUserIds", JSON.stringify(pushSelectedMembers));
+        payload.target = "specific";
+        payload.targetUserIds = pushSelectedMembers;
       } else if (pushTarget === "unpaid") {
-        fd.append("target", "unpaid");
-        fd.append("duesMonth", pushDuesMonth);
-        fd.append("duesYear", pushDuesYear);
+        payload.target = "unpaid";
+        payload.duesMonth = pushDuesMonth;
+        payload.duesYear = pushDuesYear;
       } else {
-        fd.append("target", "all");
+        payload.target = "all";
       }
       if (pushScheduledAt) {
-        fd.append("scheduledAt", new Date(pushScheduledAt).toISOString());
+        payload.scheduledAt = new Date(pushScheduledAt).toISOString();
       }
+      let res;
       if (pushBannerFile) {
+        const fd = new FormData();
         fd.append("image", pushBannerFile);
+        Object.entries(payload).forEach(([k, v]) => fd.append(k, typeof v === "boolean" ? String(v) : typeof v === "object" ? JSON.stringify(v) : v));
+        res = await API.post("/notifications/admin-send", fd);
+      } else {
+        res = await API.post("/notifications/admin-send", payload);
       }
-      const res = await API.post("/notifications/admin-send", fd);
       if (res.data.scheduled) {
         setPushResult({ type: "success", message: `Scheduled! Will send at ${new Date(pushScheduledAt).toLocaleString()}.` });
       } else {
