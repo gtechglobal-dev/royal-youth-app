@@ -24,6 +24,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import friendRoutes from "./routes/friendRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import pushRoutes from "./routes/pushRoutes.js";
+import statsRoutes from "./routes/statsRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,6 +81,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/push", pushRoutes);
+app.use("/api/stats", statsRoutes);
 // ✅ Error handler
 app.use((err, req, res, next) => {
   console.error("Server error:", err);

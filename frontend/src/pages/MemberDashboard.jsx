@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import API from "../services/api";
 import CreatePost from "../components/CreatePost";
@@ -6,6 +6,7 @@ import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
 import ConfirmModal from "../components/ConfirmModal";
 import { displayName, displayNameFull } from "../utils/displayName";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
@@ -99,6 +100,9 @@ function MemberDashboard() {
   const [lbMemberPostsLoading, setLbMemberPostsLoading] = useState(false);
   const [hubPosts, setHubPosts] = useState([]);
   const [hubPostsLoading, setHubPostsLoading] = useState(false);
+  const [monthlyStats, setMonthlyStats] = useState([]);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsYear, setStatsYear] = useState(new Date().getFullYear());
 
   // Existing features state
   const [attendance, setAttendance] = useState([]);
@@ -193,6 +197,10 @@ function MemberDashboard() {
     fetchNotifications();
     fetchLeaderboard();
   }, [user?._id]);
+
+  useEffect(() => {
+    if (activeTab === "statistics") fetchMonthlyStats(statsYear);
+  }, [activeTab, statsYear]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -325,6 +333,17 @@ function MemberDashboard() {
       console.error("Leaderboard error:", err);
     }
     setLeaderboardLoading(false);
+  };
+
+  const fetchMonthlyStats = async (year) => {
+    setStatsLoading(true);
+    try {
+      const res = await API.get(`/stats/monthly?year=${year || statsYear}`);
+      setMonthlyStats(res.data);
+    } catch (err) {
+      console.error("Monthly stats error:", err);
+    }
+    setStatsLoading(false);
   };
 
   const fetchLbMemberPosts = async (userId) => {
@@ -495,6 +514,10 @@ function MemberDashboard() {
         <button onClick={() => { setActiveTab("leaderboard"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "leaderboard" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
           Leaderboard
+        </button>
+        <button onClick={() => { setActiveTab("statistics"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "statistics" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
+          Statistics
         </button>
       </div>
 
@@ -1039,6 +1062,69 @@ function MemberDashboard() {
                     );
                   })()}
                 </>
+              )}
+            </div>
+          )}
+
+          {activeTab === "statistics" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-purple-700">Page Statistics</h2>
+                <select value={statsYear} onChange={e => setStatsYear(Number(e.target.value))} className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  {[2026, 2025].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+              {statsLoading ? (
+                <div className="flex justify-center py-16">
+                  <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : monthlyStats.length > 0 ? (
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Posts per Month</h3>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={monthlyStats} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                          <Tooltip />
+                          <Bar dataKey="posts" fill="#7c3aed" radius={[4, 4, 0, 0]} name="Posts" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-600 mb-3">New Registrations per Month</h3>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={monthlyStats} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                          <Tooltip />
+                          <Bar dataKey="registrations" fill="#0891b2" radius={[4, 4, 0, 0]} name="Registrations" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Attendance per Month</h3>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={monthlyStats} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                          <Tooltip />
+                          <Bar dataKey="attendance" fill="#16a34a" radius={[4, 4, 0, 0]} name="Attendance" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm text-center py-16">No data available for {statsYear}</p>
               )}
             </div>
           )}
