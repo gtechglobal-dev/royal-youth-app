@@ -5,7 +5,7 @@ import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
 import ConfirmModal from "../components/ConfirmModal";
-import { displayName } from "../utils/displayName";
+import { displayName, displayNameFull } from "../utils/displayName";
 
 const linkifyText = (text) => {
   const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -282,7 +282,7 @@ function CommunityFeed() {
             )}
           </div>
           <div>
-            <p className="font-semibold text-sm">{displayName(user)}</p>
+            <p className="font-semibold text-sm">{displayNameFull(user)}</p>
             <p className="text-gray-400 text-xs">{user.branch}</p>
           </div>
         </div>

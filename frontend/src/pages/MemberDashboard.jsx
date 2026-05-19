@@ -5,7 +5,7 @@ import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
 import ConfirmModal from "../components/ConfirmModal";
-import { displayName } from "../utils/displayName";
+import { displayName, displayNameFull } from "../utils/displayName";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
@@ -465,7 +465,7 @@ function MemberDashboard() {
         <div className="w-16 h-16 rounded-full bg-purple-100 mx-auto flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => user.profileImage && setShowImageModal(true)}>
           {user.profileImage ? <img src={optimizeImage(user.profileImage, 96)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-xl">{user.firstname?.[0]}{user.surname?.[0]}</span>}
         </div>
-        <p className="font-semibold mt-2">{displayName(user)}</p>
+        <p className="font-semibold mt-2">{displayNameFull(user)}</p>
         <p className="text-gray-400 text-xs">{user.branch}</p>
         <p className={`text-xs mt-1 font-medium ${user.membershipStatus === "Active Member" ? "text-green-600" : "text-red-500"}`}>{user.membershipStatus}</p>
         <p className={`text-xs mt-0.5 font-medium ${
@@ -830,7 +830,7 @@ function MemberDashboard() {
                       {viewedMember.profileImage ? <img src={optimizeImage(viewedMember.profileImage, 128)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-2xl">{viewedMember.firstname?.[0]}{viewedMember.surname?.[0]}</span>}
                     </div>
                     <div>
-                      <p className="text-lg font-bold">{displayName(viewedMember)}</p>
+                      <p className="text-lg font-bold">{displayNameFull(viewedMember)}</p>
                       <p className="text-gray-500">{viewedMember.occupation || "Not specified"}</p>
                       <p className="text-gray-400 text-sm">{viewedMember.branch || "Plot C4/C5 Owerri"}</p>
                     </div>
@@ -858,7 +858,7 @@ function MemberDashboard() {
                   {user.profileImage ? <img src={optimizeImage(user.profileImage, 128)} alt="" className="w-full h-full object-cover" loading="lazy" /> : <span className="text-purple-600 font-bold text-2xl">{user.firstname?.[0]}{user.surname?.[0]}</span>}
                 </div>
                 <div>
-                  <p className="text-lg font-bold">{displayName(user)}</p>
+                  <p className="text-lg font-bold">{displayNameFull(user)}</p>
                   <p className="text-gray-500">{user.occupation || "Not specified"}</p>
                   <Link to="/edit-profile" className="text-purple-600 text-sm hover:underline">Edit Profile</Link>
                 </div>
@@ -1012,7 +1012,7 @@ function MemberDashboard() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-lg font-bold text-gray-800">{displayName(user)}</p>
+                              <p className="text-lg font-bold text-gray-800">{displayNameFull(user)}</p>
                               <span className="text-2xl">{badge}</span>
                             </div>
                             <p className="text-sm text-gray-500">Rank #{user.rank} · Score: {user.score}</p>
