@@ -35,7 +35,7 @@ export const createPost = async (req, res) => {
       placardColor: placardColor || "#000000",
     });
 
-    const populated = await Post.findById(post._id).populate("userId", "nickname nickname firstname surname profileImage branch role");
+    const populated = await Post.findById(post._id).populate("userId", "nickname firstname surname profileImage branch role");
     try { getIO().emit("newPost", populated.toObject()); } catch (e) {}
     res.status(201).json(populated);
   } catch (err) {
@@ -54,7 +54,7 @@ export const getFeed = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("userId", "nickname nickname firstname surname profileImage branch role")
+      .populate("userId", "nickname firstname surname profileImage branch role")
       .populate("comments.userId", "nickname firstname surname profileImage")
       .populate("comments.replies.userId", "nickname firstname surname profileImage");
 
@@ -201,7 +201,7 @@ export const updatePost = async (req, res) => {
     await post.save();
 
      const populated = await Post.findById(post._id)
-       .populate("userId", "nickname nickname firstname surname profileImage branch role")
+       .populate("userId", "nickname firstname surname profileImage branch role")
        .populate("comments.userId", "nickname firstname surname profileImage")
       .populate("comments.replies.userId", "nickname firstname surname profileImage");
 
@@ -344,7 +344,7 @@ export const getFriendsFeed = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("userId", "nickname nickname firstname surname profileImage branch role")
+      .populate("userId", "nickname firstname surname profileImage branch role")
       .populate("comments.userId", "nickname firstname surname profileImage")
       .populate("comments.replies.userId", "nickname firstname surname profileImage");
 
@@ -366,7 +366,7 @@ export const getFriendsFeed = async (req, res) => {
 export const getSinglePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate("userId", "nickname nickname firstname surname profileImage branch role")
+      .populate("userId", "nickname firstname surname profileImage branch role")
       .populate("comments.userId", "nickname firstname surname profileImage")
       .populate("comments.replies.userId", "nickname firstname surname profileImage");
 
@@ -386,7 +386,7 @@ export const getUserPosts = async (req, res) => {
     const posts = await Post.find({ userId: req.params.userId, isDeleted: false })
       .sort({ createdAt: -1 })
       .limit(20)
-      .populate("userId", "nickname nickname firstname surname profileImage branch role")
+      .populate("userId", "nickname firstname surname profileImage branch role")
       .populate("comments.userId", "nickname firstname surname profileImage")
       .populate("comments.replies.userId", "nickname firstname surname profileImage");
 
@@ -404,7 +404,7 @@ export const getPinnedPosts = async (req, res) => {
       isDeleted: false,
     })
       .sort({ pinnedAt: -1 })
-      .populate("userId", "nickname nickname firstname surname profileImage branch role")
+      .populate("userId", "nickname firstname surname profileImage branch role")
       .populate("comments.userId", "nickname firstname surname profileImage")
       .populate("comments.replies.userId", "nickname firstname surname profileImage");
 
@@ -427,7 +427,7 @@ export const getPastAnnouncements = async (req, res) => {
       isDeleted: false,
     })
       .sort({ pinnedAt: -1 })
-      .populate("userId", "nickname nickname firstname surname profileImage branch role")
+      .populate("userId", "nickname firstname surname profileImage branch role")
       .populate("comments.userId", "nickname firstname surname profileImage")
       .populate("comments.replies.userId", "nickname firstname surname profileImage");
 
@@ -483,7 +483,7 @@ export const createAnnouncement = async (req, res) => {
       pinnedAt: new Date(),
     });
 
-     const populated = await Post.findById(post._id).populate("userId", "nickname nickname firstname surname profileImage branch role");
+     const populated = await Post.findById(post._id).populate("userId", "nickname firstname surname profileImage branch role");
      try { getIO().emit("newAnnouncement", populated.toObject()); } catch (e) {}
      try { getIO().emit("newPost", populated.toObject()); } catch (e) {}
      res.status(201).json(populated);
@@ -520,7 +520,7 @@ export const updateAnnouncement = async (req, res) => {
     await post.save();
 
      const populated = await Post.findById(post._id)
-       .populate("userId", "nickname nickname firstname surname profileImage branch role");
+       .populate("userId", "nickname firstname surname profileImage branch role");
 
      try { getIO().emit("announcementUpdated", populated.toObject()); } catch (e) {}
      try { getIO().emit("postUpdated", populated.toObject()); } catch (e) {}
@@ -548,7 +548,7 @@ export const repostAnnouncement = async (req, res) => {
     await post.save();
 
      const populated = await Post.findById(post._id)
-       .populate("userId", "nickname nickname firstname surname profileImage branch role");
+       .populate("userId", "nickname firstname surname profileImage branch role");
 
      try { getIO().emit("newAnnouncement", populated.toObject()); } catch (e) {}
      try { getIO().emit("postUpdated", populated.toObject()); } catch (e) {}
@@ -597,7 +597,7 @@ export const unpinAnnouncement = async (req, res) => {
     await post.save();
 
      const populated = await Post.findById(post._id)
-       .populate("userId", "nickname nickname firstname surname profileImage branch role");
+       .populate("userId", "nickname firstname surname profileImage branch role");
 
      try { getIO().emit("announcementUnpinned", populated.toObject()); } catch (e) {}
      try { getIO().emit("postUnpinned", populated.toObject()); } catch (e) {}
