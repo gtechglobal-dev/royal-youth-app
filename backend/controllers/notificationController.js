@@ -117,6 +117,16 @@ const executeAdminPush = async (title, body, target, createInAppNotifications, a
 
 const scheduledPushes = new Map();
 
+const resolveAdminUserId = async (adminId) => {
+  if (!adminId || adminId === "admin" || String(adminId).length < 10) {
+    const adminUser = await User.findOne({ role: "admin", isDeleted: false }).select("_id").lean();
+    if (adminUser) return adminUser._id;
+    const anyUser = await User.findOne({ isDeleted: false }).select("_id").lean();
+    return anyUser?._id || adminId;
+  }
+  return adminId;
+};
+
 export const sendAdminPushNotification = async (req, res) => {
   try {
     const { title, body, createInAppNotifications, target, scheduledAt, targetUserIds, duesMonth, duesYear } = req.body;
@@ -124,7 +134,7 @@ export const sendAdminPushNotification = async (req, res) => {
       return res.status(400).json({ message: "Title and body are required" });
     }
 
-    const adminId = req.user?._id || "admin";
+    const adminId = await resolveAdminUserId(req.user?._id || "admin");
     const extra = { targetUserIds, duesMonth, duesYear };
 
     // If scheduledAt is provided and in the future, schedule it
@@ -152,13 +162,15 @@ export const sendAdminPushNotification = async (req, res) => {
     // Send immediately
     const result = await executeAdminPush(title, body, target || "all", !!createInAppNotifications, adminId, extra);
 
+    console.log(`✅ Admin push: "${title}" — ${result.sent} pushes sent, ${result.inAppCount} in-app created`);
+
     res.json({
       message: "Push notification sent",
       pushSent: result.sent,
       inAppNotificationsCreated: result.inAppCount,
     });
   } catch (err) {
-    console.error("Send admin push error:", err);
+    console.error("❌ Send admin push error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

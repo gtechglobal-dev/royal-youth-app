@@ -58,7 +58,10 @@ export const unsubscribe = async (req, res) => {
 export const sendPushNotification = async (userId, title, body, url) => {
   try {
     const sub = await PushSubscription.findOne({ userId });
-    if (!sub) return;
+    if (!sub) {
+      console.log(`  ⚠️ No push subscription for user ${userId}`);
+      return;
+    }
 
     await webpush.sendNotification(
       { endpoint: sub.endpoint, keys: sub.keys },
@@ -66,13 +69,17 @@ export const sendPushNotification = async (userId, title, body, url) => {
     );
   } catch (err) {
     if (err.statusCode === 410 || err.statusCode === 404) {
+      console.log(`  🗑️ Removed expired subscription for user ${userId}`);
       await PushSubscription.findOneAndDelete({ userId });
+    } else {
+      console.error(`  ❌ Push send error for user ${userId}:`, err.message);
     }
   }
 };
 
 export const sendPushToAllUsers = async (title, body, url) => {
   const subs = await PushSubscription.find({});
+  console.log(`  📋 Found ${subs.length} push subscriptions`);
   let sent = 0;
   for (const sub of subs) {
     try {
@@ -83,7 +90,10 @@ export const sendPushToAllUsers = async (title, body, url) => {
       sent++;
     } catch (err) {
       if (err.statusCode === 410 || err.statusCode === 404) {
+        console.log(`  🗑️ Removed expired subscription for user ${sub.userId}`);
         await PushSubscription.findOneAndDelete({ userId: sub.userId });
+      } else {
+        console.error(`  ❌ Push send error for user ${sub.userId}:`, err.message);
       }
     }
   }
