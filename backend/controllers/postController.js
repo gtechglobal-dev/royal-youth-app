@@ -97,8 +97,8 @@ export const likePost = async (req, res) => {
         type: "like",
         referenceId: post._id.toString(),
       });
-      try { getIO().to(`user:${post.userId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(post.userId, "Royal Youth Hub", `${req.user.firstname || "Admin"} liked your post`, "/community"); } catch (e) {}
+      try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
+      try { sendPushNotification(targetId, "Royal Youth Hub", `${req.user.firstname || "Admin"} liked your post`, "/community"); } catch (e) {}
     }
 
     try { getIO().emit("postLiked", { postId: post._id.toString(), userId: userId.toString(), likeCount: post.likes.length }); } catch (e) {}
@@ -171,8 +171,8 @@ export const commentOnPost = async (req, res) => {
         type: "comment",
         referenceId: post._id.toString(),
       });
-      try { getIO().to(`user:${post.userId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(post.userId, "Royal Youth Hub", `${req.user.firstname || "Admin"} commented: ${text.trim().slice(0, 50)}`, `/post/${post._id}`); } catch (e) {}
+      try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
+      try { sendPushNotification(targetId, "Royal Youth Hub", `${req.user.firstname || "Admin"} commented: ${text.trim().slice(0, 50)}`, `/post/${post._id}`); } catch (e) {}
     }
 
     try { getIO().emit("newComment", { postId: post._id.toString(), comment: addedComment.toObject() }); } catch (e) {}
