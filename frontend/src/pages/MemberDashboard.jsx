@@ -268,17 +268,22 @@ function MemberDashboard() {
     setLbMemberPostsLoading(false);
   };
 
+  const updateBadge = (count) => {
+    try { navigator.setAppBadge?.(count); } catch (_) {}
+    navigator.serviceWorker?.ready?.then(r => r.active?.postMessage({ type: "SET_BADGE", count })).catch(() => {});
+  };
+
   const fetchNotifications = async () => {
     try {
       const res = await API.get("/notifications");
       setNotifications(res.data.notifications);
       setUnreadCount(res.data.unreadCount);
-      navigator.serviceWorker?.ready?.then(r => r.active?.postMessage({ type: "SET_BADGE", count: res.data.unreadCount })).catch(() => {});
+      updateBadge(res.data.unreadCount);
     } catch (err) { console.error("Notif error:", err); }
   };
 
   const markNotifRead = async () => {
-    try { await API.put("/notifications/read"); setUnreadCount(0); setNotifications(prev => prev.map(n => ({ ...n, read: true }))); }
+    try { await API.put("/notifications/read"); setUnreadCount(0); setNotifications(prev => prev.map(n => ({ ...n, read: true }))); updateBadge(0); }
     catch (err) { console.error(err); }
   };
 
@@ -549,7 +554,7 @@ function MemberDashboard() {
             <Link to="/messages" className="relative p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
             </Link>
-            <button onClick={() => { setShowRightPanel(true); if (unreadCount > 0) markNotifRead(); navigator.serviceWorker?.ready?.then(r => r.active?.postMessage({ type: "CLEAR_BADGE" })).catch(() => {}); }} className="relative p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
+            <button onClick={() => { setShowRightPanel(true); if (unreadCount > 0) markNotifRead(); else updateBadge(0); }} className="relative p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
               {unreadCount > 0 && <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{unreadCount}</span>}
             </button>
