@@ -36,6 +36,20 @@ export const markAsRead = async (req, res) => {
   }
 };
 
+export const deleteNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const notif = await Notification.findOneAndDelete({ _id: id, userId: req.user._id });
+    if (!notif) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    res.json({ message: "Notification deleted" });
+  } catch (err) {
+    console.error("Delete notification error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const executeAdminPush = async (title, body, target, createInAppNotifications, adminId, extra = {}) => {
   let sent = 0;
   let targetUsers = [];

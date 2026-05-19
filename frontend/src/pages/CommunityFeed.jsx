@@ -197,19 +197,19 @@ function CommunityFeed() {
                   </div>
                   {notifications.length === 0 && <p className="text-gray-400 text-sm text-center p-4">No notifications</p>}
                   {notifications.map((n) => {
-                    const navTo = n.type === "reminder" ? "/dashboard" : n.type === "message" ? "/messages" : "/community";
+                    const navUrl = n.type === "like" || n.type === "comment" ? `/post/${n.referenceId}` : n.type === "message" ? "/messages" : "/dashboard";
                     return (
-                      <div key={n._id} className={`p-3 border-b border-gray-50 text-sm cursor-pointer hover:bg-gray-50 ${n.read ? "" : "bg-purple-50"}`} onClick={() => { setShowNotif(false); navigate(navTo); }}>
-                        {n.type === "reminder" ? (
-                          <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
-                        ) : (
-                          <p className="text-gray-700">
-                            <span className="font-semibold">{n.fromUserId?.firstname}</span>
-                            {n.type === "like" && " liked your post"}
-                            {n.type === "comment" && " commented on your post"}
-                            {n.type === "message" && " sent you a message"}
-                          </p>
-                        )}
+                      <div key={n._id} className={`flex items-start gap-2 p-3 border-b border-gray-50 text-sm cursor-pointer hover:bg-gray-50 ${n.read ? "" : "bg-purple-50"}`} onClick={() => { setShowNotif(false); navigate(navUrl); }}>
+                        <div className="flex-1 min-w-0">
+                          {n.type === "reminder" ? (
+                            <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
+                          ) : (
+                            <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                          )}
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {}); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
                       </div>
                     );
                   })}

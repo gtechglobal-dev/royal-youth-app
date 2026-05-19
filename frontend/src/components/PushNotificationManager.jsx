@@ -25,29 +25,7 @@ export default function PushNotificationManager() {
     }
   }, [isLoggedIn, isInstalled, notificationPermission, subscribeToPush]);
 
-  if (!isLoggedIn || !isInstalled || dismissed) return null;
-
-  if (subscribed) {
-    return (
-      <div className="fixed bottom-20 left-4 right-4 z-50 max-w-sm mx-auto">
-        <div className="bg-green-50 rounded-xl shadow-lg border border-green-200 p-4 animate-slide-up">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <p className="font-semibold text-sm text-green-800">Push notifications active</p>
-            <button onClick={() => setDismissed(true)} className="ml-auto text-green-400 hover:text-green-600">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!isLoggedIn || !isInstalled || dismissed || subscribed) return null;
 
   if (notificationPermission === "denied") return null;
 

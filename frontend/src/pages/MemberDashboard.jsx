@@ -484,26 +484,32 @@ function MemberDashboard() {
         </div>
         {notifications.length === 0 && <p className="text-gray-400 text-xs text-center py-3">No notifications</p>}
         <div className="space-y-2 max-h-48 overflow-y-auto">
-          {notifications.slice(0, 8).map((n) => (
-            <div key={n._id} className={`flex items-start gap-2 p-2 rounded-lg text-xs cursor-pointer hover:bg-gray-100 ${n.read ? "" : "bg-purple-50"}`} onClick={() => { if (n.type === "reminder") navigate("/dashboard"); else if (n.type === "message") navigate("/messages"); else navigate("/community"); }}>
-              <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {n.type === "reminder" ? (
-                  <svg className="w-3.5 h-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                ) : n.fromUserId?.profileImage ? (
-                  <img src={optimizeImage(n.fromUserId.profileImage, 32)} alt="" className="w-full h-full object-cover" loading="lazy" />
-                ) : (
-                  <span className="text-purple-600 font-bold text-[9px]">{n.fromUserId?.firstname?.[0]}</span>
-                )}
+          {notifications.slice(0, 8).map((n) => {
+            const navUrl = n.type === "like" || n.type === "comment" ? `/post/${n.referenceId}` : n.type === "message" ? "/messages" : "/dashboard";
+            return (
+              <div key={n._id} className={`flex items-start gap-2 p-2 rounded-lg text-xs cursor-pointer hover:bg-gray-100 ${n.read ? "" : "bg-purple-50"}`} onClick={() => navigate(navUrl)}>
+                <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {n.type === "reminder" ? (
+                    <svg className="w-3.5 h-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  ) : n.fromUserId?.profileImage ? (
+                    <img src={optimizeImage(n.fromUserId.profileImage, 32)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <span className="text-purple-600 font-bold text-[9px]">{n.fromUserId?.firstname?.[0]}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  {n.type === "reminder" ? (
+                    <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
+                  ) : (
+                    <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                  )}
+                </div>
+                <button onClick={(e) => { e.stopPropagation(); API.delete(`/notifications/${n._id}`).then(() => { setNotifications(prev => prev.filter(x => x._id !== n._id)); }).catch(() => {}); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
-              <div>
-                {n.type === "reminder" ? (
-                  <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
-                ) : (
-                  <p className="text-gray-700"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked" : n.type === "comment" ? "commented on" : "messaged"} you</p>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -564,20 +570,32 @@ function MemberDashboard() {
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
                   <div className="p-3 border-b border-gray-100"><p className="font-semibold text-sm">Notifications</p></div>
                   {notifications.length === 0 && <p className="text-gray-400 text-xs text-center p-4">No notifications</p>}
-                  {notifications.map((n) => (
-                    <div key={n._id} className={`p-3 border-b border-gray-50 text-xs cursor-pointer hover:bg-gray-50 ${n.read ? "" : "bg-purple-50"}`} onClick={() => { setShowNotif(false); if (n.type === "reminder") navigate("/dashboard"); else if (n.type === "message") navigate("/messages"); else navigate("/community"); }}>
-                      {n.type === "reminder" ? (
-                        <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
-                      ) : (
-                        <p className="text-gray-700"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
-                      )}
-                    </div>
-                  ))}
+                  {notifications.map((n) => {
+                    const navUrl = n.type === "like" || n.type === "comment" ? `/post/${n.referenceId}` : n.type === "message" ? "/messages" : "/dashboard";
+                    return (
+                      <div key={n._id} className={`flex items-start gap-2 p-3 border-b border-gray-50 text-xs cursor-pointer hover:bg-gray-50 ${n.read ? "" : "bg-purple-50"}`} onClick={() => { setShowNotif(false); navigate(navUrl); }}>
+                        <div className="flex-1 min-w-0">
+                          {n.type === "reminder" ? (
+                            <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
+                          ) : (
+                            <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                          )}
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {}); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
-            <button onClick={() => setShowRightPanel(!showRightPanel)} className="lg:hidden p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+            <button onClick={() => setShowRightPanel(!showRightPanel)} className="lg:hidden flex items-center gap-1 px-2.5 py-1.5 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01" />
+              </svg>
+              <span className="text-xs font-medium">More</span>
+              {unreadCount > 0 && <span className="bg-red-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}
             </button>
           </div>
         </div>
