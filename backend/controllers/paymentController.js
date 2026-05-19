@@ -1,5 +1,18 @@
 import User from "../models/user.js";
 import Income from "../models/income.js";
+import Notification from "../models/Notification.js";
+import { getIO } from "../socket.js";
+import { sendPushNotification } from "./pushController.js";
+
+const resolveUserId = async (id) => {
+  if (!id || id === "admin" || String(id).length < 10) {
+    const adminUser = await User.findOne({ role: "admin", isDeleted: false }).select("_id").lean();
+    if (adminUser) return adminUser._id;
+    const anyUser = await User.findOne({ isDeleted: false }).select("_id").lean();
+    return anyUser?._id || id;
+  }
+  return id;
+};
 
 const initializePayment = async (req, res) => {
   try {
@@ -317,6 +330,18 @@ export const addSpecialDonation = async (req, res) => {
       memberId,
     });
     await income.save();
+
+    const fromId = await resolveUserId(req.user?._id || "admin");
+    const targetId = String(memberId).length < 10 ? await resolveUserId(memberId) : memberId;
+    await Notification.create({
+      userId: targetId,
+      fromUserId: fromId,
+      type: "reminder",
+      referenceId: purpose,
+      body: `Your donation of ₦${amount} for "${purpose}" has been recorded. Thank you!`,
+    });
+    try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
+    try { sendPushNotification(targetId, "Royal Youth Hub", `Your donation of ₦${amount} has been recorded. Thank you!`, "/dashboard"); } catch (e) {}
     
     res.status(201).json(income);
   } catch (error) {
