@@ -5,7 +5,7 @@ import Notification from "../components/Notification";
 import Logo from "../assets/gdev logo.svg";
 import { OverlayLoader } from "../components/Loaders";
 import { optimizeImage } from "../utils/cloudinary";
-import { displayName } from "../utils/displayName";
+import { displayName, displayNameFull } from "../utils/displayName";
 import siteLogo from "../assets/gdev logo.svg";
 import { connectSocket, getSocket } from "../services/socket";
 import EmojiPicker from "../components/EmojiPicker";
@@ -1430,7 +1430,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold">{displayName(selectedMember)}</p>
+                    <p className="font-semibold">{displayNameFull(selectedMember)}</p>
                     <p className="text-sm text-gray-500">{selectedMember.occupation || 'No occupation'}</p>
                   </div>
                 </div>

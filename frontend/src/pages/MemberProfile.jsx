@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import { optimizeImage } from "../utils/cloudinary";
-import { displayName } from "../utils/displayName";
+import { displayNameFull } from "../utils/displayName";
 
 function MemberProfile() {
   const { id } = useParams();
@@ -54,7 +54,7 @@ function MemberProfile() {
             )}
           </div>
           <div>
-            <p className="font-bold text-lg">{displayName(member)}</p>
+            <p className="font-bold text-lg">{displayNameFull(member)}</p>
             <p className="text-gray-500 text-sm">{member.branch || "Plot C4/C5 Owerri"}</p>
           </div>
         </div>
