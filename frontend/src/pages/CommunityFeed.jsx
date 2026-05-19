@@ -17,6 +17,7 @@ function CommunityFeed() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
+  const [expandedNotif, setExpandedNotif] = useState(null);
   const notifRef = useRef(null);
 
   useEffect(() => {
@@ -197,19 +198,28 @@ function CommunityFeed() {
                   </div>
                   {notifications.length === 0 && <p className="text-gray-400 text-sm text-center p-4">No notifications</p>}
                   {notifications.map((n) => {
+                    const isExpanded = expandedNotif === n._id;
                     const navUrl = n.type === "like" || n.type === "comment" ? `/post/${n.referenceId}` : n.type === "message" ? "/messages" : "/dashboard";
                     return (
-                      <div key={n._id} className={`flex items-start gap-2 p-3 border-b border-gray-50 text-sm cursor-pointer hover:bg-gray-50 ${n.read ? "" : "bg-purple-50"}`} onClick={() => { setShowNotif(false); navigate(navUrl); }}>
-                        <div className="flex-1 min-w-0">
-                          {n.type === "reminder" ? (
-                            <p className="text-gray-700"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
-                          ) : (
-                            <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
-                          )}
+                      <div key={n._id} className={`p-3 border-b border-gray-50 text-sm ${n.read ? "" : "bg-purple-50"}`}>
+                        <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
+                          <div className="flex-1 min-w-0">
+                            {n.type === "reminder" ? (
+                              <p className="text-gray-700 truncate"><span className="font-semibold">Royal Youth Hub</span> — {n.referenceId}</p>
+                            ) : (
+                              <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                            )}
+                          </div>
+                          <button onClick={(e) => { e.stopPropagation(); API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {}); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {}); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
+                        {isExpanded && (
+                          <div className="mt-1.5 pl-2">
+                            <p className="text-gray-500 text-xs">{n.body || "No additional details"}</p>
+                            <button onClick={(e) => { e.stopPropagation(); setExpandedNotif(null); setShowNotif(false); navigate(navUrl); }} className="text-purple-600 text-xs font-semibold mt-1 hover:underline">View</button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

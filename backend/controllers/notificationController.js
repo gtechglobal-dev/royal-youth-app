@@ -107,6 +107,7 @@ const executeAdminPush = async (title, body, target, createInAppNotifications, a
       fromUserId: adminId || "admin",
       type: "reminder",
       referenceId: title,
+      body,
     }));
     await Notification.insertMany(notifications);
     inAppCount = notifications.length;
@@ -119,6 +120,7 @@ const executeAdminPush = async (title, body, target, createInAppNotifications, a
       fromUserId: adminId || "admin",
       type: "reminder",
       referenceId: title,
+      body,
     }));
     if (notifications.length > 0) {
       await Notification.insertMany(notifications);
