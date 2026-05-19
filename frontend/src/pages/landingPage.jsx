@@ -5,7 +5,7 @@ import ContactSection from "../components/ContactSection";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import Logo from "../assets/gdev logo.svg";
 import PresidentImage from "../assets/president.jpg";
-import { PageLoader } from "../components/Loaders";
+
 
 function ScrollSection({ children, className = "", delay = 0 }) {
   const [ref, isVisible] = useScrollAnimation();
@@ -121,7 +121,12 @@ function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) return <PageLoader />;
+  if (loading) return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex flex-col items-center justify-center gap-4">
+      <img src={Logo} alt="RY" className="w-20 h-20 md:w-24 md:h-24 animate-pulse" />
+      <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">Royal Youth Hub</h3>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 relative">
@@ -146,13 +151,13 @@ function LandingPage() {
                 <>
                   <button
                     onClick={() => navigate("/dashboard")}
-                    className="bg-indigo-600 text-white px-4 py-2 md:px-5 rounded-xl font-semibold hover:bg-indigo-700 transition-all text-sm md:text-base shadow-lg shadow-indigo-600/25"
+                    className="bg-indigo-600 text-white px-2.5 py-1.5 md:px-5 rounded-xl font-semibold hover:bg-indigo-700 transition-all text-xs md:text-base shadow-lg shadow-indigo-600/25"
                   >
                     Dashboard
                   </button>
                   <button
                     onClick={handleLogout}
-                    className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 md:px-5 rounded-xl font-semibold transition-all text-sm md:text-base shadow-lg shadow-amber-500/25"
+                    className="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1.5 md:px-5 rounded-xl font-semibold transition-all text-xs md:text-base shadow-lg shadow-amber-500/25"
                   >
                     Logout
                   </button>
