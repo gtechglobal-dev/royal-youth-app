@@ -510,7 +510,7 @@ export const getMemberDues = async (req, res) => {
 // UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
-    const { occupation, hobbies, address, branch, nickname, gender } = req.body;
+    const { occupation, hobbies, address, branch, nickname, gender, stateOfOrigin, lga } = req.body;
     const updateData = {};
 
     if (occupation) updateData.occupation = occupation;
@@ -519,6 +519,8 @@ export const updateProfile = async (req, res) => {
     if (branch) updateData.branch = branch;
     if (nickname !== undefined) updateData.nickname = nickname;
     if (gender !== undefined) updateData.gender = gender;
+    if (stateOfOrigin !== undefined) updateData.stateOfOrigin = stateOfOrigin;
+    if (lga !== undefined) updateData.lga = lga;
 
     if (req.file && req.file.buffer && req.file.buffer.length > 0) {
       try {

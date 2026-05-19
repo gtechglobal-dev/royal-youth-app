@@ -37,6 +37,8 @@ function MemberDashboard() {
   const [showNicknamePrompt, setShowNicknamePrompt] = useState(false);
   const [nicknameInput, setNicknameInput] = useState("");
   const [genderInput, setGenderInput] = useState("");
+  const [stateOfOriginInput, setStateOfOriginInput] = useState("");
+  const [lgaInput, setLgaInput] = useState("");
 
   // Friends
   const [friends, setFriends] = useState([]);
@@ -100,7 +102,7 @@ function MemberDashboard() {
         const userRes = await API.get("/auth/me");
         if (userRes.data._id === "admin" && userRes.data.role === "admin") { navigate("/admin"); return; }
         setUser(userRes.data);
-        if (!userRes.data.nickname) { setNicknameInput(""); setGenderInput(""); setShowNicknamePrompt(true); }
+        if (!userRes.data.nickname || !userRes.data.gender || !userRes.data.stateOfOrigin || !userRes.data.lga) { setNicknameInput(userRes.data.nickname || ""); setGenderInput(userRes.data.gender || ""); setStateOfOriginInput(userRes.data.stateOfOrigin || ""); setLgaInput(userRes.data.lga || ""); setShowNicknamePrompt(true); }
 
         const cutoffDate = new Date(2026, 4, 4, 17, 0, 0);
         if (new Date() < cutoffDate) {
@@ -1136,21 +1138,23 @@ function MemberDashboard() {
       )}
       {showNicknamePrompt && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative z-10">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative z-10 max-h-[90vh] overflow-y-auto">
             <div className="flex flex-col items-center text-center">
               <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mb-4">
                 <svg className="w-7 h-7 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-1">Complete Your Profile</h3>
-               <p className="text-sm text-gray-500 mb-4">Please set your nickname and gender to continue.</p>
-               <input type="text" placeholder="Nickname *" title="Name you want others to see in Chats/Posts" value={nicknameInput} onChange={e => setNicknameInput(e.target.value)} className="w-full p-3 border rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required />
-               <p className="text-[11px] text-gray-400 -mt-2 mb-3 text-left w-full">Name you want others to see in Chats/Posts</p>
-              <select value={genderInput} onChange={e => setGenderInput(e.target.value)} className="w-full p-3 border rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white" required>
-                <option value="">Select Gender *</option>
+               <p className="text-sm text-gray-500 mb-4">Please fill in the missing details below.</p>
+               <input type="text" placeholder="Nickname *" title="Name you want others to see in Chats/Posts" value={nicknameInput} onChange={e => setNicknameInput(e.target.value)} className="w-full p-3 border rounded-xl mb-1 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+               <p className="text-[11px] text-gray-400 mb-3 text-left w-full">Name you want others to see in Chats/Posts</p>
+              <select value={genderInput} onChange={e => setGenderInput(e.target.value)} className="w-full p-3 border rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
+                <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
-              <button onClick={async () => { if (!nicknameInput.trim() || !genderInput) return; try { await API.put("/auth/profile", { nickname: nicknameInput.trim(), gender: genderInput }); setUser(prev => ({ ...prev, nickname: nicknameInput.trim(), gender: genderInput })); setShowNicknamePrompt(false); } catch (e) { console.error(e); } }} className="w-full px-4 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors">Save</button>
+              <input type="text" placeholder="State of Origin" value={stateOfOriginInput} onChange={e => setStateOfOriginInput(e.target.value)} className="w-full p-3 border rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              <input type="text" placeholder="Local Government Area" value={lgaInput} onChange={e => setLgaInput(e.target.value)} className="w-full p-3 border rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              <button onClick={async () => { try { await API.put("/auth/profile", { nickname: nicknameInput.trim(), gender: genderInput, stateOfOrigin: stateOfOriginInput.trim(), lga: lgaInput.trim() }); setUser(prev => ({ ...prev, nickname: nicknameInput.trim(), gender: genderInput, stateOfOrigin: stateOfOriginInput.trim(), lga: lgaInput.trim() })); setShowNicknamePrompt(false); } catch (e) { console.error(e); } }} className="w-full px-4 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors">Save</button>
             </div>
           </div>
         </div>
