@@ -19,7 +19,7 @@ export default defineConfig({
         short_name: 'RYH',
         description: 'Royal Youth Church Community App',
         theme_color: '#7c3aed',
-        background_color: '#7c3aed',
+        background_color: '#000000',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
