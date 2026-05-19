@@ -5,10 +5,8 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import compression from "compression";
 import dotenv from "dotenv";
-import cron from "node-cron";
 import connectDB from "./config/db.js";
 import { initSocket } from "./socket.js";
-import { runDuesReminderCycle } from "./controllers/reminderController.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -26,7 +24,6 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import friendRoutes from "./routes/friendRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import pushRoutes from "./routes/pushRoutes.js";
-import reminderRoutes from "./routes/reminderRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,8 +80,6 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/push", pushRoutes);
-app.use("/api/reminders", reminderRoutes);
-
 // ✅ Error handler
 app.use((err, req, res, next) => {
   console.error("Server error:", err);
@@ -134,17 +129,6 @@ if (SELF_URL) {
     }
   }, 5 * 60 * 1000); // every 5 minutes
 }
-
-// ✅ Daily dues/youth day reminder cron at 9:00 AM
-cron.schedule("0 9 * * *", async () => {
-  console.log("⏰ Running daily dues reminder cron...");
-  try {
-    const result = await runDuesReminderCycle();
-    console.log(`✅ Daily reminder: ${result.duesSent} dues reminders sent. Unpaid: ${result.unpaidCount}/${result.totalMembers}`);
-  } catch (err) {
-    console.error("❌ Daily reminder cron failed:", err);
-  }
-});
 
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
