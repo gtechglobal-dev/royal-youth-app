@@ -25,6 +25,7 @@ function MemberDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [expandedNotif, setExpandedNotif] = useState(null);
+  const [showAllNotifs, setShowAllNotifs] = useState(false);
 
   // Friends
   const [friends, setFriends] = useState([]);
@@ -452,22 +453,21 @@ function MemberDashboard() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-bold text-sm">Notifications</h3>
-          {unreadCount > 0 && <button onClick={markNotifRead} className="text-xs text-purple-600 hover:underline">Mark all read</button>}
+          <div className="flex items-center gap-3">
+            {notifications.length > 0 && <button onClick={() => { API.delete("/notifications/clear-all").then(() => { setNotifications([]); setUnreadCount(0); }).catch(() => {}); }} className="text-xs text-red-500 hover:underline">Clear all</button>}
+            {unreadCount > 0 && <button onClick={markNotifRead} className="text-xs text-purple-600 hover:underline">Mark all read</button>}
+          </div>
         </div>
         {notifications.length === 0 && <p className="text-gray-400 text-xs text-center py-3">No notifications</p>}
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {notifications.slice(0, 8).map((n) => {
+        <div className="space-y-1">
+          {(showAllNotifs ? notifications : notifications.slice(0, 2)).map((n) => {
             const isExpanded = expandedNotif === n._id;
-            let touchStartX = 0;
-            const deleteNotif = () => API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {});
             return (
               <div
                 key={n._id}
-                className={`relative p-2.5 rounded-lg text-sm cursor-pointer hover:bg-gray-100 overflow-hidden ${n.read ? "" : "bg-purple-50"}`}
-                onTouchStart={(e) => { touchStartX = e.touches[0].clientX; }}
-                onTouchEnd={(e) => { if (touchStartX - e.changedTouches[0].clientX > 80) deleteNotif(); }}
+                className={`p-2.5 rounded-lg text-sm cursor-pointer hover:bg-gray-100 ${n.read ? "" : "bg-purple-50"}`}
               >
-                <div className="flex items-start gap-2 relative z-10" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
+                <div className="flex items-start gap-2" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
                   <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                     {n.type === "reminder" ? (
                       <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
@@ -479,17 +479,14 @@ function MemberDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     {n.type === "reminder" ? (
-                      <p className="text-gray-700 truncate"><span className="font-semibold">Royal Youth Hub</span></p>
+                      <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">Royal Youth Hub</span></p>
                     ) : (
-                      <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                      <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                     )}
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); deleteNotif(); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
                 </div>
                 {isExpanded && (
-                  <div className="mt-2 pl-9 relative z-10">
+                  <div className="mt-2 pl-9">
                     <p className="text-gray-500 text-sm">{n.body || "No additional details"}</p>
                   </div>
                 )}
@@ -497,6 +494,11 @@ function MemberDashboard() {
             );
           })}
         </div>
+        {notifications.length > 2 && (
+          <button onClick={() => setShowAllNotifs(!showAllNotifs)} className="text-purple-600 text-xs font-semibold mt-2 hover:underline">
+            {showAllNotifs ? "Show less" : `Show more (${notifications.length - 2} more)`}
+          </button>
+        )}
       </div>
 
       {/* Friend Requests */}

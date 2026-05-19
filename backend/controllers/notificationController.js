@@ -50,6 +50,16 @@ export const deleteNotification = async (req, res) => {
   }
 };
 
+export const clearAllNotifications = async (req, res) => {
+  try {
+    await Notification.deleteMany({ userId: req.user._id });
+    res.json({ message: "All notifications cleared" });
+  } catch (err) {
+    console.error("Clear all notifications error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const executeAdminPush = async (title, body, target, createInAppNotifications, adminId, extra = {}) => {
   let sent = 0;
   let targetUsers = [];

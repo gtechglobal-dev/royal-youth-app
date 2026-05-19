@@ -18,6 +18,7 @@ function CommunityFeed() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
   const [expandedNotif, setExpandedNotif] = useState(null);
+  const [showAllNotifs, setShowAllNotifs] = useState(false);
   const notifRef = useRef(null);
 
   useEffect(() => {
@@ -197,37 +198,32 @@ function CommunityFeed() {
                     <p className="font-semibold text-sm">Notifications</p>
                   </div>
                   {notifications.length === 0 && <p className="text-gray-400 text-sm text-center p-4">No notifications</p>}
-                  {notifications.map((n) => {
+                  {(showAllNotifs ? notifications : notifications.slice(0, 2)).map((n) => {
                     const isExpanded = expandedNotif === n._id;
-                    let touchStartX = 0;
-                    const deleteNotif = () => API.delete(`/notifications/${n._id}`).then(() => setNotifications(prev => prev.filter(x => x._id !== n._id))).catch(() => {});
                     return (
-                      <div
-                        key={n._id}
-                        className={`relative p-3 border-b border-gray-50 text-sm overflow-hidden ${n.read ? "" : "bg-purple-50"}`}
-                        onTouchStart={(e) => { touchStartX = e.touches[0].clientX; }}
-                        onTouchEnd={(e) => { if (touchStartX - e.changedTouches[0].clientX > 80) deleteNotif(); }}
-                      >
-                        <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50 relative z-10" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
+                      <div key={n._id} className={`p-3 border-b border-gray-50 text-sm ${n.read ? "" : "bg-purple-50"}`}>
+                        <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
                           <div className="flex-1 min-w-0">
                             {n.type === "reminder" ? (
-                              <p className="text-gray-700 truncate"><span className="font-semibold">Royal Youth Hub</span></p>
+                              <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">Royal Youth Hub</span></p>
                             ) : (
-                              <p className="text-gray-700 truncate"><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                              <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                             )}
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); deleteNotif(); }} className="text-gray-300 hover:text-red-500 flex-shrink-0">
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                          </button>
                         </div>
                         {isExpanded && (
-                          <div className="mt-2 pl-2 relative z-10">
+                          <div className="mt-2 pl-2">
                             <p className="text-gray-500 text-sm">{n.body || "No additional details"}</p>
                           </div>
                         )}
                       </div>
                     );
                   })}
+                  {notifications.length > 2 && (
+                    <button onClick={() => setShowAllNotifs(!showAllNotifs)} className="w-full p-2 text-purple-600 text-xs font-semibold hover:bg-gray-50">
+                      {showAllNotifs ? "Show less" : `Show more (${notifications.length - 2} more)`}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
