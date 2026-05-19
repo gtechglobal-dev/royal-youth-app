@@ -7,6 +7,52 @@ import { optimizeImage } from "../utils/cloudinary";
 import ConfirmModal from "../components/ConfirmModal";
 import { displayName } from "../utils/displayName";
 
+const nigerianStates = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo",
+  "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos",
+  "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Sokoto",
+  "Taraba", "Yobe", "Zamfara"
+];
+
+const lgaByState = {
+  "Abia": ["Aba North", "Aba South", "Arochukwu", "Bende", "Ikwuano", "Isiala Ngwa North", "Isiala Ngwa South", "Isuikwuato", "Obingwa", "Ohafia", "Osisioma", "Ugwunagbo", "Ukwa East", "Ukwa West", "Umuahia North", "Umuahia South", "Umu-Nneochi"],
+  "Adamawa": ["Adamawa", "Ajingami", "Bangure", "Bewete", "Dambazau", "Fufore", "Ganye", "Girei", "Gombi", "Guyuk", "Hong", "Jada", "Kabure", "Kaltungo", "Karaye", "Kiri", "Koma", "Kumun", "Madagali", "Maiha", "Mayo Belwa", "Michika", "Mubi North", "Mubi South", "Numan", "Shelleng", "Song", "Toungo", "Yola"],
+  "Akwa Ibom": ["Abak", "Eastern Obolo", "Essien Udim", "Etim Ekpo", "Etinan", "Ibeno", "Ibesikpo Asutan", "Ibiono-Ibom", "Ikot Abasi", "Ikot Ekpene", "Ini", "Itu", "Mbiabong", "Mkpat-Enin", "Nsit-Atai", "Nsit-Ibom", "Nsit-Ubium", "Obot-Akara", "Okobo", "Onna", "Oruk Anam", "Oron", "Oruk-Anam", "Udung-Uko", "Ukanafun", "Uquo", "Uruah"],
+  "Anambra": ["Aguata", "Anambra East", "Anambra West", "Anaocha", "Awka North", "Awka South", "Ayamelum", "Dunukofia", "Ekwusigo", "Idemili North", "Idemili South", "Ihiala", "Njikoka", "Nnewi North", "Nnewi South", "Ogbaru", "Onitsha North", "Onitsha South", "Orumba North", "Orumba South", "Oyi"],
+  "Bauchi": ["Alagarn", "Bauchi", "Bogoro", "Damban", "Darako", "Gamawa", "Ganjuwa", "Giade", "Itas-Gadau", "Jamaare", "Katagum", "Misau", "Ningi", "Shira", "Tafawa-Balewa", "Toro", "Warji", "Zaki"],
+  "Bayelsa": ["Brass", "Ekeremor", "Kolokuma-Opokuma", "Nembe", "Ogbia", "Sagbama", "Southern Ijaw", "Yenagoa"],
+  "Benue": ["Ado", "Agatu", "Apa", "Buruku", "Gboko", "Guma", "Gwer-East", "Gwer-West", "Katsina-Ala", "Konshisha", "Kwande", "Logo", "Makurdi", "Obi", "Ogbadibo", "Oju", "Okpokwu", "Oturkpo", "Tarka", "Ukum", "Ushongo", "Vandeikya"],
+  "Borno": ["Abadam", "Askira-Uba", "Bama", "Bayo", "Bijo", "Chibok", "Damboa", "Dikwa", "Gubio", "Gwagwalada", "Gwoza", "Kala-Balge", "Kukawa", "Kwaya-Kusar", "Maduguri", "Maiduguri", "Marte", "Misa", "Mobar", "Shani"],
+  "Cross River": ["Abi", "Akamkpa", "Akpabuyo", "Bakassi", "Bekwarra", "Biasi", "Calabar Municipal", "Calabar South", "Etung", "Ikom", "Obanliku", "Obubra", "Obudu", "Odot", "Okpoma", "Ugep", "Yakurr"],
+  "Delta": ["Aniocha North", "Aniocha South", "Bomadi", "Burutu", "Delta", "Ethiope East", "Ethiope West", "Ika North East", "Ika South", "Isoko North", "Isoko South", "Ndokwa East", "Ndokwa West", "Okpe", "Oshimili North", "Oshimili South", "Patani", "Sapele", "Udu", "Ughelli North", "Ughelli South", "Uvwie", "Warri North", "Warri South", "Warri South West"],
+  "Ebonyi": ["Abakaliki", "Afikpo North", "Afikpo South", "Ebonyi", "Ezza", "Ezza North", "Ezza South", "Ikwo", "Ishielu", "Ivo", "Izzi", "Ohahua", "Onicha", "Ohaozara", "Ukaba", "Ukwara"],
+  "Edo": ["Akoko-Edo", "Egor", "Esan Central", "Esan North-East", "Esan South-East", "Esan West", "Etsuna Central", "Etsuan West", "Igueben", "Ikpoba-Okha", "Orhionmwon", "Oredo", "Uhunmwonde"],
+  "Ekiti": ["Ado-Ekiti", "Aiyekire", "Efon", "Ekiti East", "Ekiti South-West", "Ekiti West", "Emure", "Ido-Osi", "Ijero", "Ikole", "Ilejemeje", "Irepodun", "Irolu", "Oye", "Oyebanji"],
+  "Enugu": ["Aninri", "Awgu", "Enugu East", "Enugu North", "Enugu South", "Ezeagu", "Igbo-Etiti", "Igbo-Eze North", "Igbo-Eze South", "Isi-Uzo", "Nkanu East", "Nkanu West", "Nsukka", "Oji River", "Udenu", "Udi", "Uzo-Nyi"],
+  "Gombe": ["Akko", "Balanga", "Billiri", "Dukku", "Funakaye", "Gombe", "Kaltungo", "Kwami", "Nafada", "Shongom", "Yeme"],
+  "Imo": ["Aboh-Mbaise", "Ahiazu-Mbaise", "Ehime-Mbano", "Ezuah", "Ideato North", "Ideato South", "Ihitte-Uboma", "Ikeduru", "Isu", "Mbaitoli", "Ngor-Okpala", "Njaba", "Nkwerre", "Obowo", "Oguta", "Ohaji-Egbema", "Okigwe", "Orlu", "Orsu", "Oru East", "Oru West", "Owerri Municipal", "Owerri North", "Owerri West"],
+  "Jigawa": ["Auyo", "Babura", "Birnin Kudu", "Birniwa", "Buji", "Dutse", "Gagarawa", "Garki", "Gumel", "Gwiwa", "Hadejia", "Jahun", "Kafin Madaki", "Kaugama", "Kazaure", "Kiyawa", "Maigatari", "Malam Madori", "Ringim", "Roni", "Sabon-Taura", "Sankargo", "Suletaryu", "Taura"],
+  "Kaduna": ["Birnin-Gwari", "Chikun", "Giwa", "Ikara", "Jaba", "Jemaa", "Kaduna North", "Kaduna South", "Kagarko", "Kajuru", "Kaura", "Kubau", "Kudan", "Lere", "Makarfi", "Sabon-Gari", "Sanga", "Soba", "Zangon-Keteng", "Zaria"],
+  "Kano": ["Aleiru", "Bebe", "Bichi", "Bunkure", "Dambatta", "Dawakin Kudu", "Dawakin Tofa", "Dunbulin", "Gabas", "Gaya", "Gwarzo", "Kabo", "Kano Municipal", "Karaye", "Kibiya", "Kiru", "Kumbotso", "Kura", "Madobi", "Makoda", "Minjibir", "Nasarawa", "Rano", "Rimin Gada", "Rogo", "Shanono", "Sumbure", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada", "Ungogo", "Warawa", "Wudil"],
+  "Katsina": ["Bakori", "Batagarawa", "Batsari", "Baure", "Bindawa", "Charanchi", "Dandume", "Danja", "Dan Musa", "Daura", "Dilimi", "Faskari", "Funtua", "Indivara", "Jibia", "Kafur", "Kaita", "Kankara", "Kankiya", "Katsina", "Kurfi", "Kusada", "Mai'Aduwa", "Malumfashi", "Mani", "Maru", "Mashi", "Mikinti", "Madura", "Musawa", "Rimi", "Sabuwa", "Safana", "Sandamu", "Yashaka", "Zango"],
+  "Kebbi": ["Aleiro", "Arewa-Dandi", "Argungu", "Augie", "Bagudo", "Birnin Kebbi", "Bunza", "Dandi", "Danko", "Fakai", "Gwandu", "Jega", "Kalgo", "Koko/Besse", "Maiyama", "Ngaski", "Sakaba", "Shanga", "Suru", "Wasagu", "Yauri", "Zuru"],
+  "Kogi": ["Adavi", "Ajaokuta", "Ankpa", "Bassa", "Dekina", "Ibaji", "Idah", "Igalamela-Odulo", "Ijumu", "Kabba/Bunu", "Koton Karfe", "Lokoja", "Ofu", "Ogori/Mangongo", "Okehi", "Okene", "Olamabolo", "Omala", "Yagba East", "Yagba West"],
+  "Kwara": ["Baruten", "Edu", "Ekiti", "Ilorin East", "Ilorin South", "Ilorin West", "Irepodun", "Isin", "Kaiama", "Moro", "Offa", "Oke-Ero", "Omu-Aran", "Pategi"],
+  "Lagos": ["Agege", "Ajeromi-Ifelodun", "Alimosh", "Amuwo-Odofin", "Apapa", "Badagry", "Epe", "Eti-Osa", "Ibeju-Lekki", "Ifako-Ijaye", "Ikeja", "Ikorodu", "Kosofe", "Lagos Island", "Lagos Mainland", "Mushin", "Ojo", "Oshodi-Isolo", "Shomolu", "Surulere"],
+  "Nasarawa": ["Awe", "Doma", "Karu", "Keana", "Keffi", "Kokona", "Lafia", "Nasarawa", "Nasarawa Egon", "Obi", "Toto", "Wamba"],
+  "Niger": ["Agwara", "Bida", "Borgu", "Chanchaga", "Edati", "Gbako", "Gwagwalada", "Ilorin", "Katcha", "Kontagora", "Lapai", "Lavun", "Magama", "Mariga", "Mashegu", "Mokwa", "Moya", "Paikoro", "Rafi", "Rijau", "Shiroro", "Suleja", "Tafa", "Wushishi"],
+  "Ogun": ["Abeokuta North", "Abeokuta South", "Ado-Odo/Ota", "Ewekoro", "Ikenne", "Imeko-Afon", "Ipokia", "Obafemi Owode", "Odogbolu", "Ogun Waterside", "Remo North", "Remo South", "Sagamu", "Yewa"],
+  "Ondo": ["Akoko North", "Akoko South", "Akure North", "Akure South", "Odigbo", "Oke-Oro", "Ose", "Owo"],
+  "Osun": ["Aiyedaade", "Aiyegbele", "Atakumosa East", "Atakumosa West", "Boluwaduro", "Boripe", "Ede North", "Ede South", "Egbedore", "Ejigbo", "Ife Central", "Ife East", "Ife North", "Ife South", "Ila", "Ilesha East", "Ilesha West", "Irepodun", "Irewole", "Isokan", "Iwo", "Obong", "Ola- Oluwa", "Olorunda", "Oriade", "Orolu", "Osogbo"],
+  "Oyo": ["Afijio", "Akinyele", "Atibo", "Atisbo", "Egbeda", "Ibadan North", "Ibadan South-East", "Ibadan South-West", "Ibarapa Central", "Ibarapa East", "Ibarapa North", "Ido", "Iseyin", "Itesiwaju", "Iwajowa", "Kajola", "Lagelu", "O gbomose", "Oderu", "Oluyole", "Ona-Ara", "Orire", "Oyo East", "Oyo West", "Saki East", "Saki West", "Surulere"],
+  "Plateau": ["Barkin-Ladi", "Bassa", "Bukuru", "Jos East", "Jos North", "Jos South", "Kanam", "Kanke", "Langtang North", "Langtang South", "Mangu", "Mikang", "Pankshin", "Qua'an Pan", "Riyom", "Shendam", "Wase"],
+  "Sokoto": ["Binani", "Bodinga", "Dange", "Gada", "Goronyo", "Gudu", "Gwadabawa", "Illela", "Isa", "Kebbe", "Kware", "Rabah", "Sabon Birni", "Shagari", "Sokoto North", "Sokoto South", "Tambuwal", "Tangaza", "Turefna", "Wamako", "Wara"],
+  "Taraba": ["Ardo-Kola", "Bali", "Donga", "Gashaka", "Gassol", "Ibi", "Jalingo", "Karaye", "Kurfi", "Lau", "Sardauna", "Takum", "Ussa", "Wukari", "Yorro", "Zing"],
+  "Yobe": ["Bade", "Borsari", "Damaturu", "Fika", "Fune", "Geidam", "Gujba", "Gulani", "Kukawa", "Machina", "Nangere", "Potiskum", "Tarmu", "Yunusuri", "Yusufari"],
+  "Zamfara": ["Anka", "Bakura", "Birnin Magaji", "Bukuyyumi", "Bungudu", "Gummi", "Gusau", "Kaura Namoda", "Maradun", "Maru", "Shinkafi", "Talata Mafara", "Tsafe", "Zurmi"]
+};
+
 const linkifyText = (text) => {
   const urlRegex = /(https?:\/\/[^\s<]+)/g;
   return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline break-all">$1</a>');
@@ -39,6 +85,7 @@ function MemberDashboard() {
   const [genderInput, setGenderInput] = useState("");
   const [stateOfOriginInput, setStateOfOriginInput] = useState("");
   const [lgaInput, setLgaInput] = useState("");
+  const [selectedPromptState, setSelectedPromptState] = useState("");
 
   // Friends
   const [friends, setFriends] = useState([]);
@@ -102,7 +149,7 @@ function MemberDashboard() {
         const userRes = await API.get("/auth/me");
         if (userRes.data._id === "admin" && userRes.data.role === "admin") { navigate("/admin"); return; }
         setUser(userRes.data);
-        if (!userRes.data.nickname || !userRes.data.gender || !userRes.data.stateOfOrigin || !userRes.data.lga) { setNicknameInput(userRes.data.nickname || ""); setGenderInput(userRes.data.gender || ""); setStateOfOriginInput(userRes.data.stateOfOrigin || ""); setLgaInput(userRes.data.lga || ""); setShowNicknamePrompt(true); }
+        if (!userRes.data.nickname || !userRes.data.gender || !userRes.data.stateOfOrigin || !userRes.data.lga) { setNicknameInput(userRes.data.nickname || ""); setGenderInput(userRes.data.gender || ""); setStateOfOriginInput(userRes.data.stateOfOrigin || ""); setLgaInput(userRes.data.lga || ""); setSelectedPromptState(userRes.data.stateOfOrigin || ""); setShowNicknamePrompt(true); }
 
         const cutoffDate = new Date(2026, 4, 4, 17, 0, 0);
         if (new Date() < cutoffDate) {
@@ -1152,8 +1199,14 @@ function MemberDashboard() {
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
-              <input type="text" placeholder="State of Origin" value={stateOfOriginInput} onChange={e => setStateOfOriginInput(e.target.value)} className="w-full p-3 border rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
-              <input type="text" placeholder="Local Government Area" value={lgaInput} onChange={e => setLgaInput(e.target.value)} className="w-full p-3 border rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              <select value={stateOfOriginInput} onChange={e => { setStateOfOriginInput(e.target.value); setSelectedPromptState(e.target.value); setLgaInput(""); }} className="w-full p-3 border rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
+                <option value="">State of Origin</option>
+                {nigerianStates.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <select value={lgaInput} onChange={e => setLgaInput(e.target.value)} disabled={!selectedPromptState} className="w-full p-3 border rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white disabled:opacity-50">
+                <option value="">Local Government Area</option>
+                {selectedPromptState && lgaByState[selectedPromptState]?.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
               <button onClick={async () => { try { await API.put("/auth/profile", { nickname: nicknameInput.trim(), gender: genderInput, stateOfOrigin: stateOfOriginInput.trim(), lga: lgaInput.trim() }); setUser(prev => ({ ...prev, nickname: nicknameInput.trim(), gender: genderInput, stateOfOrigin: stateOfOriginInput.trim(), lga: lgaInput.trim() })); setShowNicknamePrompt(false); } catch (e) { console.error(e); } }} className="w-full px-4 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors">Save</button>
             </div>
           </div>
