@@ -251,8 +251,9 @@ function Register() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <input type="text" name="nickname" placeholder="NICKNAME * (Name that appears in conversations/posts)" required value={formData.nickname} className={`w-full p-4 rounded-xl border-2 transition-all focus:outline-none focus:border-indigo-500 ${errors.nickname ? "border-red-500" : "border-gray-200"}`} onChange={handleChange} />
+                <input type="text" name="nickname" placeholder="NICKNAME *" required value={formData.nickname} className={`w-full p-4 rounded-xl border-2 transition-all focus:outline-none focus:border-indigo-500 ${errors.nickname ? "border-red-500" : "border-gray-200"}`} onChange={handleChange} />
                 {errors.nickname && <p className="text-red-500 text-sm mt-1">{errors.nickname}</p>}
+                <p className="text-[11px] text-gray-400 mt-1">Name you want others to see in Chats/Posts</p>
               </div>
               <div>
                 <select name="gender" required value={formData.gender} className={`w-full p-4 rounded-xl border-2 transition-all focus:outline-none focus:border-indigo-500 ${errors.gender ? "border-red-500" : "border-gray-200"} bg-white`} onChange={handleChange}>
