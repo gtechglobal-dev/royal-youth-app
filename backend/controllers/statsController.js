@@ -1,5 +1,5 @@
 import Post from "../models/Post.js";
-import User from "../models/User.js";
+import User from "../models/user.js";
 import Attendance from "../models/attendanceModel.js";
 
 export const getMonthlyStats = async (req, res) => {
