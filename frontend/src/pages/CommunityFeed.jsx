@@ -4,6 +4,7 @@ import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
+import ConfirmModal from "../components/ConfirmModal";
 
 const linkifyText = (text) => {
   const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -24,6 +25,7 @@ function CommunityFeed() {
   const [showNotif, setShowNotif] = useState(false);
   const [expandedNotif, setExpandedNotif] = useState(null);
   const [showAllNotifs, setShowAllNotifs] = useState(false);
+  const [clearAllConfirm, setClearAllConfirm] = useState(false);
   const notifRef = useRef(null);
 
   useEffect(() => {
@@ -171,6 +173,14 @@ function CommunityFeed() {
     }
   };
 
+  const deleteNotif = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await API.delete(`/notifications/${id}`);
+      setNotifications(prev => { const next = prev.filter(n => n._id !== id); updateBadge(next.filter(n => !n.read).length); return next; });
+    } catch (err) { console.error(err); }
+  };
+
   const handlePostCreated = useCallback((post) => {
     setPosts((prev) => [post, ...prev]);
   }, []);
@@ -217,8 +227,9 @@ function CommunityFeed() {
               </button>
               {showNotif && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
-                  <div className="p-3 border-b border-gray-100">
+                  <div className="p-3 border-b border-gray-100 flex items-center justify-between">
                     <p className="font-semibold text-sm">Notifications</p>
+                    {notifications.length > 0 && <button onClick={() => setClearAllConfirm(true)} className="text-xs text-red-500 hover:underline">Clear all</button>}
                   </div>
                   {notifications.length === 0 && <p className="text-gray-400 text-sm text-center p-4">No notifications</p>}
                   {(showAllNotifs ? notifications : notifications.slice(0, 2)).map((n) => {
@@ -236,6 +247,9 @@ function CommunityFeed() {
                               <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                             )}
                           </div>
+                          <button onClick={(e) => deleteNotif(n._id, e)} className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
                         </div>
                         {isExpanded && (
                           <div className="mt-2 pl-2">
@@ -310,6 +324,13 @@ function CommunityFeed() {
         )}
       </main>
     </div>
+      <ConfirmModal
+        open={clearAllConfirm}
+        title="Clear All Notifications"
+        message="Are you sure you want to delete all notifications? This action cannot be undone."
+        onConfirm={() => { API.delete("/notifications/clear-all").then(() => { setNotifications([]); setUnreadCount(0); updateBadge(0); }).catch(() => {}); setClearAllConfirm(false); }}
+        onCancel={() => setClearAllConfirm(false)}
+      />
   );
 }
 

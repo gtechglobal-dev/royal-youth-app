@@ -4,6 +4,7 @@ import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
+import ConfirmModal from "../components/ConfirmModal";
 
 const linkifyText = (text) => {
   const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -31,6 +32,7 @@ function MemberDashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [expandedNotif, setExpandedNotif] = useState(null);
   const [showAllNotifs, setShowAllNotifs] = useState(false);
+  const [clearAllConfirm, setClearAllConfirm] = useState(false);
 
   // Friends
   const [friends, setFriends] = useState([]);
@@ -302,6 +304,14 @@ function MemberDashboard() {
     catch (err) { console.error(err); }
   };
 
+  const deleteNotif = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await API.delete(`/notifications/${id}`);
+      setNotifications(prev => { const next = prev.filter(n => n._id !== id); updateBadge(next.filter(n => !n.read).length); return next; });
+    } catch (err) { console.error(err); }
+  };
+
   const handlePostCreated = useCallback((post) => { setPosts(prev => [post, ...prev]); }, []);
   const handleDeletePost = useCallback((postId) => {
     setPosts(prev => prev.filter(p => p._id !== postId));
@@ -474,7 +484,7 @@ function MemberDashboard() {
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-bold text-sm">Notifications</h3>
           <div className="flex items-center gap-3">
-            {notifications.length > 0 && <button onClick={() => { API.delete("/notifications/clear-all").then(() => { setNotifications([]); setUnreadCount(0); }).catch(() => {}); }} className="text-xs text-red-500 hover:underline">Clear all</button>}
+            {notifications.length > 0 && <button onClick={() => setClearAllConfirm(true)} className="text-xs text-red-500 hover:underline">Clear all</button>}
             {unreadCount > 0 && <button onClick={markNotifRead} className="text-xs text-purple-600 hover:underline">Mark all read</button>}
           </div>
         </div>
@@ -507,6 +517,9 @@ function MemberDashboard() {
                       <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                     )}
                   </div>
+                  <button onClick={(e) => deleteNotif(n._id, e)} className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
                 </div>
                 {isExpanded && (
                   <div className="mt-2 pl-9">
@@ -1117,6 +1130,13 @@ function MemberDashboard() {
         </div>
       )}
     </div>
+      <ConfirmModal
+        open={clearAllConfirm}
+        title="Clear All Notifications"
+        message="Are you sure you want to delete all notifications? This action cannot be undone."
+        onConfirm={() => { API.delete("/notifications/clear-all").then(() => { setNotifications([]); setUnreadCount(0); updateBadge(0); }).catch(() => {}); setClearAllConfirm(false); }}
+        onCancel={() => setClearAllConfirm(false)}
+      />
   );
 }
 
