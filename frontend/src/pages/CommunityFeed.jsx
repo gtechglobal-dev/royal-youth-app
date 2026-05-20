@@ -241,7 +241,7 @@ function CommunityFeed() {
                           <img src={n.image} alt="" className="w-full h-28 object-cover" loading="lazy" />
                         )}
                         <div className="p-3 border-b border-gray-50">
-                          <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedNotif(isExpanded ? null : n._id)}>
+                          <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => { if (n.type === "reminder") { setExpandedNotif(isExpanded ? null : n._id); } else { navigate(n.type === "message" ? "/messages" : `/post/${n.referenceId}`); } }}>
                             <div className="flex-1 min-w-0">
                               {n.type === "reminder" ? (
                                 <div>
@@ -249,7 +249,7 @@ function CommunityFeed() {
                                   {n.referenceId && <p className={`text-xs truncate ${n.read ? "text-gray-400" : "text-gray-500"}`}>{n.referenceId}</p>}
                                 </div>
                               ) : (
-                                <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{displayName(n.fromUserId)}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                                <p className={`${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{displayName(n.fromUserId)}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
                               )}
                             </div>
                             <button onClick={(e) => deleteNotif(n._id, e)} className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">

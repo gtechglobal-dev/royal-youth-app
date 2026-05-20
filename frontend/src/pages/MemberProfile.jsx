@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
+import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
 import { displayNameFull } from "../utils/displayName";
 
@@ -9,19 +10,34 @@ function MemberProfile() {
   const navigate = useNavigate();
   const [member, setMember] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
 
   const fetchMember = async () => {
     const res = await API.get(`/auth/member/${id}`);
     setMember(res.data);
   };
 
+  const fetchPosts = async () => {
+    try {
+      setPostsLoading(true);
+      const res = await API.get(`/posts/user/${id}`);
+      setPosts(res.data.posts);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchMember();
+    fetchPosts();
     const userStr = localStorage.getItem("user");
     if (userStr) {
       try { setCurrentUser(JSON.parse(userStr)); } catch {}
     }
-  }, []);
+  }, [id]);
 
   const updateStatus = async (status) => {
     await API.put(`/auth/member-status/${id}`, { status });
@@ -30,12 +46,20 @@ function MemberProfile() {
 
   const handleSendMessage = async () => {
     try {
-      const res = await API.get(`/messages/conversation/${id}`);
+      await API.get(`/messages/conversation/${id}`);
       navigate("/messages");
     } catch (err) {
       console.error("Error:", err);
     }
   };
+
+  const handleDeletePost = useCallback((postId) => {
+    setPosts((prev) => prev.filter((p) => p._id !== postId));
+  }, []);
+
+  const handleShare = useCallback((post) => {
+    navigate("/messages", { state: { sharedPost: { _id: post._id, text: post.text, imageUrl: post.imageUrl } } });
+  }, [navigate]);
 
   if (!member) return <p>Loading...</p>;
 
@@ -81,6 +105,29 @@ function MemberProfile() {
             </button>
           )}
         </div>
+      </div>
+
+      <div className="mt-8 max-w-2xl">
+        <h3 className="text-xl font-bold mb-4">Posts</h3>
+        {postsLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+          </div>
+        ) : posts.length === 0 ? (
+          <p className="text-gray-400 text-sm text-center py-8">No posts yet</p>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <PostCard
+                key={post._id}
+                post={post}
+                currentUserId={currentUser?._id}
+                onDelete={handleDeletePost}
+                onShare={handleShare}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
