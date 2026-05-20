@@ -241,7 +241,7 @@ function CommunityFeed() {
                           <img src={n.image} alt="" className="w-full h-28 object-cover" loading="lazy" />
                         )}
                         <div className="p-3 border-b border-gray-50">
-                          <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => { if (n.type === "reminder") { setExpandedNotif(isExpanded ? null : n._id); } else { navigate(n.type === "message" ? "/messages" : `/post/${n.referenceId}`); } }}>
+                          <div className="flex items-start gap-2 cursor-pointer hover:bg-gray-50" onClick={() => { if (n.type === "reminder") { setExpandedNotif(isExpanded ? null : n._id); } else { navigate(n.type === "message" ? "/messages" : `/dashboard?post=${n.referenceId}`); } }}>
                             <div className="flex-1 min-w-0">
                               {n.type === "reminder" ? (
                                 <div>

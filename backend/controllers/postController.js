@@ -98,7 +98,7 @@ export const likePost = async (req, res) => {
         referenceId: post._id.toString(),
       });
       try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(targetId, "Royal Youth Hub", `${req.user.firstname || "Admin"} liked your post`, `/post/${post._id}`, notif._id.toString()); } catch (e) {}
+      try { sendPushNotification(targetId, "Royal Youth Hub", `${req.user.firstname || "Admin"} liked your post`, `/dashboard?post=${post._id}`, notif._id.toString()); } catch (e) {}
     }
 
     try { getIO().emit("postLiked", { postId: post._id.toString(), userId: userId.toString(), likeCount: post.likes.length }); } catch (e) {}

@@ -62,6 +62,7 @@ import { connectSocket, getSocket } from "../services/socket";
 
 function MemberDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("feed");
   const [showMobileNav, setShowMobileNav] = useState(false);
@@ -114,6 +115,8 @@ function MemberDashboard() {
   const [viewingMemberId, setViewingMemberId] = useState(null);
   const [viewedMember, setViewedMember] = useState(null);
   const [viewingMemberLoading, setViewingMemberLoading] = useState(false);
+  const [viewingPost, setViewingPost] = useState(null);
+  const [viewingPostLoading, setViewingPostLoading] = useState(false);
   const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [showSpecialModal, setShowSpecialModal] = useState(false);
@@ -226,6 +229,19 @@ function MemberDashboard() {
       window.history.replaceState({}, "", url);
     }
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const postId = params.get("post");
+    if (postId) {
+      setActiveTab("viewing-post");
+      setViewingPostLoading(true);
+      API.get(`/posts/public/${postId}`)
+        .then((res) => setViewingPost(res.data))
+        .catch(() => setViewingPost(null))
+        .finally(() => setViewingPostLoading(false));
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -425,6 +441,12 @@ function MemberDashboard() {
     if (activeTab === "viewing-member") setActiveTab("feed");
   };
 
+  const closeViewPost = () => {
+    setViewingPost(null);
+    if (activeTab === "viewing-post") setActiveTab("feed");
+    window.history.replaceState({}, "", "/dashboard");
+  };
+
   useEffect(() => {
     if (!viewingMemberId) return;
     setViewingMemberLoading(true);
@@ -600,7 +622,7 @@ function MemberDashboard() {
                   <img src={n.image} alt="" className="w-full h-28 object-cover" loading="lazy" />
                 )}
                 <div className="p-2.5">
-                  <div className="flex items-start gap-2" onClick={() => { if (n.type === "reminder") { setExpandedNotif(isExpanded ? null : n._id); } else { navigate(n.type === "message" ? "/messages" : `/post/${n.referenceId}`); } }}>
+                  <div className="flex items-start gap-2" onClick={() => { if (n.type === "reminder") { setExpandedNotif(isExpanded ? null : n._id); } else { navigate(n.type === "message" ? "/messages" : `/dashboard?post=${n.referenceId}`); } }}>
                     <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {n.type === "reminder" ? (
                         <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
@@ -896,6 +918,26 @@ function MemberDashboard() {
                 </>
               ) : (
                 <p className="text-gray-400 text-center py-8">Member not found</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === "viewing-post" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-purple-700">Post</h2>
+                <button onClick={closeViewPost} className="text-sm text-purple-600 hover:text-purple-800 font-semibold">&larr; Back to Feed</button>
+              </div>
+              {viewingPostLoading ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-pulse">
+                  <div className="flex items-start gap-3"><div className="w-10 h-10 bg-gray-200 rounded-full" /><div className="flex-1 space-y-2"><div className="h-4 bg-gray-200 rounded w-1/3" /><div className="h-3 bg-gray-100 rounded w-3/4" /><div className="h-3 bg-gray-100 rounded w-1/2" /></div></div>
+                </div>
+              ) : viewingPost ? (
+                <PostCard post={viewingPost} currentUserId={user?._id} />
+              ) : (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+                  <p className="text-gray-400">Post not found</p>
+                </div>
               )}
             </div>
           )}

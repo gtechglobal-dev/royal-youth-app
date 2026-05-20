@@ -15,6 +15,7 @@ function SinglePost() {
   const [commentCount, setCommentCount] = useState(0);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchPost = async () => {
       try {
         const token = localStorage.getItem("token");
