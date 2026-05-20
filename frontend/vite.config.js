@@ -53,7 +53,7 @@ export default defineConfig({
     },
     cssMinify: true,
     sourcemap: false,
-    target: 'es2020'
+    target: 'es2019'
   },
   server: {
     historyApiFallback: true

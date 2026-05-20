@@ -12,12 +12,12 @@ registerRoute(
   })
 );
 
-// Fallback for navigation requests — iOS home screen requires a response
 setDefaultHandler(new NetworkOnly());
 
 setCatchHandler(async ({ event }) => {
   if (event.request.mode === "navigate") {
-    return caches.match("/index.html") || Response.error();
+    const cached = await caches.match("/index.html");
+    return cached || fetch(event.request);
   }
   return Response.error();
 });
