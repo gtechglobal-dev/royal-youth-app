@@ -1,8 +1,7 @@
 import Post from "../models/Post.js";
 import Notification from "../models/Notification.js";
 import User from "../models/user.js";
-import Post from "../models/Post.js";
-import { uploadToCloudinary } from "../config/cloudinary.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
 import { getIO } from "../socket.js";
 import { sendPushNotification } from "./pushController.js";
 import { getFollowedFeedPosts } from "./feedController.js";
