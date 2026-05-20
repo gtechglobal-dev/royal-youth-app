@@ -67,6 +67,18 @@ function MemberDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "community");
+  const switchTab = useCallback((tab) => {
+    setActiveTab(tab);
+    if (persistableTabs.includes(tab)) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", tab);
+        next.delete("post");
+        return next;
+      }, { replace: true });
+    }
+  }, [setSearchParams]);
+  const persistableTabs = useMemo(() => ["feed", "hub-connect", "community", "inspiration", "leaderboard", "statistics", "profile", "dues", "attendance"], []);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(false);
 
@@ -274,19 +286,6 @@ function MemberDashboard() {
         .finally(() => setViewingPostLoading(false));
     }
   }, [location.search]);
-
-  const persistableTabs = ["feed", "hub-connect", "community", "inspiration", "leaderboard", "statistics", "profile", "dues", "attendance"];
-
-  useEffect(() => {
-    if (persistableTabs.includes(activeTab)) {
-      setSearchParams((prev) => {
-        if (prev.get("tab") === activeTab) return prev;
-        const next = new URLSearchParams(prev);
-        next.set("tab", activeTab);
-        return next;
-      }, { replace: true });
-    }
-  }, [activeTab, setSearchParams]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -516,12 +515,12 @@ function MemberDashboard() {
   const closeViewMember = () => {
     setViewingMemberId(null);
     setViewedMember(null);
-    if (activeTab === "viewing-member") setActiveTab("community");
+    if (activeTab === "viewing-member") switchTab("community");
   };
 
   const closeViewPost = () => {
     setViewingPost(null);
-    if (activeTab === "viewing-post") setActiveTab("community");
+    if (activeTab === "viewing-post") switchTab("community");
     const url = new URL(window.location);
     url.searchParams.delete("post");
     window.history.replaceState({}, "", url);
@@ -615,19 +614,19 @@ function MemberDashboard() {
 
       {/* Navigation */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2">
-        <button onClick={() => { setActiveTab("community"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("community"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
           Community
         </button>
-        <button onClick={() => { setActiveTab("feed"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("feed"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
           Feed
         </button>
-        <button onClick={() => { setActiveTab("hub-connect"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "hub-connect" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("hub-connect"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "hub-connect" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
           Hub-Connect
         </button>
-        <button onClick={() => { setActiveTab("inspiration"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("inspiration"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
           Inspiration
         </button>
@@ -635,11 +634,11 @@ function MemberDashboard() {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
           Messages
         </Link>
-        <button onClick={() => { setActiveTab("leaderboard"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "leaderboard" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("leaderboard"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "leaderboard" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
           Leaderboard
         </button>
-        <button onClick={() => { setActiveTab("statistics"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "statistics" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("statistics"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "statistics" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
           Statistics
         </button>
@@ -648,7 +647,7 @@ function MemberDashboard() {
       {/* Account Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2">
         <p className="px-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
-        <button onClick={() => { setActiveTab("profile"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "profile" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("profile"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "profile" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
           My Profile
         </button>
@@ -656,11 +655,11 @@ function MemberDashboard() {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
           Edit Profile
         </Link>
-        <button onClick={() => { setActiveTab("dues"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "dues" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("dues"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "dues" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           Dues & Finance
         </button>
-        <button onClick={() => { setActiveTab("attendance"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "attendance" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+        <button onClick={() => { switchTab("attendance"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "attendance" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           Attendance
         </button>
@@ -838,23 +837,23 @@ function MemberDashboard() {
         <main className="flex-1 min-w-0">
           {/* Quick Navigation - permanent */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1.5 sm:p-2 mb-4 flex items-center justify-between gap-0.5 sm:gap-1">
-            <button onClick={() => setActiveTab("community")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+            <button onClick={() => switchTab("community")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Community</span>
             </button>
-            <button onClick={() => setActiveTab("feed")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+            <button onClick={() => switchTab("feed")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Feed</span>
             </button>
-            <button onClick={() => setActiveTab("hub-connect")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "hub-connect" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+            <button onClick={() => switchTab("hub-connect")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "hub-connect" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Hub</span>
             </button>
-            <button onClick={() => setActiveTab("inspiration")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+            <button onClick={() => switchTab("inspiration")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Inspire</span>
             </button>
-            <button onClick={() => setActiveTab("leaderboard")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "leaderboard" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+            <button onClick={() => switchTab("leaderboard")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "leaderboard" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Leaderboard</span>
             </button>
