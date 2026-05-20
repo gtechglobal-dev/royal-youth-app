@@ -65,7 +65,7 @@ function MemberDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("feed");
+  const [activeTab, setActiveTab] = useState(new URLSearchParams(location.search).get("tab") || "feed");
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(false);
 
@@ -269,6 +269,15 @@ function MemberDashboard() {
         .finally(() => setViewingPostLoading(false));
     }
   }, [location.search]);
+
+  useEffect(() => {
+    const persistableTabs = ["feed", "hub-connect", "community", "inspiration", "leaderboard", "statistics", "profile", "dues", "attendance"];
+    if (persistableTabs.includes(activeTab)) {
+      const url = new URL(window.location);
+      url.searchParams.set("tab", activeTab);
+      window.history.replaceState({}, "", url);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (!user?._id) return;
