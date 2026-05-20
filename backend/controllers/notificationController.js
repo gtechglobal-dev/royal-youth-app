@@ -51,6 +51,24 @@ export const deleteNotification = async (req, res) => {
   }
 };
 
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const notif = await Notification.findOneAndUpdate(
+      { _id: id, userId: req.user._id },
+      { $set: { read: true } },
+      { new: true }
+    );
+    if (!notif) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    res.json({ message: "Notification marked as read" });
+  } catch (err) {
+    console.error("Mark notification read error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const clearAllNotifications = async (req, res) => {
   try {
     await Notification.deleteMany({ userId: req.user._id });
