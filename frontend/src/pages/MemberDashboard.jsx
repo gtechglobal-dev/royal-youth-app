@@ -756,6 +756,29 @@ function MemberDashboard() {
         <main className="flex-1 min-w-0">
           {activeTab === "feed" && (
             <>
+              {/* Quick Navigation */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 mb-4 flex items-center gap-1 overflow-x-auto">
+                <button onClick={() => setActiveTab("feed")} className={`flex flex-col items-center gap-0.5 p-2 rounded-lg min-w-[56px] transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                  <span className="text-[10px] font-medium">Feed</span>
+                </button>
+                <button onClick={() => setActiveTab("hub-connect")} className={`flex flex-col items-center gap-0.5 p-2 rounded-lg min-w-[56px] transition ${activeTab === "hub-connect" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                  <span className="text-[10px] font-medium">Hub</span>
+                </button>
+                <Link to="/community" className={`flex flex-col items-center gap-0.5 p-2 rounded-lg min-w-[56px] transition text-gray-500 hover:bg-gray-100`}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
+                  <span className="text-[10px] font-medium">Community</span>
+                </Link>
+                <button onClick={() => setActiveTab("inspiration")} className={`flex flex-col items-center gap-0.5 p-2 rounded-lg min-w-[56px] transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                  <span className="text-[10px] font-medium">Inspire</span>
+                </button>
+                <button onClick={() => setActiveTab("leaderboard")} className={`flex flex-col items-center gap-0.5 p-2 rounded-lg min-w-[56px] transition ${activeTab === "leaderboard" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                  <span className="text-[10px] font-medium">Leaderboard</span>
+                </button>
+              </div>
               {/* Suggested Members - Facebook style */}
               {suggested.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
