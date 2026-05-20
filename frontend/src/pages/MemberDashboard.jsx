@@ -520,6 +520,9 @@ function MemberDashboard() {
   const closeViewPost = () => {
     setViewingPost(null);
     if (activeTab === "viewing-post") setActiveTab("community");
+    const url = new URL(window.location);
+    url.searchParams.delete("post");
+    window.history.replaceState({}, "", url);
   };
 
   useEffect(() => {
