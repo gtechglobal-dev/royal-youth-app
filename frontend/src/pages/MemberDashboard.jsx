@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link, useLocation, useSearchParams } from "react-router-dom";
 import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
@@ -64,8 +64,9 @@ import { connectSocket, getSocket } from "../services/socket";
 function MemberDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState(new URLSearchParams(location.search).get("tab") || "feed");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "feed");
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(false);
 
@@ -236,7 +237,7 @@ function MemberDashboard() {
 
   useEffect(() => {
     if (activeTab === "inspiration") fetchExternalFeed();
-    if (activeTab === "feed") fetchAvailableSources();
+    if (activeTab === "feed" || activeTab === "community") fetchAvailableSources();
   }, [activeTab]);
 
   useEffect(() => {
@@ -270,14 +271,18 @@ function MemberDashboard() {
     }
   }, [location.search]);
 
+  const persistableTabs = ["feed", "hub-connect", "community", "inspiration", "leaderboard", "statistics", "profile", "dues", "attendance"];
+
   useEffect(() => {
-    const persistableTabs = ["feed", "hub-connect", "community", "inspiration", "leaderboard", "statistics", "profile", "dues", "attendance"];
     if (persistableTabs.includes(activeTab)) {
-      const url = new URL(window.location);
-      url.searchParams.set("tab", activeTab);
-      window.history.replaceState({}, "", url);
+      setSearchParams((prev) => {
+        if (prev.get("tab") === activeTab) return prev;
+        const next = new URLSearchParams(prev);
+        next.set("tab", activeTab);
+        return next;
+      }, { replace: true });
     }
-  }, [activeTab]);
+  }, [activeTab, setSearchParams]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -436,6 +441,7 @@ function MemberDashboard() {
     try {
       await API.post(`/feeds/follow/${sourceId}`);
       setAvailableSources((prev) => prev.map((s) => s.sourceId === sourceId ? { ...s, following: true } : s));
+      if (activeTab === "community") fetchCommunityFeed(1, true);
     } catch (err) { console.error(err); }
   };
 
@@ -443,6 +449,7 @@ function MemberDashboard() {
     try {
       await API.delete(`/feeds/follow/${sourceId}`);
       setAvailableSources((prev) => prev.map((s) => s.sourceId === sourceId ? { ...s, following: false } : s));
+      if (activeTab === "community") fetchCommunityFeed(1, true);
     } catch (err) { console.error(err); }
   };
 
@@ -511,7 +518,6 @@ function MemberDashboard() {
   const closeViewPost = () => {
     setViewingPost(null);
     if (activeTab === "viewing-post") setActiveTab("feed");
-    window.history.replaceState({}, "", "/dashboard");
   };
 
   useEffect(() => {
@@ -848,32 +854,6 @@ function MemberDashboard() {
           </div>
           {activeTab === "feed" && (
             <>
-              {/* Suggested Feeds */}
-              {!sourcesLoading && availableSources.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Suggested Feeds</h3>
-                  <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
-                    {availableSources.map((s) => (
-                      <div key={s.sourceId} className="flex flex-col items-center gap-1.5 min-w-[130px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg">
-                          {s.icon || s.label[0]}
-                        </div>
-                        <span className="text-xs font-semibold text-gray-700 text-center truncate max-w-[130px]">{s.label}</span>
-                        <span className="text-[10px] text-gray-400 capitalize">{s.category}</span>
-                        {s.following ? (
-                          <button onClick={() => handleUnfollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-100 text-purple-700 px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-200 transition">
-                            Following
-                          </button>
-                        ) : (
-                          <button onClick={() => handleFollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition">
-                            Follow
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
               {/* Suggested Members - Facebook style */}
               {suggested.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
@@ -1005,6 +985,32 @@ function MemberDashboard() {
           {activeTab === "community" && (
             <>
               <CreatePost onPostCreated={handleCommunityPostCreated} />
+              {/* Suggested Feeds */}
+              {!sourcesLoading && availableSources.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
+                  <h3 className="text-sm font-bold text-gray-700 mb-3">Suggested Feeds</h3>
+                  <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
+                    {availableSources.map((s) => (
+                      <div key={s.sourceId} className="flex flex-col items-center gap-1.5 min-w-[130px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg">
+                          {s.icon || s.label[0]}
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700 text-center truncate max-w-[130px]">{s.label}</span>
+                        <span className="text-[10px] text-gray-400 capitalize">{s.category}</span>
+                        {s.following ? (
+                          <button onClick={() => handleUnfollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-100 text-purple-700 px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-200 transition">
+                            Following
+                          </button>
+                        ) : (
+                          <button onClick={() => handleFollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Follow
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {communityLoading ? (
                 <div className="space-y-4 mt-4">
                   {Array.from({length:3}).map((_,i) => (
