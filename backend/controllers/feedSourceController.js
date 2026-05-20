@@ -17,6 +17,10 @@ const DEFAULT_SOURCES = [
   { sourceId: "mg", url: "https://mg.co.za/rss/", label: "Mail & Guardian", category: "africa", icon: "🗺️", order: 14 },
   { sourceId: "gospel-music-updates", url: "https://gospelmusicfever.com/feed/", label: "Gospel Music Updates", category: "spiritual", icon: "🎵", order: 15 },
   { sourceId: "christian-news", url: "https://www.christianpost.com/rss/", label: "Christian News", category: "spiritual", icon: "📰", order: 16 },
+  { sourceId: "nigeria-sports", url: "https://234sportsng.com/rss/latest-posts", label: "Nigeria Sports", category: "sports", icon: "⚽", order: 17 },
+  { sourceId: "completesports", url: "https://www.completesports.com/feed/", label: "Complete Sports", category: "sports", icon: "🏆", order: 18 },
+  { sourceId: "bbc-sport", url: "https://feeds.bbci.co.uk/sport/rss.xml", label: "BBC Sport", category: "sports", icon: "🎾", order: 19 },
+  { sourceId: "espn", url: "https://www.espn.com/espn/rss/news", label: "ESPN", category: "sports", icon: "🏈", order: 20 },
 ];
 
 export const seedFeedSources = async () => {
