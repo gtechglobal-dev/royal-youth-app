@@ -95,6 +95,7 @@ function MemberDashboard() {
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [suggested, setSuggested] = useState([]);
+  const shuffledSuggested = useMemo(() => [...suggested].sort(() => Math.random() - 0.5), [suggested]);
   const [friendLoading, setFriendLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
@@ -132,6 +133,7 @@ function MemberDashboard() {
   const [availableSources, setAvailableSources] = useState([]);
   const [sourcesLoading, setSourcesLoading] = useState(false);
   const [showAllFeeds, setShowAllFeeds] = useState(false);
+  const shuffledSources = useMemo(() => [...availableSources].sort(() => Math.random() - 0.5), [availableSources]);
   const [externalFeed, setExternalFeed] = useState([]);
   const [externalLoading, setExternalLoading] = useState(false);
   const [feedCategory, setFeedCategory] = useState("all");
@@ -921,7 +923,7 @@ function MemberDashboard() {
                   </h3>
                   {showAllFeeds ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {[...availableSources].sort(() => Math.random() - 0.5).map((s) => (
+                      {shuffledSources.map((s) => (
                         <div key={s.sourceId} className="flex flex-col items-center gap-1.5 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition">
                           <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg">
                             {s.icon || s.label[0]}
@@ -942,7 +944,7 @@ function MemberDashboard() {
                     </div>
                   ) : (
                     <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
-                      {[...availableSources].sort(() => Math.random() - 0.5).map((s) => (
+                      {shuffledSources.map((s) => (
                         <div key={s.sourceId} className="flex flex-col items-center gap-1.5 min-w-[130px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition flex-shrink-0">
                           <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg">
                             {s.icon || s.label[0]}
@@ -969,7 +971,7 @@ function MemberDashboard() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
                   <h3 className="text-sm font-bold text-gray-700 mb-3">Meet Royalties of the Hub</h3>
                   <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
-                      {[...suggested].sort(() => Math.random() - 0.5).map((s) => (
+                      {shuffledSuggested.map((s) => (
                         <div key={s._id} onClick={() => handleViewMember(s._id)} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition cursor-pointer">
                           <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
                             <div className="w-full h-full rounded-full bg-white p-[2px]">
