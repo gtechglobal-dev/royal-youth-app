@@ -80,6 +80,7 @@ function MemberDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [expandedNotif, setExpandedNotif] = useState(null);
+  const [expandedImage, setExpandedImage] = useState(null);
   const [showAllNotifs, setShowAllNotifs] = useState(false);
   const [clearAllConfirm, setClearAllConfirm] = useState(false);
   const [showNicknamePrompt, setShowNicknamePrompt] = useState(false);
@@ -613,14 +614,12 @@ function MemberDashboard() {
         <div className="space-y-1">
           {(showAllNotifs ? notifications : notifications.slice(0, 2)).map((n) => {
             const isExpanded = expandedNotif === n._id;
+            const imgExpanded = expandedImage === n._id;
             return (
               <div
                 key={n._id}
                 className={`rounded-lg text-sm cursor-pointer hover:bg-gray-100 overflow-hidden ${n.read ? "" : "bg-purple-50"}`}
               >
-                {n.image && (
-                  <img src={n.image} alt="" className="w-full h-28 object-cover" loading="lazy" />
-                )}
                 <div className="p-2.5">
                   <div className="flex items-start gap-2" onClick={() => { if (n.type === "reminder") { setExpandedNotif(isExpanded ? null : n._id); } else { navigate(n.type === "message" ? "/messages" : `/dashboard?post=${n.referenceId}`); } }}>
                     <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -646,6 +645,18 @@ function MemberDashboard() {
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </div>
+                  {n.image && (
+                    <div className="mt-2" onClick={() => setExpandedImage(imgExpanded ? null : n._id)}>
+                      {imgExpanded ? (
+                        <img src={n.image} alt="" className="w-full h-auto max-h-56 object-contain rounded-lg" loading="lazy" />
+                      ) : (
+                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg text-gray-500 text-xs hover:bg-gray-100 transition">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          <span>View image</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {isExpanded && (
                     <div className="mt-2">
                       <p className="text-gray-500 text-sm whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: n.body ? linkifyText(n.body) : "No additional details" }} />
