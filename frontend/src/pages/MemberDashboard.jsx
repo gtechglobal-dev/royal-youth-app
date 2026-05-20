@@ -855,88 +855,6 @@ function MemberDashboard() {
           </div>
           {activeTab === "feed" && (
             <>
-              {/* Suggested Members - Facebook style */}
-              {suggested.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Meet Royalties of the Hub</h3>
-                  <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
-                      {suggested.map((s) => (
-                        <div key={s._id} onClick={() => handleViewMember(s._id)} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition cursor-pointer">
-                          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
-                            <div className="w-full h-full rounded-full bg-white p-[2px]">
-                              <div className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
-                                {s.profileImage ? (
-                                  <img src={optimizeImage(s.profileImage, 80)} alt="" className="w-full h-full object-cover" loading="lazy" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-xs">
-                                    {s.firstname?.[0]}{s.surname?.[0]}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center">
-                            {displayName(s)}
-                          </span>
-                        {s.branch && (
-                          <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.branch}</span>
-                        )}
-                        <span className={`text-[10px] font-medium ${
-                          s.role === "youth_president" ? "text-yellow-600" :
-                          s.role === "admin" ? "text-purple-600" : "text-gray-400"
-                        }`}>{s.role === "youth_president" ? "Youth President" : s.role === "admin" ? "Admin" : "Member"}</span>
-                        {s.friendStatus === "none" && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleSendRequest(s._id); }}
-                            className="mt-1 w-full text-[11px] bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
-                          >
-                            Add Royalty
-                          </button>
-                        )}
-                        {s.friendStatus === "pending_sent" && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleCancelRequest(s._id); }}
-                            className="mt-1 w-full text-[11px] bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-orange-200 transition"
-                          >
-                            Pending
-                          </button>
-                        )}
-                        {s.friendStatus === "pending_received" && (
-                          <div className="mt-1 flex gap-1.5 w-full">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleAcceptRequest(s.requestId); }}
-                              className="flex-1 text-[10px] bg-purple-600 text-white px-2 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
-                            >
-                              Accept Royalty
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleRejectRequest(s.requestId); }}
-                              className="flex-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-1.5 rounded-lg font-semibold hover:bg-gray-300 transition"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {friendLoading && suggested.length === 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
-                  <div className="h-4 w-36 bg-gray-200 rounded mb-3 animate-pulse" />
-                  <div className="flex gap-4">
-                    {Array.from({length:5}).map((_,i) => (
-                      <div key={i} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl animate-pulse">
-                        <div className="w-14 h-14 rounded-full bg-gray-200" />
-                        <div className="h-3 w-20 bg-gray-200 rounded" />
-                        <div className="h-2 w-16 bg-gray-100 rounded" />
-                        <div className="h-6 w-full bg-gray-200 rounded-lg" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
               {pinnedPosts.length > 0 && (
                 <div className="space-y-3 mb-4">
                   {pinnedPosts.map((post) => (
@@ -1007,6 +925,88 @@ function MemberDashboard() {
                             Follow
                           </button>
                         )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Suggested Royalties */}
+              {suggested.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
+                  <h3 className="text-sm font-bold text-gray-700 mb-3">Meet Royalties of the Hub</h3>
+                  <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
+                      {suggested.map((s) => (
+                        <div key={s._id} onClick={() => handleViewMember(s._id)} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition cursor-pointer">
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
+                            <div className="w-full h-full rounded-full bg-white p-[2px]">
+                              <div className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
+                                {s.profileImage ? (
+                                  <img src={optimizeImage(s.profileImage, 80)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-xs">
+                                    {s.firstname?.[0]}{s.surname?.[0]}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center">
+                            {displayName(s)}
+                          </span>
+                        {s.branch && (
+                          <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.branch}</span>
+                        )}
+                        <span className={`text-[10px] font-medium ${
+                          s.role === "youth_president" ? "text-yellow-600" :
+                          s.role === "admin" ? "text-purple-600" : "text-gray-400"
+                        }`}>{s.role === "youth_president" ? "Youth President" : s.role === "admin" ? "Admin" : "Member"}</span>
+                        {s.friendStatus === "none" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleSendRequest(s._id); }}
+                            className="mt-1 w-full text-[11px] bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
+                          >
+                            Add Royalty
+                          </button>
+                        )}
+                        {s.friendStatus === "pending_sent" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleCancelRequest(s._id); }}
+                            className="mt-1 w-full text-[11px] bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-orange-200 transition"
+                          >
+                            Pending
+                          </button>
+                        )}
+                        {s.friendStatus === "pending_received" && (
+                          <div className="mt-1 flex gap-1.5 w-full">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleAcceptRequest(s.requestId); }}
+                              className="flex-1 text-[10px] bg-purple-600 text-white px-2 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
+                            >
+                              Accept Royalty
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRejectRequest(s.requestId); }}
+                              className="flex-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-1.5 rounded-lg font-semibold hover:bg-gray-300 transition"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {friendLoading && suggested.length === 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
+                  <div className="h-4 w-36 bg-gray-200 rounded mb-3 animate-pulse" />
+                  <div className="flex gap-4">
+                    {Array.from({length:5}).map((_,i) => (
+                      <div key={i} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl animate-pulse">
+                        <div className="w-14 h-14 rounded-full bg-gray-200" />
+                        <div className="h-3 w-20 bg-gray-200 rounded" />
+                        <div className="h-2 w-16 bg-gray-100 rounded" />
+                        <div className="h-6 w-full bg-gray-200 rounded-lg" />
                       </div>
                     ))}
                   </div>
