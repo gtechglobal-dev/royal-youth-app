@@ -104,6 +104,29 @@ function MemberDashboard() {
   const [monthlyStats, setMonthlyStats] = useState([]);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsYear, setStatsYear] = useState(new Date().getFullYear());
+  const [communityPosts, setCommunityPosts] = useState([]);
+  const [communityLoading, setCommunityLoading] = useState(false);
+  const [communityPage, setCommunityPage] = useState(1);
+  const [communityHasMore, setCommunityHasMore] = useState(false);
+  const [communityLoadingMore, setCommunityLoadingMore] = useState(false);
+  const fetchCommunityFeed = async (p = 1, reset = false) => {
+    if (reset) setCommunityLoading(true); else setCommunityLoadingMore(true);
+    try {
+      const res = await API.get(`/posts/feed?page=${p}&limit=20`);
+      if (reset) setCommunityPosts(res.data.posts);
+      else setCommunityPosts(prev => [...prev, ...res.data.posts]);
+      setCommunityHasMore(res.data.hasMore);
+      setCommunityPage(p);
+    } catch (err) { console.error("Community feed error:", err); }
+    finally { setCommunityLoading(false); setCommunityLoadingMore(false); }
+  };
+
+  useEffect(() => {
+    if (activeTab === "community") {
+      fetchCommunityFeed(1, true);
+    }
+  }, [activeTab]);
+
   const [externalFeed, setExternalFeed] = useState([]);
   const [externalLoading, setExternalLoading] = useState(false);
   const [feedCategory, setFeedCategory] = useState("all");
@@ -249,21 +272,26 @@ function MemberDashboard() {
     const socket = getSocket();
     if (!socket) return;
 
-     const handleNewPost = (post) => {
-       const isFriend = friends.some((f) => f._id === post.userId?._id);
-       const isAnnouncement = post.isPinned && post.pinnedAt;
-       if (isFriend || isAnnouncement) {
-         setPosts((prev) => {
-           if (prev.some((p) => p._id === post._id)) return prev;
-           return [post, ...prev];
-         });
-       }
-     };
+      const handleNewPost = (post) => {
+        const isFriend = friends.some((f) => f._id === post.userId?._id);
+        const isAnnouncement = post.isPinned && post.pinnedAt;
+        if (isFriend || isAnnouncement) {
+          setPosts((prev) => {
+            if (prev.some((p) => p._id === post._id)) return prev;
+            return [post, ...prev];
+          });
+        }
+        setCommunityPosts((prev) => {
+          if (prev.some((p) => p._id === post._id)) return prev;
+          return [post, ...prev];
+        });
+      };
 
-    const handlePostDeleted = ({ postId }) => {
-      setPosts((prev) => prev.filter((p) => p._id !== postId));
-      setHubPosts((prev) => prev.filter((p) => p._id !== postId));
-    };
+     const handlePostDeleted = ({ postId }) => {
+       setPosts((prev) => prev.filter((p) => p._id !== postId));
+       setHubPosts((prev) => prev.filter((p) => p._id !== postId));
+       setCommunityPosts((prev) => prev.filter((p) => p._id !== postId));
+     };
 
     const handleAnnouncementEvent = () => { fetchPinnedPosts(); };
 
@@ -420,6 +448,7 @@ function MemberDashboard() {
   };
 
   const handlePostCreated = useCallback((post) => { setPosts(prev => [post, ...prev]); }, []);
+  const handleCommunityPostCreated = useCallback((post) => { setCommunityPosts(prev => [post, ...prev]); }, []);
   const handleDeletePost = useCallback((postId) => {
     setPosts(prev => prev.filter(p => p._id !== postId));
     setHubPosts(prev => prev.filter(p => p._id !== postId));
@@ -543,10 +572,10 @@ function MemberDashboard() {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
           Hub-Connect
         </button>
-        <Link to="/community" className="flex items-center gap-3 p-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+        <button onClick={() => { setActiveTab("community"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
           Community
-        </Link>
+        </button>
         <button onClick={() => { setActiveTab("inspiration"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
           Inspiration
@@ -766,10 +795,10 @@ function MemberDashboard() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Hub</span>
             </button>
-            <Link to="/community" className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition text-gray-500 hover:bg-gray-100`}>
+            <button onClick={() => setActiveTab("community")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Community</span>
-            </Link>
+            </button>
             <button onClick={() => setActiveTab("inspiration")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Inspire</span>
@@ -903,6 +932,40 @@ function MemberDashboard() {
                 <div className="text-center py-6">
                   <button onClick={() => fetchFeed(feedPage + 1)} disabled={feedLoadingMore} className="bg-purple-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50">
                     {feedLoadingMore ? "Loading..." : "Load More"}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "community" && (
+            <>
+              <CreatePost onPostCreated={handleCommunityPostCreated} />
+              {communityLoading ? (
+                <div className="space-y-4 mt-4">
+                  {Array.from({length:3}).map((_,i) => (
+                    <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-pulse">
+                      <div className="flex items-start gap-3"><div className="w-10 h-10 bg-gray-200 rounded-full" /><div className="flex-1 space-y-2"><div className="h-4 bg-gray-200 rounded w-1/3" /><div className="h-3 bg-gray-100 rounded w-3/4" /><div className="h-3 bg-gray-100 rounded w-1/2" /></div></div>
+                    </div>
+                  ))}
+                </div>
+              ) : communityPosts.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100 mt-4">
+                  <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                  <p className="text-gray-400 mt-4">No posts in the community yet</p>
+                  <p className="text-gray-400 text-sm">Be the first to share something!</p>
+                </div>
+              ) : (
+                <div className="space-y-4 mt-4">
+                  {communityPosts.map((post) => (
+                    <PostCard key={post._id} post={post} currentUserId={user._id} onDelete={handleDeletePost} onShare={handleShare} />
+                  ))}
+                </div>
+              )}
+              {communityHasMore && (
+                <div className="text-center py-6">
+                  <button onClick={() => fetchCommunityFeed(communityPage + 1)} disabled={communityLoadingMore} className="bg-purple-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50">
+                    {communityLoadingMore ? "Loading..." : "Load More"}
                   </button>
                 </div>
               )}
