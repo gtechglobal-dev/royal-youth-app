@@ -15,6 +15,8 @@ const DEFAULT_SOURCES = [
   { sourceId: "africanews", url: "https://www.africanews.com/feed/", label: "Africanews", category: "africa", icon: "🌍", order: 12 },
   { sourceId: "africa-report", url: "https://www.theafricareport.com/feed/", label: "The Africa Report", category: "africa", icon: "🌐", order: 13 },
   { sourceId: "mg", url: "https://mg.co.za/rss/", label: "Mail & Guardian", category: "africa", icon: "🗺️", order: 14 },
+  { sourceId: "gospel-music-updates", url: "https://gospelmusicfever.com/feed/", label: "Gospel Music Updates", category: "spiritual", icon: "🎵", order: 15 },
+  { sourceId: "christian-news", url: "https://www.christianpost.com/rss/", label: "Christian News", category: "spiritual", icon: "📰", order: 16 },
 ];
 
 export const seedFeedSources = async () => {

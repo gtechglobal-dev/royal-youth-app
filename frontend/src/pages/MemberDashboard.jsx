@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import API from "../services/api";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
+import RssCard from "../components/RssCard";
 import { optimizeImage } from "../utils/cloudinary";
 import ConfirmModal from "../components/ConfirmModal";
 import { displayName, displayNameFull } from "../utils/displayName";
@@ -127,6 +128,8 @@ function MemberDashboard() {
     }
   }, [activeTab]);
 
+  const [availableSources, setAvailableSources] = useState([]);
+  const [sourcesLoading, setSourcesLoading] = useState(false);
   const [externalFeed, setExternalFeed] = useState([]);
   const [externalLoading, setExternalLoading] = useState(false);
   const [feedCategory, setFeedCategory] = useState("all");
@@ -233,6 +236,7 @@ function MemberDashboard() {
 
   useEffect(() => {
     if (activeTab === "inspiration") fetchExternalFeed();
+    if (activeTab === "feed") fetchAvailableSources();
   }, [activeTab]);
 
   useEffect(() => {
@@ -406,6 +410,31 @@ function MemberDashboard() {
       console.error("External feed error:", err);
     }
     setExternalLoading(false);
+  };
+
+  const fetchAvailableSources = async () => {
+    setSourcesLoading(true);
+    try {
+      const res = await API.get("/feeds/available");
+      setAvailableSources(res.data || []);
+    } catch (err) {
+      console.error("Available sources error:", err);
+    }
+    setSourcesLoading(false);
+  };
+
+  const handleFollowSource = async (sourceId) => {
+    try {
+      await API.post(`/feeds/follow/${sourceId}`);
+      setAvailableSources((prev) => prev.map((s) => s.sourceId === sourceId ? { ...s, following: true } : s));
+    } catch (err) { console.error(err); }
+  };
+
+  const handleUnfollowSource = async (sourceId) => {
+    try {
+      await API.delete(`/feeds/follow/${sourceId}`);
+      setAvailableSources((prev) => prev.map((s) => s.sourceId === sourceId ? { ...s, following: false } : s));
+    } catch (err) { console.error(err); }
   };
 
   const fetchLbMemberPosts = async (userId) => {
@@ -810,6 +839,32 @@ function MemberDashboard() {
           </div>
           {activeTab === "feed" && (
             <>
+              {/* Suggested Feeds */}
+              {!sourcesLoading && availableSources.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                  <h3 className="text-sm font-bold text-gray-700 mb-3">Suggested Feeds</h3>
+                  <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
+                    {availableSources.map((s) => (
+                      <div key={s.sourceId} className="flex flex-col items-center gap-1.5 min-w-[130px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg">
+                          {s.icon || s.label[0]}
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700 text-center truncate max-w-[130px]">{s.label}</span>
+                        <span className="text-[10px] text-gray-400 capitalize">{s.category}</span>
+                        {s.following ? (
+                          <button onClick={() => handleUnfollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-100 text-purple-700 px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-200 transition">
+                            Following
+                          </button>
+                        ) : (
+                          <button onClick={() => handleFollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Follow
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Suggested Members - Facebook style */}
               {suggested.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
@@ -957,9 +1012,13 @@ function MemberDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4 mt-4">
-                  {communityPosts.map((post) => (
-                    <PostCard key={post._id} post={post} currentUserId={user._id} onDelete={handleDeletePost} onShare={handleShare} />
-                  ))}
+                  {communityPosts.map((post) =>
+                    post._isRss ? (
+                      <RssCard key={post.id || post._id} item={post} />
+                    ) : (
+                      <PostCard key={post._id} post={post} currentUserId={user._id} onDelete={handleDeletePost} onShare={handleShare} />
+                    )
+                  )}
                 </div>
               )}
               {communityHasMore && (

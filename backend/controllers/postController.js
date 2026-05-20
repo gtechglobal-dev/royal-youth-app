@@ -1,9 +1,11 @@
 import Post from "../models/Post.js";
 import Notification from "../models/Notification.js";
 import User from "../models/user.js";
-import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
+import Post from "../models/Post.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 import { getIO } from "../socket.js";
 import { sendPushNotification } from "./pushController.js";
+import { getFollowedFeedPosts } from "./feedController.js";
 
 const resolveUserId = async (id) => {
   if (!id || id === "admin" || String(id).length < 10) {
@@ -60,9 +62,23 @@ export const getFeed = async (req, res) => {
 
     const total = await Post.countDocuments({ isDeleted: false });
 
+    // Merge followed RSS posts on first page
+    let rssPosts = [];
+    if (page === 1) {
+      rssPosts = await getFollowedFeedPosts(req.user._id);
+    }
+
+    const merged = [...rssPosts, ...posts];
+    // Sort by date descending, newest first
+    merged.sort((a, b) => {
+      const dateA = a._isRss ? new Date(a.date || 0) : new Date(a.createdAt || 0);
+      const dateB = b._isRss ? new Date(b.date || 0) : new Date(b.createdAt || 0);
+      return dateB - dateA;
+    });
+
     res.json({
-      posts,
-      total,
+      posts: merged,
+      total: total + rssPosts.length,
       page,
       totalPages: Math.ceil(total / limit),
       hasMore: skip + posts.length < total,
