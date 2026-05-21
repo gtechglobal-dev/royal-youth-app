@@ -918,7 +918,6 @@ function MemberDashboard() {
 
           {activeTab === "community" && (
             <>
-              <CreatePost onPostCreated={handleCommunityPostCreated} />
               {/* Suggested Feeds */}
               {!sourcesLoading && availableSources.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
@@ -975,6 +974,7 @@ function MemberDashboard() {
                   )}
                 </div>
               )}
+              <CreatePost onPostCreated={handleCommunityPostCreated} />
               {/* Suggested Royalties */}
               {suggested.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
