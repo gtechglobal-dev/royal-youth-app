@@ -102,7 +102,7 @@ function MemberProfile() {
           <p><b>Occupation:</b> {member.occupation}</p>
           <p><b>Born Again:</b> {member.bornAgain}</p>
           <p><b>Status:</b> {member.membershipStatus}</p>
-          <p><b>Last Seen:</b> <span className="text-gray-500">{member.lastActive ? timeAgo(member.lastActive) : "Unknown"}</span></p>
+          <p><b>Last Seen:</b> <span className="text-gray-500">{member.lastLogin ? timeAgo(member.lastLogin) + " ago" : "Unknown"}</span></p>
           <p><b>State of Origin:</b> {member.stateOfOrigin || "N/A"}</p>
           <p><b>LGA:</b> {member.lga || "N/A"}</p>
           <p><b>Date Joined:</b> {new Date(member.createdAt).toLocaleDateString()}</p>
