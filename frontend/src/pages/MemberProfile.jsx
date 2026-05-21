@@ -5,20 +5,7 @@ import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
 import { displayNameFull } from "../utils/displayName";
 
-function timeAgo(date) {
-  const now = Date.now();
-  const diff = now - new Date(date).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(date).toLocaleDateString();
-}
-
-function MemberProfile() {
+import { formatDate } from "../utils/formatTime";
   const { id } = useParams();
   const navigate = useNavigate();
   const [member, setMember] = useState(null);
@@ -102,7 +89,7 @@ function MemberProfile() {
           <p><b>Occupation:</b> {member.occupation}</p>
           <p><b>Born Again:</b> {member.bornAgain}</p>
           <p><b>Status:</b> {member.membershipStatus}</p>
-          <p><b>Last Seen:</b> <span className="text-gray-500">{member.lastLogin ? timeAgo(member.lastLogin) + " ago" : "Unknown"}</span></p>
+          <p><b>Last Seen:</b> <span className="text-gray-500">{member.lastLogin ? formatDate(member.lastLogin) : "Unknown"}</span></p>
           <p><b>State of Origin:</b> {member.stateOfOrigin || "N/A"}</p>
           <p><b>LGA:</b> {member.lga || "N/A"}</p>
           <p><b>Date Joined:</b> {new Date(member.createdAt).toLocaleDateString()}</p>
