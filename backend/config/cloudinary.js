@@ -17,7 +17,7 @@ if (hasCloudinary) {
 
 const uploadMiddleware = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 3 * 1024 * 1024 }
+  limits: { fileSize: 200 * 1024 }
 });
 
 const uploadToCloudinary = async (fileBuffer, mimeType) => {

@@ -40,7 +40,7 @@ router.get("/friends-feed", protect, getFriendsFeed);
 router.get("/user/:userId", protect, getUserPosts);
 router.get("/public/:id", getSinglePost);
 router.get("/:id", protect, getSinglePost);
-router.post("/", protect, uploadMiddleware.single("image"), createPost);
+router.post("/", protect, uploadMiddleware.array("images", 5), createPost);
 router.get("/:id/likes", protect, getPostLikes);
 router.put("/:id/like", protect, likePost);
 router.put("/:id/unlike", protect, unlikePost);

@@ -23,16 +23,18 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: "Post text is required" });
     }
 
-    let imageUrl = null;
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
-      if (result) imageUrl = result.secure_url;
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      const uploads = req.files.map((f) => uploadToCloudinary(f.buffer, f.mimetype));
+      const results = await Promise.all(uploads);
+      images = results.filter(Boolean).map((r) => r.secure_url);
     }
 
     const post = await Post.create({
       userId: req.user._id,
       text: text.trim(),
-      imageUrl,
+      imageUrl: images[0] || null,
+      images,
       placardColor: placardColor || "#000000",
     });
 
@@ -253,7 +255,8 @@ export const deletePost = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    await deleteFromCloudinary(post.imageUrl);
+    const allImages = [...(post.images || []), ...(post.imageUrl ? [post.imageUrl] : [])];
+    await Promise.all(allImages.map((url) => deleteFromCloudinary(url).catch(() => {})));
     post.isDeleted = true;
     await post.save();
 
@@ -600,7 +603,8 @@ export const deleteAnnouncement = async (req, res) => {
     if (!post) return res.status(404).json({ message: "Announcement not found" });
     if (!post.pinnedAt) return res.status(400).json({ message: "Not an announcement" });
 
-     await deleteFromCloudinary(post.imageUrl);
+     const allImages = [...(post.images || []), ...(post.imageUrl ? [post.imageUrl] : [])];
+     await Promise.all(allImages.map((url) => deleteFromCloudinary(url).catch(() => {})));
      post.isDeleted = true;
      await post.save();
  

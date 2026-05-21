@@ -136,7 +136,16 @@ function SinglePost() {
                   <span className="text-gray-400 text-xs whitespace-nowrap">{new Date(post.createdAt).toLocaleDateString()}</span>
                 </div>
                 <span className="text-gray-400 text-xs block truncate">{post.userId?.branch}</span>
-                {post.imageUrl ? (
+                {post.images && post.images.length > 0 ? (
+                  <>
+                    <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{post.text}</p>
+                    <div className={`mt-3 grid gap-2 ${post.images.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                      {post.images.map((url, i) => (
+                        <img key={i} src={url} alt="" className="rounded-lg max-h-72 w-full object-cover cursor-pointer" onClick={() => window.open(url, "_blank")} />
+                      ))}
+                    </div>
+                  </>
+                ) : post.imageUrl ? (
                   <>
                     <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{post.text}</p>
                     <img src={post.imageUrl} alt="Post" className="mt-3 rounded-lg max-h-96 w-full object-cover cursor-pointer" onClick={() => window.open(post.imageUrl, "_blank")} />

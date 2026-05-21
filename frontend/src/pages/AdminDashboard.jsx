@@ -1336,9 +1336,15 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                               )}
                             </div>
                             <p className="text-sm mt-2 whitespace-pre-wrap">{post.text}</p>
-                            {post.imageUrl && (
+                            {post.images && post.images.length > 0 ? (
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {post.images.map((url, i) => (
+                                  <img key={i} src={url} alt="" className="h-24 rounded-lg object-cover" loading="lazy" />
+                                ))}
+                              </div>
+                            ) : post.imageUrl ? (
                               <img src={post.imageUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover" loading="lazy" />
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       )}

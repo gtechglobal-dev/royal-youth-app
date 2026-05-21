@@ -200,6 +200,15 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
                 </button>
               </div>
             </div>
+          ) : post.images && post.images.length > 0 ? (
+            <>
+              <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{postText}</p>
+              <div className={`mt-3 grid gap-2 ${post.images.length === 1 ? "grid-cols-1" : post.images.length === 2 ? "grid-cols-2" : "grid-cols-2"}`}>
+                {post.images.map((url, i) => (
+                  <img key={i} src={url} alt="" className="rounded-lg max-h-72 w-full object-cover cursor-pointer" onClick={() => window.open(url, "_blank")} />
+                ))}
+              </div>
+            </>
           ) : post.imageUrl ? (
             <>
               <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{postText}</p>

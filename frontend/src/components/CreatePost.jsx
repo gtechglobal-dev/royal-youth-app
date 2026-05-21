@@ -26,48 +26,55 @@ const PLACARD_COLORS = [
   "#7f5539",
 ];
 
-function CreatePost({ onPostCreated }) {
+function CreatePost({ onPostCreated, placeholder = "Share something with the community..." }) {
   const [text, setText] = useState("");
-  const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [placardColor, setPlacardColor] = useState("#000000");
   const [posting, setPosting] = useState(false);
   const fileRef = useRef(null);
 
-  const handleImage = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 3 * 1024 * 1024) {
-      alert("Image must be under 3MB");
-      return;
-    }
-
+  const handleImages = (e) => {
+    const files = Array.from(e.target.files);
     const allowed = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) {
-      alert("Only jpg, png, webp allowed");
-      return;
-    }
 
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
+    const valid = files.filter((f) => {
+      if (f.size > 200 * 1024) { alert(`"${f.name}" exceeds 200KB limit`); return false; }
+      if (!allowed.includes(f.type)) { alert(`"${f.name}" must be jpg, png, or webp`); return false; }
+      return true;
+    });
+
+    const total = images.length + valid.length;
+    if (total > 5) { alert("Maximum 5 images allowed"); return; }
+
+    setImages((prev) => [...prev, ...valid]);
+    setPreviews((prev) => [...prev, ...valid.map((f) => URL.createObjectURL(f))]);
+    e.target.value = "";
+  };
+
+  const removeImage = (index) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!text.trim() && !image) return;
+    if (!text.trim() && images.length === 0) return;
 
     setPosting(true);
     try {
       const form = new FormData();
       form.append("text", text.trim());
       form.append("placardColor", placardColor);
-      if (image) form.append("image", image);
+      images.forEach((img) => form.append("images", img));
 
       const res = await API.post("/posts", form);
       setText("");
-      setImage(null);
-      setPreview(null);
+      setImages([]);
+      setPreviews([]);
       setPlacardColor("#000000");
       if (onPostCreated) onPostCreated(res.data);
     } catch (err) {
@@ -84,25 +91,29 @@ function CreatePost({ onPostCreated }) {
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Share something with the community..."
+          placeholder={placeholder}
           rows={3}
           maxLength={2000}
           className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 focus:outline-none text-sm"
         />
-        {preview && (
-          <div className="relative mt-2 inline-block">
-            <img src={preview} alt="Preview" className="h-32 rounded-lg object-cover" />
-            <button
-              type="button"
-              onClick={() => { setImage(null); setPreview(null); }}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-            >
-              ×
-            </button>
+        {previews.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {previews.map((p, i) => (
+              <div key={i} className="relative">
+                <img src={p} alt="" className="h-20 w-20 rounded-lg object-cover border" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
         )}
         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          !image && text.trim().length > 0 ? "max-h-48 opacity-100 mt-3" : "max-h-0 opacity-0"
+          images.length === 0 && text.trim().length > 0 ? "max-h-48 opacity-100 mt-3" : "max-h-0 opacity-0"
         }`}>
           <div>
             <p className="text-xs text-gray-500 mb-2 font-medium">Placard background</p>
@@ -152,10 +163,10 @@ function CreatePost({ onPostCreated }) {
             Photo
           </button>
           </div>
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImage} className="hidden" />
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImages} multiple className="hidden" />
           <button
             type="submit"
-            disabled={posting || (!text.trim() && !image)}
+            disabled={posting || (!text.trim() && images.length === 0)}
             className="bg-purple-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {posting ? "Posting..." : "Post"}

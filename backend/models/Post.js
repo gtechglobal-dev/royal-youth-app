@@ -19,6 +19,7 @@ const postSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     text: { type: String, required: true, trim: true, maxlength: 2000 },
     imageUrl: { type: String, default: null },
+    images: [{ type: String }],
     placardColor: { type: String, default: "#000000" },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     comments: [commentSchema],
