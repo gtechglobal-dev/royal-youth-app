@@ -203,9 +203,16 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
           ) : post.images && post.images.length > 0 ? (
             <>
               <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{postText}</p>
-              <div className={`mt-3 grid gap-2 ${post.images.length === 1 ? "grid-cols-1" : post.images.length === 2 ? "grid-cols-2" : "grid-cols-2"}`}>
-                {post.images.map((url, i) => (
-                  <img key={i} src={url} alt="" className="rounded-lg max-h-72 w-full object-cover cursor-pointer" onClick={() => window.open(url, "_blank")} />
+              <div className="flex gap-1.5 mt-3 overflow-x-auto">
+                {post.images.slice(0, 3).map((url, i) => (
+                  <div key={i} className="relative flex-shrink-0">
+                    <img src={url} alt="" className="h-24 w-24 rounded-lg object-cover cursor-pointer" onClick={() => window.open(url, "_blank")} />
+                    {i === 2 && post.images.length > 3 && (
+                      <div onClick={() => window.open(post.images[3], "_blank")} className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center cursor-pointer hover:bg-black/60">
+                        <span className="text-white text-xs font-bold">+{post.images.length - 3} more</span>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </>
