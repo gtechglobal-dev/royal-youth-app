@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import CreatePost from "../components/CreatePost";
@@ -27,6 +27,9 @@ function CommunityFeed() {
   const [expandedNotif, setExpandedNotif] = useState(null);
   const [showAllNotifs, setShowAllNotifs] = useState(false);
   const [clearAllConfirm, setClearAllConfirm] = useState(false);
+  const [availableSources, setAvailableSources] = useState([]);
+  const [sourcesLoading, setSourcesLoading] = useState(true);
+  const [showAllFeeds, setShowAllFeeds] = useState(false);
   const notifRef = useRef(null);
 
   useEffect(() => {
@@ -126,6 +129,43 @@ function CommunityFeed() {
       document.removeEventListener("touchend", touchEndHandler);
     };
   }, [showNotif]);
+
+  useEffect(() => {
+    fetchAvailableSources();
+  }, []);
+
+  const fetchAvailableSources = async () => {
+    try {
+      const res = await API.get("/feeds/available");
+      setAvailableSources(res.data);
+    } catch (err) {
+      console.error("Available sources error:", err);
+    }
+    setSourcesLoading(false);
+  };
+
+  const handleFollowSource = async (sourceId) => {
+    try {
+      await API.post(`/feeds/follow/${sourceId}`);
+      setAvailableSources((prev) => prev.map((s) => s.sourceId === sourceId ? { ...s, following: true } : s));
+    } catch (err) { console.error(err); }
+  };
+
+  const handleUnfollowSource = async (sourceId) => {
+    try {
+      await API.delete(`/feeds/follow/${sourceId}`);
+      setAvailableSources((prev) => prev.map((s) => s.sourceId === sourceId ? { ...s, following: false } : s));
+    } catch (err) { console.error(err); }
+  };
+
+  const shuffledSources = useMemo(() => {
+    const shuffled = [...availableSources];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, [availableSources]);
 
   const fetchFeed = async (p = 1, reset = false) => {
     if (reset) setLoading(true);
@@ -295,6 +335,63 @@ function CommunityFeed() {
         </div>
 
         <CreatePost onPostCreated={handlePostCreated} />
+
+        {/* Suggested Feeds */}
+        {!sourcesLoading && availableSources.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
+            <h3 onClick={() => setShowAllFeeds(!showAllFeeds)} className="text-sm font-bold text-gray-700 mb-3 cursor-pointer hover:text-purple-600 flex items-center gap-2">
+              {showAllFeeds ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              )}
+              Popular Feeds
+            </h3>
+            {showAllFeeds ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {shuffledSources.map((s) => (
+                  <div key={s.sourceId} className="flex flex-col items-center gap-1.5 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg">
+                      {s.icon || s.label[0]}
+                    </div>
+                    <span className="text-xs font-semibold text-gray-700 text-center truncate max-w-full">{s.label}</span>
+                    <span className="text-[10px] text-gray-400 capitalize">{s.category}</span>
+                    {s.following ? (
+                      <button onClick={() => handleUnfollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-100 text-purple-700 px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-200 transition">
+                        Following
+                      </button>
+                    ) : (
+                      <button onClick={() => handleFollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                        Follow
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
+                {shuffledSources.map((s) => (
+                  <div key={s.sourceId} className="flex flex-col items-center gap-1.5 min-w-[130px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg">
+                      {s.icon || s.label[0]}
+                    </div>
+                    <span className="text-xs font-semibold text-gray-700 text-center truncate max-w-[130px]">{s.label}</span>
+                    <span className="text-[10px] text-gray-400 capitalize">{s.category}</span>
+                    {s.following ? (
+                      <button onClick={() => handleUnfollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-100 text-purple-700 px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-200 transition">
+                        Following
+                      </button>
+                    ) : (
+                      <button onClick={() => handleFollowSource(s.sourceId)} className="mt-1 w-full text-[10px] bg-purple-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                        Follow
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {loading && (
           <div className="flex justify-center py-12">

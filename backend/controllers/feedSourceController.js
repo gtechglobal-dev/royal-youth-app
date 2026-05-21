@@ -21,6 +21,10 @@ const DEFAULT_SOURCES = [
   { sourceId: "completesports", url: "https://www.completesports.com/feed/", label: "Complete Sports", category: "sports", icon: "🏆", order: 18 },
   { sourceId: "bbc-sport", url: "https://feeds.bbci.co.uk/sport/rss.xml", label: "BBC Sport", category: "sports", icon: "🎾", order: 19 },
   { sourceId: "espn", url: "https://www.espn.com/espn/rss/news", label: "ESPN", category: "sports", icon: "🏈", order: 20 },
+  { sourceId: "relationship-advice", url: "https://www.ibelieve.com/relationships/rss/", label: "Relationship Advice", category: "relationship", icon: "💑", order: 21 },
+  { sourceId: "focus-family", url: "http://feeds.feedburner.com/JimDalyBlog", label: "Focus on Family", category: "relationship", icon: "👨‍👩‍👧‍👦", order: 22 },
+  { sourceId: "desiring-god", url: "http://rss.desiringgod.org/", label: "Desiring God", category: "quotes", icon: "🔥", order: 23 },
+  { sourceId: "christian-quotes", url: "https://www.christianquotes.info/feed/", label: "Christian Quotes", category: "quotes", icon: "💬", order: 24 },
 ];
 
 export const seedFeedSources = async () => {
