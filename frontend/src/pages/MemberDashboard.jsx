@@ -158,6 +158,8 @@ function MemberDashboard() {
   const [viewingMemberId, setViewingMemberId] = useState(null);
   const [viewedMember, setViewedMember] = useState(null);
   const [viewingMemberLoading, setViewingMemberLoading] = useState(false);
+  const [viewedMemberPosts, setViewedMemberPosts] = useState([]);
+  const [viewedMemberPostsLoading, setViewedMemberPostsLoading] = useState(false);
   const [viewingPost, setViewingPost] = useState(null);
   const [viewingPostLoading, setViewingPostLoading] = useState(false);
   const [showHandbookModal, setShowHandbookModal] = useState(false);
@@ -534,6 +536,11 @@ function MemberDashboard() {
       .then((res) => setViewedMember(res.data))
       .catch(() => setViewedMember(null))
       .finally(() => setViewingMemberLoading(false));
+    setViewedMemberPostsLoading(true);
+    API.get(`/posts/user/${viewingMemberId}`)
+      .then((res) => setViewedMemberPosts(res.data.posts || []))
+      .catch(() => setViewedMemberPosts([]))
+      .finally(() => setViewedMemberPostsLoading(false));
   }, [viewingMemberId]);
 
   const handleAcceptRequest = async (id) => {
@@ -877,7 +884,7 @@ function MemberDashboard() {
                   ))}
                 </div>
               )}
-              <CreatePost onPostCreated={handlePostCreated} />
+              <CreatePost onPostCreated={handlePostCreated} placeholder="Share something with your friends..." />
               {feedLoading && (
                 <div className="space-y-4">
                   {Array.from({length:3}).map((_,i) => (
@@ -1129,6 +1136,22 @@ function MemberDashboard() {
                     <div><span className="font-semibold text-gray-600">Born Again:</span> {viewedMember.bornAgain}</div>
                     <div><span className="font-semibold text-gray-600">Membership:</span> <span className={viewedMember.membershipStatus === "Active Member" ? "text-green-600 font-medium" : "text-red-500 font-medium"}>{viewedMember.membershipStatus}</span></div>
                     <div><span className="font-semibold text-gray-600">Role:</span> <span className={`font-medium ${viewedMember.role === "youth_president" ? "text-yellow-600" : viewedMember.role === "admin" ? "text-purple-600" : ""}`}>{viewedMember.role === "youth_president" ? "Youth President" : viewedMember.role === "admin" ? "Admin" : "Member"}</span></div>
+                  </div>
+                  <div className="mt-8">
+                    <h3 className="text-lg font-bold mb-4">Posts</h3>
+                    {viewedMemberPostsLoading ? (
+                      <div className="flex justify-center py-6">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+                      </div>
+                    ) : viewedMemberPosts.length === 0 ? (
+                      <p className="text-gray-400 text-sm text-center py-6">No posts yet</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {viewedMemberPosts.map((post) => (
+                          <PostCard key={post._id} post={post} currentUserId={user?._id} onDelete={handleDeletePost} onShare={handleShare} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (
