@@ -927,7 +927,7 @@ function MemberDashboard() {
                     ) : (
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
                     )}
-                    News, relationships, lifestyle, and daily inspiration, Follow for UPDATES
+                    News, business, relationships, lifestyle...Follow for UPDATES
                   </h3>
                   {showAllFeeds ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
