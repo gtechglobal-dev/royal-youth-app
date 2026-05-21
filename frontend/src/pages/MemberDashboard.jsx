@@ -1136,6 +1136,10 @@ function MemberDashboard() {
                     <div><span className="font-semibold text-gray-600">Born Again:</span> {viewedMember.bornAgain}</div>
                     <div><span className="font-semibold text-gray-600">Membership:</span> <span className={viewedMember.membershipStatus === "Active Member" ? "text-green-600 font-medium" : "text-red-500 font-medium"}>{viewedMember.membershipStatus}</span></div>
                     <div><span className="font-semibold text-gray-600">Role:</span> <span className={`font-medium ${viewedMember.role === "youth_president" ? "text-yellow-600" : viewedMember.role === "admin" ? "text-purple-600" : ""}`}>{viewedMember.role === "youth_president" ? "Youth President" : viewedMember.role === "admin" ? "Admin" : "Member"}</span></div>
+                    <div><span className="font-semibold text-gray-600">State of Origin:</span> {viewedMember.stateOfOrigin || "N/A"}</div>
+                    <div><span className="font-semibold text-gray-600">LGA:</span> {viewedMember.lga || "N/A"}</div>
+                    <div><span className="font-semibold text-gray-600">Date Joined:</span> {viewedMember.createdAt ? new Date(viewedMember.createdAt).toLocaleDateString() : "N/A"}</div>
+                    <div><span className="font-semibold text-gray-600">Last Seen:</span> <span className="text-gray-500">{viewedMember.lastActive ? timeAgo(viewedMember.lastActive) : "Unknown"}</span></div>
                   </div>
                   <div className="mt-8">
                     <h3 className="text-lg font-bold mb-4">Posts</h3>
