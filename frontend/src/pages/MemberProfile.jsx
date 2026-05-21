@@ -94,7 +94,7 @@ function MemberProfile() {
           <p><b>Last Seen:</b> <span className="text-gray-500">{member.lastLogin ? formatDate(member.lastLogin) : "Unknown"}</span></p>
           <p><b>State of Origin:</b> {member.stateOfOrigin || "N/A"}</p>
           <p><b>LGA:</b> {member.lga || "N/A"}</p>
-          <p><b>Date Joined:</b> {new Date(member.createdAt).toLocaleDateString()}</p>
+          <p><b>Date Joined:</b> {formatDate(member.createdAt, true)}</p>
           <p><b>Role:</b> <span className={`font-medium ${
             member.role === "youth_president" ? "text-yellow-600" :
             member.role === "admin" ? "text-purple-600" : ""

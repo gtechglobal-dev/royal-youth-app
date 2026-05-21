@@ -1,13 +1,15 @@
-export function formatDate(date) {
+export function formatDate(date, dateOnly) {
   const d = new Date(date);
   const day = d.getDate();
   const suffix = day % 10 === 1 && day !== 11 ? "st" : day % 10 === 2 && day !== 12 ? "nd" : day % 10 === 3 && day !== 13 ? "rd" : "th";
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const dateStr = `${day}${suffix} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  if (dateOnly) return dateStr;
   let hours = d.getHours();
   const mins = d.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "pm" : "am";
   hours = hours % 12 || 12;
-  return `${day}${suffix} ${months[d.getMonth()]} ${d.getFullYear()} | ${hours}.${mins}${ampm}`;
+  return `${dateStr} | ${hours}.${mins}${ampm}`;
 }
 
 export function timeAgo(date) {

@@ -1138,7 +1138,7 @@ function MemberDashboard() {
                     <div><span className="font-semibold text-gray-600">Role:</span> <span className={`font-medium ${viewedMember.role === "youth_president" ? "text-yellow-600" : viewedMember.role === "admin" ? "text-purple-600" : ""}`}>{viewedMember.role === "youth_president" ? "Youth President" : viewedMember.role === "admin" ? "Admin" : "Member"}</span></div>
                     <div><span className="font-semibold text-gray-600">State of Origin:</span> {viewedMember.stateOfOrigin || "N/A"}</div>
                     <div><span className="font-semibold text-gray-600">LGA:</span> {viewedMember.lga || "N/A"}</div>
-                    <div><span className="font-semibold text-gray-600">Date Joined:</span> {viewedMember.createdAt ? new Date(viewedMember.createdAt).toLocaleDateString() : "N/A"}</div>
+                    <div><span className="font-semibold text-gray-600">Date Joined:</span> {viewedMember.createdAt ? formatDate(viewedMember.createdAt, true) : "N/A"}</div>
                     <div><span className="font-semibold text-gray-600">Last Seen:</span> <span className="text-gray-500">{viewedMember.lastLogin ? formatDate(viewedMember.lastLogin) : "Unknown"}</span></div>
                   </div>
                   <div className="mt-8">
