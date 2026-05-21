@@ -7,6 +7,7 @@ import RssCard from "../components/RssCard";
 import { optimizeImage } from "../utils/cloudinary";
 import ConfirmModal from "../components/ConfirmModal";
 import { displayName, displayNameFull } from "../utils/displayName";
+import { timeAgo } from "../utils/formatTime";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const nigerianStates = [
@@ -713,9 +714,11 @@ function MemberDashboard() {
                         <div>
                           <p className={`truncate ${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">Royal Youth Hub</span></p>
                           {n.referenceId && <p className={`text-xs truncate ${n.read ? "text-gray-400" : "text-gray-500"}`}>{n.referenceId}</p>}
+                          <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.createdAt)}</p>
                         </div>
                       ) : (
                         <p className={`${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.createdAt)}</p>
                       )}
                     </div>
                     <button onClick={(e) => deleteNotif(n._id, e)} className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
