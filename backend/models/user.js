@@ -105,6 +105,11 @@ const userSchema = new mongoose.Schema(
       type: Date,
     },
 
+    lastActive: {
+      type: Date,
+      default: Date.now,
+    },
+
     role: {
       type: String,
       enum: ["member", "admin", "youth_president"],

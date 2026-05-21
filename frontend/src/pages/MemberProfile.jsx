@@ -5,6 +5,19 @@ import PostCard from "../components/PostCard";
 import { optimizeImage } from "../utils/cloudinary";
 import { displayNameFull } from "../utils/displayName";
 
+function timeAgo(date) {
+  const now = Date.now();
+  const diff = now - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(date).toLocaleDateString();
+}
+
 function MemberProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -89,6 +102,7 @@ function MemberProfile() {
           <p><b>Occupation:</b> {member.occupation}</p>
           <p><b>Born Again:</b> {member.bornAgain}</p>
           <p><b>Status:</b> {member.membershipStatus}</p>
+          <p><b>Last Seen:</b> <span className="text-gray-500">{member.lastActive ? timeAgo(member.lastActive) : "Unknown"}</span></p>
           <p><b>Role:</b> <span className={`font-medium ${
             member.role === "youth_president" ? "text-yellow-600" :
             member.role === "admin" ? "text-purple-600" : ""
