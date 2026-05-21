@@ -4,6 +4,8 @@ import User from "./models/user.js";
 
 let io;
 
+const activeSessions = new Map();
+
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
@@ -42,6 +44,98 @@ export const initSocket = (server) => {
 
     socket.on("disconnect", () => {
       User.findByIdAndUpdate(socket.userId, { lastActive: new Date() }).catch(() => {});
+      for (const [sessionId, session] of activeSessions) {
+        if (session.broadcasterId === socket.userId) {
+          activeSessions.delete(sessionId);
+          io.emit("live-ended", { sessionId });
+          break;
+        }
+      }
+    });
+
+    socket.on("start-live", (data, callback) => {
+      const sessionId = `live:${socket.userId}:${Date.now()}`;
+      const session = {
+        sessionId,
+        broadcasterId: socket.userId,
+        title: data.title || "Live Broadcast",
+        description: data.description || "",
+        category: data.category || "General",
+        type: data.type || "video",
+        startedAt: Date.now(),
+        viewers: [],
+      };
+      activeSessions.set(sessionId, session);
+      socket.join(sessionId);
+      socket.liveSessionId = sessionId;
+      io.emit("live-started", session);
+      if (callback) callback({ success: true, sessionId });
+    });
+
+    socket.on("end-live", (data, callback) => {
+      const sessionId = data?.sessionId || socket.liveSessionId;
+      if (!sessionId) return;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      if (session.broadcasterId !== socket.userId) return;
+      activeSessions.delete(sessionId);
+      io.to(sessionId).emit("live-ended", { sessionId });
+      io.socketsLeave(sessionId);
+      io.emit("live-ended", { sessionId });
+      if (callback) callback({ success: true });
+    });
+
+    socket.on("join-live", (data) => {
+      const { sessionId } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return socket.emit("live-error", { message: "Session not found" });
+      socket.join(sessionId);
+      if (!session.viewers.includes(socket.userId)) {
+        session.viewers.push(socket.userId);
+      }
+      socket.liveSessionId = sessionId;
+      io.to(sessionId).emit("viewer-count", { count: session.viewers.length });
+      socket.to(session.broadcasterId).emit("viewer-joined", { userId: socket.userId });
+    });
+
+    socket.on("leave-live", (data) => {
+      const sessionId = data?.sessionId || socket.liveSessionId;
+      if (!sessionId) return;
+      const session = activeSessions.get(sessionId);
+      socket.leave(sessionId);
+      if (session) {
+        session.viewers = session.viewers.filter((id) => id !== socket.userId);
+        io.to(sessionId).emit("viewer-count", { count: session.viewers.length });
+        socket.to(session.broadcasterId).emit("viewer-left", { userId: socket.userId });
+      }
+      socket.liveSessionId = null;
+    });
+
+    socket.on("signal", (data) => {
+      const { to, signal } = data;
+      io.to(`user:${to}`).emit("signal", { from: socket.userId, signal });
+    });
+
+    socket.on("live-message", (data) => {
+      const { sessionId, text } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      io.to(sessionId).emit("live-message", { userId: socket.userId, text, timestamp: Date.now() });
+    });
+
+    socket.on("live-reaction", (data) => {
+      const { sessionId, emoji } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      io.to(sessionId).emit("live-reaction", { userId: socket.userId, emoji });
+    });
+
+    socket.on("get-active-sessions", (_, callback) => {
+      const sessions = Array.from(activeSessions.values()).map((s) => ({
+        ...s,
+        viewers: s.viewers.length,
+      }));
+      if (callback) callback(sessions);
     });
   });
 
@@ -52,3 +146,5 @@ export const getIO = () => {
   if (!io) throw new Error("Socket.io not initialized");
   return io;
 };
+
+export const getActiveSessions = () => Array.from(activeSessions.values());

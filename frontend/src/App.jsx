@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { PageLoader } from "./components/Loaders";
+import { LiveProvider } from "./contexts/LiveContext";
+import { connectSocket } from "./services/socket";
 
 const InstallPrompt = lazy(() => import("./components/InstallPrompt"));
 const PushNotificationManager = lazy(() => import("./components/PushNotificationManager"));
@@ -21,30 +23,38 @@ const DirectMessages = lazy(() => import("./pages/DirectMessages"));
 const SinglePost = lazy(() => import("./pages/SinglePost"));
 
 function App() {
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      connectSocket();
+    }
+  }, []);
+
   return (
     <BrowserRouter>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/registration-success" element={<RegistrationSuccess />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/dashboard" element={<MemberDashboard />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/members" element={<Members />} />
-          <Route path="/member/:id" element={<MemberProfile />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/community" element={<CommunityFeed />} />
-          <Route path="/messages" element={<DirectMessages />} />
-          <Route path="/post/:id" element={<SinglePost />} />
-        </Routes>
-      </Suspense>
-      <Suspense fallback={null}>
-        <InstallPrompt />
-        <PushNotificationManager />
-      </Suspense>
+      <LiveProvider>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/registration-success" element={<RegistrationSuccess />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/dashboard" element={<MemberDashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/members" element={<Members />} />
+            <Route path="/member/:id" element={<MemberProfile />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/community" element={<CommunityFeed />} />
+            <Route path="/messages" element={<DirectMessages />} />
+            <Route path="/post/:id" element={<SinglePost />} />
+          </Routes>
+        </Suspense>
+        <Suspense fallback={null}>
+          <InstallPrompt />
+          <PushNotificationManager />
+        </Suspense>
+      </LiveProvider>
     </BrowserRouter>
   );
 }

@@ -55,6 +55,11 @@
   animation: float 3s ease-in-out infinite;
 }
 
+@keyframes float-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-120px) scale(1.5); }
+}
+
 :root {
   --primary: #4f46e5;
   --primary-dark: #3730a3;
