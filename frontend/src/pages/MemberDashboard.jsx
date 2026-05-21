@@ -717,8 +717,8 @@ function MemberDashboard() {
                           <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.createdAt)}</p>
                         </div>
                       ) : (
-                        <p className={`${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.createdAt)}</p>
+                        <><p className={`${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.createdAt)}</p></>
                       )}
                     </div>
                     <button onClick={(e) => deleteNotif(n._id, e)} className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
