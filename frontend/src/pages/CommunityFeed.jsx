@@ -319,24 +319,9 @@ function CommunityFeed() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
-            {user.profileImage ? (
-              <img src={optimizeImage(user.profileImage, 64)} alt="" className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <span className="text-purple-600 font-bold text-sm">{user.firstname?.[0]}</span>
-            )}
-          </div>
-          <div>
-            <p className="font-semibold text-sm">{displayNameFull(user)}</p>
-            <p className="text-gray-400 text-xs">{user.branch}</p>
-          </div>
-        </div>
-
-        {/* Suggested Feeds */}
-        {!sourcesLoading && availableSources.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
+      {/* Suggested Feeds */}
+      {!sourcesLoading && availableSources.length > 0 && (
+        <div className="bg-white border-b border-gray-200 p-4">
             <h3 onClick={() => setShowAllFeeds(!showAllFeeds)} className="text-sm font-bold text-gray-700 mb-3 cursor-pointer hover:text-purple-600 flex items-center gap-2">
               {showAllFeeds ? (
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -390,6 +375,21 @@ function CommunityFeed() {
             )}
           </div>
         )}
+
+        <main className="max-w-2xl mx-auto px-4 py-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+            {user.profileImage ? (
+              <img src={optimizeImage(user.profileImage, 64)} alt="" className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <span className="text-purple-600 font-bold text-sm">{user.firstname?.[0]}</span>
+            )}
+          </div>
+          <div>
+            <p className="font-semibold text-sm">{displayNameFull(user)}</p>
+            <p className="text-gray-400 text-xs">{user.branch}</p>
+          </div>
+        </div>
 
         <CreatePost onPostCreated={handlePostCreated} />
 
