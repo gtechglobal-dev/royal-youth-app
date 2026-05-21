@@ -39,6 +39,10 @@ export const initSocket = (server) => {
   io.on("connection", (socket) => {
     socket.join(`user:${socket.userId}`);
     User.findByIdAndUpdate(socket.userId, { lastActive: new Date() }).catch(() => {});
+
+    socket.on("disconnect", () => {
+      User.findByIdAndUpdate(socket.userId, { lastActive: new Date() }).catch(() => {});
+    });
   });
 
   return io;
