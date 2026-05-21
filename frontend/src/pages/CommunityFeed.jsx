@@ -334,8 +334,6 @@ function CommunityFeed() {
           </div>
         </div>
 
-        <CreatePost onPostCreated={handlePostCreated} />
-
         {/* Suggested Feeds */}
         {!sourcesLoading && availableSources.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
@@ -392,6 +390,8 @@ function CommunityFeed() {
             )}
           </div>
         )}
+
+        <CreatePost onPostCreated={handlePostCreated} />
 
         {loading && (
           <div className="flex justify-center py-12">
