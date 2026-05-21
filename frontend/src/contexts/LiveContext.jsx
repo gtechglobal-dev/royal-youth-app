@@ -1,17 +1,30 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
-import { getSocket } from "../services/socket";
+import { getSocket, connectSocket } from "../services/socket";
 
 const LiveContext = createContext(null);
 
 export function LiveProvider({ children }) {
   const [activeSessions, setActiveSessions] = useState([]);
   const [liveRoom, setLiveRoom] = useState(null);
-  const [incomingCall, setIncomingCall] = useState(null);
+  const [liveNotifs, setLiveNotifs] = useState([]);
   const myStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
+  const liveRoomRef = useRef(null);
 
   useEffect(() => {
-    const socket = getSocket();
+    liveRoomRef.current = liveRoom;
+  }, [liveRoom]);
+
+  const ensureSocket = useCallback(() => {
+    let socket = getSocket();
+    if (!socket || !socket.connected) {
+      socket = connectSocket();
+    }
+    return socket;
+  }, []);
+
+  useEffect(() => {
+    const socket = ensureSocket();
     if (!socket) return;
 
     const onLiveStarted = (session) => {
@@ -23,13 +36,36 @@ export function LiveProvider({ children }) {
 
     const onLiveEnded = ({ sessionId }) => {
       setActiveSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
-      if (liveRoom?.sessionId === sessionId) {
-        handleLeaveLive();
+    };
+
+    const onViewerJoined = async ({ userId }) => {
+      const room = liveRoomRef.current;
+      if (!room?.isBroadcaster || !myStreamRef.current) return;
+      const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+      peerConnectionsRef.current[userId] = pc;
+
+      myStreamRef.current.getTracks().forEach((track) => pc.addTrack(track, myStreamRef.current));
+
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          socket.emit("signal", { to: userId, signal: { type: "candidate", candidate: e.candidate } });
+        }
+      };
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socket.emit("signal", { to: userId, signal: offer });
+    };
+
+    const onViewerLeft = ({ userId }) => {
+      const pc = peerConnectionsRef.current[userId];
+      if (pc) {
+        pc.close();
+        delete peerConnectionsRef.current[userId];
       }
     };
 
     const onSignal = async ({ from, signal }) => {
-      if (liveRoom?.isBroadcaster) return;
       if (signal.type === "offer") {
         const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
         peerConnectionsRef.current[from] = pc;
@@ -41,20 +77,17 @@ export function LiveProvider({ children }) {
         };
 
         pc.ontrack = (e) => {
-          if (myStreamRef.current) {
-            myStreamRef.current.getVideoTracks().forEach((t) => myStreamRef.current.removeTrack(t));
-            myStreamRef.current.getAudioTracks().forEach((t) => myStreamRef.current.removeTrack(t));
-          }
           const remoteStream = new MediaStream();
           e.streams[0].getTracks().forEach((t) => remoteStream.addTrack(t));
           myStreamRef.current = remoteStream;
+          setLiveRoom((prev) => prev ? { ...prev, stream: remoteStream } : prev);
         };
 
         await pc.setRemoteDescription(new RTCSessionDescription(signal));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         socket.emit("signal", { to: from, signal: answer });
-      } else if (signal.type === "answer" && liveRoom?.isBroadcaster) {
+      } else if (signal.type === "answer") {
         const pc = peerConnectionsRef.current[from];
         if (pc) {
           await pc.setRemoteDescription(new RTCSessionDescription(signal));
@@ -67,9 +100,17 @@ export function LiveProvider({ children }) {
       }
     };
 
+    const onLiveNotification = (notif) => {
+      setLiveNotifs((prev) => [...prev, { ...notif, id: Date.now() }]);
+      setTimeout(() => setLiveNotifs((prev) => prev.slice(1)), 5000);
+    };
+
     socket.on("live-started", onLiveStarted);
     socket.on("live-ended", onLiveEnded);
+    socket.on("viewer-joined", onViewerJoined);
+    socket.on("viewer-left", onViewerLeft);
     socket.on("signal", onSignal);
+    socket.on("live-notification", onLiveNotification);
 
     socket.emit("get-active-sessions", (sessions) => {
       setActiveSessions(sessions);
@@ -78,14 +119,15 @@ export function LiveProvider({ children }) {
     return () => {
       socket.off("live-started", onLiveStarted);
       socket.off("live-ended", onLiveEnded);
+      socket.off("viewer-joined", onViewerJoined);
+      socket.off("viewer-left", onViewerLeft);
       socket.off("signal", onSignal);
+      socket.off("live-notification", onLiveNotification);
     };
   }, []);
 
   const cleanupPeerConnections = useCallback(() => {
-    Object.values(peerConnectionsRef.current).forEach((pc) => {
-      pc.close();
-    });
+    Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
     peerConnectionsRef.current = {};
     if (myStreamRef.current) {
       myStreamRef.current.getTracks().forEach((t) => t.stop());
@@ -94,8 +136,8 @@ export function LiveProvider({ children }) {
   }, []);
 
   const startLive = useCallback(async (data) => {
-    const socket = getSocket();
-    if (!socket) return;
+    const socket = ensureSocket();
+    if (!socket) throw new Error("No socket connection");
 
     const stream = await navigator.mediaDevices.getUserMedia({
       video: data.type === "video",
@@ -103,7 +145,7 @@ export function LiveProvider({ children }) {
     });
     myStreamRef.current = stream;
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       socket.emit("start-live", data, (res) => {
         if (res.success) {
           setLiveRoom({
@@ -117,13 +159,15 @@ export function LiveProvider({ children }) {
             stream,
           });
           resolve(res);
+        } else {
+          reject(new Error("Failed to start live"));
         }
       });
     });
-  }, []);
+  }, [ensureSocket]);
 
   const joinLive = useCallback(async (session) => {
-    const socket = getSocket();
+    const socket = ensureSocket();
     if (!socket) return;
 
     socket.emit("join-live", { sessionId: session.sessionId });
@@ -139,44 +183,43 @@ export function LiveProvider({ children }) {
       type: session.type,
       stream,
     });
-
-    socket.emit("signal", {
-      to: session.broadcasterId,
-      signal: { type: "join-request" },
-    });
-  }, []);
+  }, [ensureSocket]);
 
   const handleLeaveLive = useCallback(() => {
     const socket = getSocket();
-    if (liveRoom) {
-      if (liveRoom.isBroadcaster) {
-        socket.emit("end-live", { sessionId: liveRoom.sessionId });
+    if (liveRoomRef.current) {
+      if (liveRoomRef.current.isBroadcaster) {
+        socket?.emit("end-live", { sessionId: liveRoomRef.current.sessionId });
       } else {
-        socket.emit("leave-live", { sessionId: liveRoom.sessionId });
+        socket?.emit("leave-live", { sessionId: liveRoomRef.current.sessionId });
       }
     }
     cleanupPeerConnections();
     setLiveRoom(null);
-  }, [liveRoom, cleanupPeerConnections]);
+  }, [cleanupPeerConnections]);
 
   const sendMessage = useCallback((text) => {
     const socket = getSocket();
-    if (!socket || !liveRoom) return;
-    socket.emit("live-message", { sessionId: liveRoom.sessionId, text });
-  }, [liveRoom]);
+    if (!socket || !liveRoomRef.current) return;
+    socket.emit("live-message", { sessionId: liveRoomRef.current.sessionId, text });
+  }, []);
 
   const sendReaction = useCallback((emoji) => {
     const socket = getSocket();
-    if (!socket || !liveRoom) return;
-    socket.emit("live-reaction", { sessionId: liveRoom.sessionId, emoji });
-  }, [liveRoom]);
+    if (!socket || !liveRoomRef.current) return;
+    socket.emit("live-reaction", { sessionId: liveRoomRef.current.sessionId, emoji });
+  }, []);
+
+  const dismissLiveNotif = useCallback((id) => {
+    setLiveNotifs((prev) => prev.filter((n) => n.id !== id));
+  }, []);
 
   return (
     <LiveContext.Provider
       value={{
         activeSessions,
         liveRoom,
-        incomingCall,
+        liveNotifs,
         myStreamRef,
         peerConnectionsRef,
         startLive,
@@ -184,6 +227,7 @@ export function LiveProvider({ children }) {
         handleLeaveLive,
         sendMessage,
         sendReaction,
+        dismissLiveNotif,
       }}
     >
       {children}

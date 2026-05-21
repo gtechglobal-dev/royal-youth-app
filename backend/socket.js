@@ -53,7 +53,7 @@ export const initSocket = (server) => {
       }
     });
 
-    socket.on("start-live", (data, callback) => {
+    socket.on("start-live", async (data, callback) => {
       const sessionId = `live:${socket.userId}:${Date.now()}`;
       const session = {
         sessionId,
@@ -69,6 +69,22 @@ export const initSocket = (server) => {
       socket.join(sessionId);
       socket.liveSessionId = sessionId;
       io.emit("live-started", session);
+
+      try {
+        const broadcaster = await User.findById(socket.userId).select("friends");
+        if (broadcaster?.friends?.length > 0) {
+          const friendIds = broadcaster.friends.map((f) => f.toString());
+          friendIds.forEach((friendId) => {
+            io.to(`user:${friendId}`).emit("live-notification", {
+              sessionId,
+              broadcasterId: socket.userId,
+              title: data.title,
+              type: data.type,
+            });
+          });
+        }
+      } catch {}
+
       if (callback) callback({ success: true, sessionId });
     });
 
@@ -95,7 +111,7 @@ export const initSocket = (server) => {
       }
       socket.liveSessionId = sessionId;
       io.to(sessionId).emit("viewer-count", { count: session.viewers.length });
-      socket.to(session.broadcasterId).emit("viewer-joined", { userId: socket.userId });
+      io.to(`user:${session.broadcasterId}`).emit("viewer-joined", { userId: socket.userId });
     });
 
     socket.on("leave-live", (data) => {
@@ -106,7 +122,7 @@ export const initSocket = (server) => {
       if (session) {
         session.viewers = session.viewers.filter((id) => id !== socket.userId);
         io.to(sessionId).emit("viewer-count", { count: session.viewers.length });
-        socket.to(session.broadcasterId).emit("viewer-left", { userId: socket.userId });
+        io.to(`user:${session.broadcasterId}`).emit("viewer-left", { userId: socket.userId });
       }
       socket.liveSessionId = null;
     });

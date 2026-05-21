@@ -6,6 +6,7 @@ import { connectSocket } from "./services/socket";
 
 const InstallPrompt = lazy(() => import("./components/InstallPrompt"));
 const PushNotificationManager = lazy(() => import("./components/PushNotificationManager"));
+const LiveNotification = lazy(() => import("./components/LiveNotification"));
 
 const LandingPage = lazy(() => import("./pages/landingPage"));
 const Register = lazy(() => import("./pages/Register"));
@@ -50,10 +51,11 @@ function App() {
             <Route path="/post/:id" element={<SinglePost />} />
           </Routes>
         </Suspense>
-        <Suspense fallback={null}>
-          <InstallPrompt />
-          <PushNotificationManager />
-        </Suspense>
+      <Suspense fallback={null}>
+        <InstallPrompt />
+        <PushNotificationManager />
+        <LiveNotification />
+      </Suspense>
       </LiveProvider>
     </BrowserRouter>
   );
