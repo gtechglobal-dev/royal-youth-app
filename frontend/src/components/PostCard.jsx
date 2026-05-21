@@ -202,7 +202,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
             </div>
           ) : post.images && post.images.length > 0 ? (
             <>
-              <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{postText}</p>
+              <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{postText || (post.images?.length ? "Say something about your image(s)" : "")}</p>
               <div className="flex gap-1.5 mt-3 overflow-x-auto">
                 {post.images.slice(0, 3).map((url, i) => (
                   <div key={i} className="relative flex-shrink-0">
@@ -218,7 +218,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
             </>
           ) : post.imageUrl ? (
             <>
-              <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{postText}</p>
+              <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{postText || "Say something about your image(s)"}</p>
               <img
                 src={post.imageUrl}
                 alt="Post"

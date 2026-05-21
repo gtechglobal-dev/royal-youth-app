@@ -138,7 +138,7 @@ function SinglePost() {
                 <span className="text-gray-400 text-xs block truncate">{post.userId?.branch}</span>
                 {post.images && post.images.length > 0 ? (
                   <>
-                    <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{post.text}</p>
+                    <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{post.text || "Say something about your image(s)"}</p>
                     <div className="flex gap-1.5 mt-3 overflow-x-auto">
                       {post.images.slice(0, 3).map((url, i) => (
                         <div key={i} className="relative flex-shrink-0">
@@ -154,7 +154,7 @@ function SinglePost() {
                   </>
                 ) : post.imageUrl ? (
                   <>
-                    <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{post.text}</p>
+                    <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{post.text || "Say something about your image(s)"}</p>
                     <img src={post.imageUrl} alt="Post" className="mt-3 rounded-lg max-h-96 w-full object-cover cursor-pointer" onClick={() => window.open(post.imageUrl, "_blank")} />
                   </>
                 ) : (
