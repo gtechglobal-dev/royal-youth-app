@@ -9,6 +9,10 @@ import ConfirmModal from "../components/ConfirmModal";
 import { displayName, displayNameFull } from "../utils/displayName";
 import { timeAgo, formatDate } from "../utils/formatTime";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import LiveFeedSection from "../components/LiveFeedSection";
+import GoLiveModal from "../components/GoLiveModal";
+import LiveRoom from "../components/LiveRoom";
+import { useLive } from "../contexts/LiveContext";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
@@ -66,6 +70,8 @@ function MemberDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { liveRoom } = useLive();
+  const [showGoLive, setShowGoLive] = useState(false);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "community");
   const switchTab = useCallback((tab) => {
@@ -918,6 +924,7 @@ function MemberDashboard() {
 
           {activeTab === "community" && (
             <>
+              <LiveFeedSection user={user} />
               {/* Suggested Feeds */}
               {!sourcesLoading && availableSources.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
@@ -1103,6 +1110,16 @@ function MemberDashboard() {
                   </button>
                 </div>
               )}
+              {showGoLive && <GoLiveModal onClose={() => setShowGoLive(false)} />}
+              {liveRoom && <LiveRoom />}
+              <button
+                onClick={() => setShowGoLive(true)}
+                className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-r from-red-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition flex items-center justify-center"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
             </>
           )}
 
