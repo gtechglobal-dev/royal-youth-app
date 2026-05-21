@@ -6,6 +6,8 @@ import { optimizeImage } from "../utils/cloudinary";
 import { displayNameFull } from "../utils/displayName";
 
 import { formatDate } from "../utils/formatTime";
+
+function MemberProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [member, setMember] = useState(null);
