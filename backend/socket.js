@@ -1,10 +1,21 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import User from "./models/user.js";
+import Message from "./models/Message.js";
+import Conversation from "./models/Conversation.js";
 
 let io;
 
 const activeSessions = new Map();
+
+function broadcastParticipants(sessionId) {
+  const session = activeSessions.get(sessionId);
+  if (!session) return;
+  io.to(sessionId).emit("participants-update", {
+    participants: session.participants,
+    raisedHands: session.raisedHands,
+  });
+}
 
 export const initSocket = (server) => {
   io = new Server(server, {
@@ -50,11 +61,21 @@ export const initSocket = (server) => {
           io.emit("live-ended", { sessionId });
           break;
         }
+        const idx = session.participants.findIndex((p) => p.userId === socket.userId);
+        if (idx !== -1) {
+          session.participants.splice(idx, 1);
+          session.raisedHands = session.raisedHands.filter((r) => r.userId !== socket.userId);
+          io.to(sessionId).emit("viewer-count", { count: session.participants.length });
+          io.to(`user:${session.broadcasterId}`).emit("viewer-left", { userId: socket.userId });
+          broadcastParticipants(sessionId);
+        }
       }
     });
 
     socket.on("start-live", async (data, callback) => {
       const sessionId = `live:${socket.userId}:${Date.now()}`;
+      const user = await User.findById(socket.userId).select("firstname surname").lean();
+      const displayName = user ? `${user.firstname} ${user.surname}` : "Host";
       const session = {
         sessionId,
         broadcasterId: socket.userId,
@@ -63,7 +84,8 @@ export const initSocket = (server) => {
         category: data.category || "General",
         type: data.type || "video",
         startedAt: Date.now(),
-        viewers: [],
+        participants: [{ userId: socket.userId, displayName, role: "host", muted: false, joinedAt: Date.now() }],
+        raisedHands: [],
       };
       activeSessions.set(sessionId, session);
       socket.join(sessionId);
@@ -102,16 +124,23 @@ export const initSocket = (server) => {
     });
 
     socket.on("join-live", (data) => {
-      const { sessionId } = data;
+      const { sessionId, displayName } = data;
       const session = activeSessions.get(sessionId);
       if (!session) return socket.emit("live-error", { message: "Session not found" });
       socket.join(sessionId);
-      if (!session.viewers.includes(socket.userId)) {
-        session.viewers.push(socket.userId);
+      if (!session.participants.find((p) => p.userId === socket.userId)) {
+        session.participants.push({
+          userId: socket.userId,
+          displayName: displayName || `User-${socket.userId.slice(-4)}`,
+          role: "listener",
+          muted: false,
+          joinedAt: Date.now(),
+        });
       }
       socket.liveSessionId = sessionId;
-      io.to(sessionId).emit("viewer-count", { count: session.viewers.length });
-      io.to(`user:${session.broadcasterId}`).emit("viewer-joined", { userId: socket.userId });
+      io.to(sessionId).emit("viewer-count", { count: session.participants.length });
+      io.to(`user:${session.broadcasterId}`).emit("viewer-joined", { userId: socket.userId, displayName });
+      broadcastParticipants(sessionId);
     });
 
     socket.on("leave-live", (data) => {
@@ -120,11 +149,85 @@ export const initSocket = (server) => {
       const session = activeSessions.get(sessionId);
       socket.leave(sessionId);
       if (session) {
-        session.viewers = session.viewers.filter((id) => id !== socket.userId);
-        io.to(sessionId).emit("viewer-count", { count: session.viewers.length });
+        session.participants = session.participants.filter((p) => p.userId !== socket.userId);
+        session.raisedHands = session.raisedHands.filter((r) => r.userId !== socket.userId);
+        io.to(sessionId).emit("viewer-count", { count: session.participants.length });
         io.to(`user:${session.broadcasterId}`).emit("viewer-left", { userId: socket.userId });
+        broadcastParticipants(sessionId);
       }
       socket.liveSessionId = null;
+    });
+
+    socket.on("raise-hand", (data) => {
+      const { sessionId } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      if (session.raisedHands.find((r) => r.userId === socket.userId)) return;
+      const participant = session.participants.find((p) => p.userId === socket.userId);
+      session.raisedHands.push({ userId: socket.userId, displayName: participant?.displayName || "Someone" });
+      io.to(`user:${session.broadcasterId}`).emit("hand-raised", { userId: socket.userId, displayName: participant?.displayName || "Someone" });
+      broadcastParticipants(sessionId);
+    });
+
+    socket.on("lower-hand", (data) => {
+      const { sessionId } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      session.raisedHands = session.raisedHands.filter((r) => r.userId !== socket.userId);
+      io.to(`user:${session.broadcasterId}`).emit("hand-lowered", { userId: socket.userId });
+      broadcastParticipants(sessionId);
+    });
+
+    socket.on("grant-mic", (data) => {
+      const { sessionId, userId } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      if (session.broadcasterId !== socket.userId) return;
+      const participant = session.participants.find((p) => p.userId === userId);
+      if (participant) participant.role = "speaker";
+      session.raisedHands = session.raisedHands.filter((r) => r.userId !== userId);
+      io.to(`user:${userId}`).emit("mic-granted", { sessionId, by: socket.userId });
+      broadcastParticipants(sessionId);
+    });
+
+    socket.on("revoke-mic", (data) => {
+      const { sessionId, userId } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      if (session.broadcasterId !== socket.userId) return;
+      const participant = session.participants.find((p) => p.userId === userId);
+      if (participant) participant.role = "listener";
+      io.to(`user:${userId}`).emit("mic-revoked", { sessionId, by: socket.userId });
+      broadcastParticipants(sessionId);
+    });
+
+    socket.on("mute-participant", (data) => {
+      const { sessionId, userId } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      if (session.broadcasterId !== socket.userId) return;
+      const participant = session.participants.find((p) => p.userId === userId);
+      if (participant) participant.muted = true;
+      io.to(`user:${userId}`).emit("muted-by-host", { sessionId });
+      broadcastParticipants(sessionId);
+    });
+
+    socket.on("unmute-participant", (data) => {
+      const { sessionId, userId } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      if (session.broadcasterId !== socket.userId) return;
+      const participant = session.participants.find((p) => p.userId === userId);
+      if (participant) participant.muted = false;
+      io.to(`user:${userId}`).emit("unmuted-by-host", { sessionId });
+      broadcastParticipants(sessionId);
+    });
+
+    socket.on("speaker-signal", (data) => {
+      const { sessionId, to, signal } = data;
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      io.to(`user:${to}`).emit("speaker-signal", { from: socket.userId, signal, sessionId });
     });
 
     socket.on("signal", (data) => {
@@ -149,7 +252,8 @@ export const initSocket = (server) => {
     socket.on("get-active-sessions", (_, callback) => {
       const sessions = Array.from(activeSessions.values()).map((s) => ({
         ...s,
-        viewers: s.viewers.length,
+        participants: s.participants.length,
+        raisedHands: s.raisedHands.length,
       }));
       if (callback) callback(sessions);
     });
@@ -169,14 +273,47 @@ export const initSocket = (server) => {
       io.to(`user:${to}`).emit("ice-candidate", { from: socket.userId, candidate });
     });
 
+    async function createCallMessage(callerId, receiverId, callStatus, callType, callDuration) {
+      try {
+        const conversation = await Conversation.findOne({
+          participants: { $all: [callerId, receiverId] },
+        });
+        if (!conversation) return;
+        const msg = await Message.create({
+          conversationId: conversation._id,
+          senderId: callerId,
+          type: "call",
+          callType: callType || "audio",
+          callStatus,
+          callDuration: callDuration || 0,
+        });
+        conversation.lastMessage = callStatus === "ended" ? "Call ended" : callStatus === "declined" ? "Call declined" : "Missed call";
+        conversation.lastSenderId = callerId;
+        await conversation.save();
+        const populated = await Message.findById(msg._id).populate("senderId", "firstname surname profileImage");
+        io.to(`user:${callerId}`).emit("new-message", populated);
+        io.to(`user:${receiverId}`).emit("new-message", populated);
+      } catch (e) {
+        console.error("createCallMessage error:", e);
+      }
+    }
+
     socket.on("end-call", (data) => {
-      const { to } = data;
+      const { to, callType, duration } = data;
+      createCallMessage(socket.userId, to, "ended", callType, duration);
       io.to(`user:${to}`).emit("call-ended", { from: socket.userId });
     });
 
     socket.on("call-declined", (data) => {
-      const { to } = data;
+      const { to, callType } = data;
+      createCallMessage(socket.userId, to, "declined", callType);
       io.to(`user:${to}`).emit("call-declined", { from: socket.userId });
+    });
+
+    socket.on("missed-call", (data) => {
+      const { to, callType } = data;
+      createCallMessage(socket.userId, to, "missed", callType);
+      io.to(`user:${to}`).emit("call-ended", { from: socket.userId });
     });
   });
 

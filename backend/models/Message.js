@@ -7,6 +7,10 @@ const messageSchema = new mongoose.Schema(
     text: { type: String, trim: true, maxlength: 2000 },
     imageUrl: { type: String, default: null },
     sharedPostId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", default: null },
+    type: { type: String, enum: ["text", "call"], default: "text" },
+    callType: { type: String, enum: ["audio", "video"] },
+    callStatus: { type: String, enum: ["missed", "declined", "ended"] },
+    callDuration: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

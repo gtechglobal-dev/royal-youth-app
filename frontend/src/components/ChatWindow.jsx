@@ -159,6 +159,20 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
         )}
         {messages.map((msg) => {
           const isMine = msg.senderId?._id === currentUserId;
+          if (msg.type === "call") {
+            const icon = msg.callType === "video" ? "📹" : "📞";
+            const label = msg.callStatus === "ended" ? "Call ended" : msg.callStatus === "declined" ? "Call declined" : "Missed call";
+            const duration = msg.callDuration ? ` (${Math.floor(msg.callDuration / 60)}:${(msg.callDuration % 60).toString().padStart(2, "0")})` : "";
+            return (
+              <div key={msg._id} className="flex justify-center">
+                <div className="bg-gray-100 rounded-full px-4 py-1.5 text-xs text-gray-500 flex items-center gap-1.5">
+                  <span>{icon}</span>
+                  <span>{label}{duration}</span>
+                  <span className="text-gray-400">· {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={msg._id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[75%] ${isMine ? "bg-purple-600 text-white" : "bg-white border border-gray-200"} rounded-xl px-4 py-2`}>
