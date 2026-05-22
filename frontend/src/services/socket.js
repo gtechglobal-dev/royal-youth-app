@@ -6,7 +6,13 @@ let socket = null;
 
 export const connectSocket = () => {
   const token = localStorage.getItem("token");
-  if (!token || socket?.connected) return socket;
+  if (!token) return null;
+
+  if (socket) {
+    if (socket.connected) return socket;
+    socket.connect();
+    return socket;
+  }
 
   socket = io(SOCKET_URL, {
     auth: { token },

@@ -14,6 +14,9 @@ export function LiveProvider({ children }) {
   const liveRoomRef = useRef(null);
   const callPCRef = useRef(null);
   const listenersReadyRef = useRef(false);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     liveRoomRef.current = liveRoom;
@@ -201,9 +204,63 @@ export function LiveProvider({ children }) {
     events.forEach((e) => socket.off(e));
   }
 
+  const startRecording = useCallback(() => {
+    const stream = myStreamRef.current;
+    if (!stream || mediaRecorderRef.current) return;
+    try {
+      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
+        ? "video/webm;codecs=vp9,opus"
+        : MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+        ? "video/webm;codecs=vp8,opus"
+        : "video/webm";
+      const recorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = recorder;
+      recordedChunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+      };
+      recorder.onerror = () => {
+        if (recorder.state !== "inactive") recorder.stop();
+        setIsRecording(false);
+      };
+      recorder.onstop = () => {
+        const chunks = recordedChunksRef.current;
+        if (chunks.length > 0) {
+          const blob = new Blob(chunks, { type: mimeType });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `live-recording-${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+        recordedChunksRef.current = [];
+        mediaRecorderRef.current = null;
+      };
+      recorder.start(1000);
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Failed to start recording:", err);
+    }
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+      setIsRecording(false);
+    }
+  }, []);
+
   const cleanupPeerConnections = useCallback(() => {
     Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
     peerConnectionsRef.current = {};
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
     if (myStreamRef.current) {
       myStreamRef.current.getTracks().forEach((t) => t.stop());
       myStreamRef.current = null;
@@ -270,6 +327,10 @@ export function LiveProvider({ children }) {
   const handleLeaveLive = useCallback(() => {
     const socket = getSocket();
     const room = liveRoomRef.current;
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
     if (room?.isBroadcaster) {
       socket?.emit("end-live", { sessionId: room.sessionId });
     } else if (room?.sessionId) {
@@ -360,6 +421,9 @@ export function LiveProvider({ children }) {
         acceptCall,
         declineCall,
         endCall,
+        isRecording,
+        startRecording,
+        stopRecording,
       }}
     >
       {children}

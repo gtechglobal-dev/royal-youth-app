@@ -29,7 +29,7 @@ export const sendRequest = async (req, res) => {
       existing.to = userId;
       await existing.save();
       try { getIO().to(`user:${userId}`).emit("friendRequestUpdate", {}); } catch (e) {}
-      const notif2 = await Notification.create({ userId, fromUserId: req.user._id, type: "message", referenceId: "Friend Request", body: `${req.user.firstname || "Someone"} sent you a friend request` });
+      const notif2 = await Notification.create({ userId, fromUserId: req.user._id, type: "friend_request", referenceId: "Friend Request", body: `${req.user.firstname || "Someone"} sent you a friend request` });
       try { getIO().to(`user:${userId}`).emit("newNotification", {}); } catch (e) {}
       try { sendPushNotification(userId, "Royal Youth Hub", `${req.user.firstname || "Someone"} sent you a friend request`, "/dashboard", notif2._id.toString()); } catch (e) {}
       return res.json({ message: "Friend request sent" });
@@ -37,7 +37,7 @@ export const sendRequest = async (req, res) => {
 
     await FriendRequest.create({ from: req.user._id, to: userId });
     try { getIO().to(`user:${userId}`).emit("friendRequestUpdate", {}); } catch (e) {}
-    const notif = await Notification.create({ userId, fromUserId: req.user._id, type: "message", referenceId: "Friend Request", body: `${req.user.firstname || "Someone"} sent you a friend request` });
+    const notif = await Notification.create({ userId, fromUserId: req.user._id, type: "friend_request", referenceId: "Friend Request", body: `${req.user.firstname || "Someone"} sent you a friend request` });
     try { getIO().to(`user:${userId}`).emit("newNotification", {}); } catch (e) {}
     try { sendPushNotification(userId, "Royal Youth Hub", `${req.user.firstname || "Someone"} sent you a friend request`, "/dashboard", notif._id.toString()); } catch (e) {}
     res.json({ message: "Friend request sent" });
@@ -65,7 +65,7 @@ export const acceptRequest = async (req, res) => {
     try { getIO().to(`user:${request.from}`).emit("friendRequestUpdate", {}); } catch (e) {}
     try { getIO().to(`user:${request.to}`).emit("friendRequestUpdate", {}); } catch (e) {}
     const user = await User.findById(request.to).select("firstname surname").lean();
-    const notif = await Notification.create({ userId: request.from, fromUserId: request.to, type: "message", referenceId: "Friend Request", body: `${user?.firstname || "Someone"} accepted your friend request` });
+    const notif = await Notification.create({ userId: request.from, fromUserId: request.to, type: "friend_accept", referenceId: "Friend Request", body: `${user?.firstname || "Someone"} accepted your friend request` });
     try { getIO().to(`user:${request.from}`).emit("newNotification", {}); } catch (e) {}
     try { sendPushNotification(request.from, "Royal Youth Hub", `${user?.firstname || "Someone"} accepted your friend request`, "/dashboard", notif._id.toString()); } catch (e) {}
     res.json({ message: "Friend request accepted" });

@@ -711,7 +711,7 @@ function MemberDashboard() {
                 className={`rounded-lg text-sm cursor-pointer hover:bg-gray-100 overflow-hidden ${n.read ? "" : "bg-purple-50"}`}
               >
                 <div className="p-2.5">
-                  <div className="flex items-start gap-2" onClick={() => { if (n.type === "reminder") { setExpandedNotif(isExpanded ? null : n._id); } else { if (!n.read) { API.put(`/notifications/read/${n._id}`).then(() => { setUnreadCount(prev => { const next = Math.max(0, prev - 1); updateBadge(next); return next; }); setNotifications(prev => prev.map(x => x._id === n._id ? { ...x, read: true } : x)); }).catch(() => {}); } navigate(n.type === "message" ? "/messages" : `/dashboard?post=${n.referenceId}`); } }}>
+                  <div className="flex items-start gap-2" onClick={() => { if (n.type === "reminder") { setExpandedNotif(isExpanded ? null : n._id); } else { if (!n.read) { API.put(`/notifications/read/${n._id}`).then(() => { setUnreadCount(prev => { const next = Math.max(0, prev - 1); updateBadge(next); return next; }); setNotifications(prev => prev.map(x => x._id === n._id ? { ...x, read: true } : x)); }).catch(() => {}); } navigate(n.type === "message" ? "/messages" : n.type === "friend_request" || n.type === "friend_accept" ? "/dashboard" : `/dashboard?post=${n.referenceId}`); } }}>
                     <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {n.type === "reminder" ? (
                         <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
@@ -729,7 +729,7 @@ function MemberDashboard() {
                           <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.createdAt)}</p>
                         </div>
                       ) : (
-                        <><p className={`${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : "sent you a message"}</p>
+                        <><p className={`${n.read ? "text-gray-600" : "text-gray-900 font-semibold"}`}><span className="font-semibold">{n.fromUserId?.firstname}</span> {n.type === "like" ? "liked your post" : n.type === "comment" ? "commented on your post" : n.type === "friend_accept" ? "accepted your friend request" : n.type === "friend_request" ? "sent you a friend request" : "sent you a message"}</p>
                         <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.createdAt)}</p></>
                       )}
                     </div>

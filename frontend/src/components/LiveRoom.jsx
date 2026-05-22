@@ -5,7 +5,7 @@ import { getSocket } from "../services/socket";
 const EMOJIS = ["❤️", "🔥", "🙌", "👏", "😍", "😂", "🙏", "💯", "🎉", "✨"];
 
 export default function LiveRoom() {
-  const { liveRoom, handleLeaveLive, sendMessage, sendReaction, myStreamRef, peerConnectionsRef } = useLive();
+  const { liveRoom, handleLeaveLive, sendMessage, sendReaction, myStreamRef, peerConnectionsRef, isRecording, startRecording, stopRecording } = useLive();
   const videoRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [reactions, setReactions] = useState([]);
@@ -155,6 +155,12 @@ export default function LiveRoom() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {isRecording && (
+              <span className="flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                REC
+              </span>
+            )}
             <button
               onClick={handleShare}
               className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition"
@@ -237,6 +243,15 @@ export default function LiveRoom() {
                   )}
                 </button>
               )}
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`p-1.5 transition ${isRecording ? "text-red-500" : "text-white/70 hover:text-white"}`}
+                title={isRecording ? "Stop recording" : "Start recording"}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <circle cx="12" cy="12" r="6" fill={isRecording ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} />
+                </svg>
+              </button>
             </>
           )}
           <button onClick={toggleFullscreen} className="p-1.5 text-white/70 hover:text-white ml-auto">
