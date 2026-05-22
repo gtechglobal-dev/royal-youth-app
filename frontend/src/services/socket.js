@@ -28,6 +28,23 @@ export const connectSocket = () => {
 
 export const getSocket = () => socket;
 
+export const waitForSocket = (timeout = 15000) => {
+  const s = connectSocket();
+  if (!s) return Promise.reject(new Error("No socket connection"));
+  if (s.connected) return Promise.resolve(s);
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      s.off("connect", onConnect);
+      reject(new Error("Socket connection timed out"));
+    }, timeout);
+    const onConnect = () => {
+      clearTimeout(timer);
+      resolve(s);
+    };
+    s.on("connect", onConnect);
+  });
+};
+
 export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();

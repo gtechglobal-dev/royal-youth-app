@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
-import { getSocket, connectSocket } from "../services/socket";
+import { getSocket, connectSocket, waitForSocket } from "../services/socket";
 
 const LiveContext = createContext(null);
 
@@ -268,8 +268,7 @@ export function LiveProvider({ children }) {
   }, []);
 
   const startLive = useCallback(async (data) => {
-    const socket = getSocket();
-    if (!socket || !socket.connected) throw new Error("No socket connection");
+    const socket = await waitForSocket(15000);
 
     const stream = await navigator.mediaDevices.getUserMedia({
       video: data.type === "video",

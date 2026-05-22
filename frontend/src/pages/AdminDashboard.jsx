@@ -795,7 +795,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       setNotification({ open: true, type: "success", message: "Announcement sent!" });
       fetchAnnouncements();
     } catch (err) {
-      setNotification({ open: true, type: "error", message: "Failed to send announcement" });
+      const msg = err.response?.data?.message || err.message || "Failed to send announcement";
+      setNotification({ open: true, type: "error", message: msg });
     } finally { setAnnouncementSending(false); }
   };
 
@@ -826,7 +827,8 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       handleCancelEdit();
       fetchAnnouncements();
     } catch (err) {
-      setNotification({ open: true, type: "error", message: "Failed to update announcement" });
+      const msg = err.response?.data?.message || err.message || "Failed to update announcement";
+      setNotification({ open: true, type: "error", message: msg });
     } finally { setEditingSaving(false); }
   };
 
@@ -1214,12 +1216,21 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               )}
               <div className="flex items-center gap-3 mt-3">
                 <label className="cursor-pointer text-sm text-adminBlue hover:underline">
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => setAnnouncementImage(e.target.files[0])} />
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file && file.size > 200 * 1024) {
+                      setNotification({ open: true, type: "error", message: `Image too large (${(file.size / 1024).toFixed(0)}KB). Maximum size is 200KB.` });
+                      e.target.value = "";
+                      return;
+                    }
+                    setAnnouncementImage(file);
+                  }} />
                   {announcementImage ? announcementImage.name : "+ Add Image"}
                 </label>
                 {announcementImage && (
                   <button onClick={() => setAnnouncementImage(null)} className="text-xs text-red-500 hover:underline">Remove</button>
                 )}
+                <span className="text-xs text-gray-400">Max 200KB</span>
                 <button
                   onClick={handleCreateAnnouncement}
                   disabled={announcementSending || !announcementText.trim()}
@@ -1261,12 +1272,21 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                           </div>
                           <div className="flex items-center gap-3">
                             <label className="cursor-pointer text-xs text-adminBlue hover:underline">
-                              <input type="file" accept="image/*" className="hidden" onChange={(e) => setEditingImage(e.target.files[0])} />
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file && file.size > 200 * 1024) {
+                                  setNotification({ open: true, type: "error", message: `Image too large (${(file.size / 1024).toFixed(0)}KB). Maximum size is 200KB.` });
+                                  e.target.value = "";
+                                  return;
+                                }
+                                setEditingImage(file);
+                              }} />
                               {editingImage ? editingImage.name : "Change Image"}
                             </label>
                             {editingImage && (
                               <button onClick={() => setEditingImage(null)} className="text-xs text-red-500 hover:underline">Remove</button>
                             )}
+                            <span className="text-xs text-gray-400">Max 200KB</span>
                             <button
                               onClick={handleSaveAnnouncement}
                               disabled={editingSaving || !editingText.trim()}
