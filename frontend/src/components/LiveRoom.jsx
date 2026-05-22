@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLive } from "../contexts/LiveContext";
 import { getSocket } from "../services/socket";
+import Hls from "hls.js";
 
 const REACTIONS = ["❤️", "🙏", "👍", "🔥", "😍", "👏"];
 
@@ -10,6 +11,7 @@ export default function LiveRoom() {
     peerConnectionsRef, isRecording, startRecording, stopRecording,
     participants, raisedHands, raiseHand, lowerHand,
     grantMic, revokeMic, muteParticipant, unmuteParticipant,
+    streamActive,
   } = useLive();
 
   const videoRef = useRef(null);
@@ -31,6 +33,9 @@ export default function LiveRoom() {
   const room = liveRoom;
   const isBroadcaster = room?.isBroadcaster;
   const isAudio = room?.type === "audio";
+  const isRtmp = room?.source === "rtmp";
+
+  const hlsRef = useRef(null);
   const currentUserId = JSON.parse(localStorage.getItem("user") || "{}")._id;
   const myName = JSON.parse(localStorage.getItem("user") || "{}").firstname || "You";
 
@@ -79,6 +84,20 @@ export default function LiveRoom() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!isRtmp || !videoRef.current || !room?.hlsUrl || !streamActive) return;
+    if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hlsRef.current = hls;
+      hls.loadSource(room.hlsUrl);
+      hls.attachMedia(videoRef.current);
+    } else if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+      videoRef.current.src = room.hlsUrl;
+    }
+    return () => { if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; } };
+  }, [isRtmp, room?.hlsUrl, streamActive]);
 
   useEffect(() => {
     if (!showReactions) return;
@@ -290,6 +309,42 @@ export default function LiveRoom() {
     );
   }
 
+  if (isRtmp && isBroadcaster) {
+    return (
+      <div ref={containerRef} className="fixed inset-0 z-50 bg-black flex flex-col">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${streamActive ? "bg-green-500" : "bg-yellow-500 animate-pulse"}`}>
+            {streamActive ? (
+              <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+            ) : (
+              <span className="text-3xl">📡</span>
+            )}
+          </div>
+          <h2 className="text-white font-bold text-xl mb-2">{room.title}</h2>
+          <p className="text-gray-400 text-sm mb-6">{streamActive ? "🔴 Stream is live via external software" : "⏳ Waiting for external stream..."}</p>
+          {!streamActive && (
+            <div className="bg-gray-900 rounded-xl p-5 w-full max-w-sm text-left space-y-3 mb-4">
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">RTMP URL</p>
+                <p className="text-white text-sm font-mono bg-gray-800 rounded-lg px-3 py-2 break-all">{room.rtmpUrl}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Stream Key</p>
+                <p className="text-white text-sm font-mono bg-gray-800 rounded-lg px-3 py-2 break-all">{room.streamKey}</p>
+              </div>
+            </div>
+          )}
+          {streamActive && (
+            <p className="text-gray-500 text-xs mb-4">The stream is now being broadcast to all viewers.</p>
+          )}
+        </div>
+        <div className="px-4 py-3 border-t border-gray-800 flex justify-center">
+          <button onClick={handleLeaveLive} className="bg-red-600 text-white text-sm font-bold px-6 py-2 rounded-full hover:bg-red-700 transition">End Stream</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div ref={containerRef} className="fixed inset-0 z-50 bg-black flex flex-col">
       <div className="relative flex-1 flex flex-col">
@@ -323,6 +378,17 @@ export default function LiveRoom() {
           </div>
         </div>
 
+        {isRtmp && !streamActive && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <span className="text-3xl">📡</span>
+              </div>
+              <p className="text-white text-lg font-semibold">Waiting for stream...</p>
+              <p className="text-gray-400 text-sm mt-1">The broadcaster is setting up their streaming software.</p>
+            </div>
+          </div>
+        )}
         {reactions.map((r) => (
           <div key={r.id} className="absolute text-3xl animate-bounce pointer-events-none" style={{ bottom: `${20 + Math.random() * 40}%`, left: `${10 + Math.random() * 60}%`, animation: "float-up 2s ease-out forwards" }}>
             {r.emoji}
@@ -331,7 +397,7 @@ export default function LiveRoom() {
       </div>
 
       <div className="bg-gray-900 max-h-[45vh] flex flex-col">
-        {!showChat && (
+        {!showChat && !isRtmp && (
           <div className="px-4 py-2 border-b border-gray-800 overflow-x-auto">
             <p className="text-[10px] text-gray-500 mb-1.5">Participants ({participants.length})</p>
             <div className="flex gap-2">
@@ -350,7 +416,7 @@ export default function LiveRoom() {
           </div>
         )}
 
-        {isBroadcaster && (
+        {isBroadcaster && !isRtmp && (
           <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-800 overflow-x-auto">
             <span className="text-[10px] text-gray-500 flex-shrink-0">Manage:</span>
             {participants.filter((p) => !isHost(p)).slice(0, 10).map((p) => (
@@ -368,7 +434,7 @@ export default function LiveRoom() {
         )}
 
         <div className="flex items-center gap-2 px-4 py-2 border-t border-gray-800 relative">
-          {!isBroadcaster && (
+          {!isBroadcaster && !isRtmp && (
             <button onClick={handleRaiseHand} className={`p-1.5 transition ${myHandRaised ? "text-yellow-400" : "text-white/60 hover:text-white"}`} title="Raise hand">
               <span className="text-lg">{myHandRaised ? "✋" : "🤚"}</span>
             </button>

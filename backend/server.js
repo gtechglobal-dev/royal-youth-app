@@ -1,6 +1,7 @@
 import express from "express";
 import { createServer } from "http";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import cors from "cors";
 import compression from "compression";
@@ -28,6 +29,7 @@ import statsRoutes from "./routes/statsRoutes.js";
 import feedRoutes from "./routes/feedRoutes.js";
 import feedSourceRoutes from "./routes/feedSourceRoutes.js";
 import { seedFeedSources } from "./controllers/feedSourceController.js";
+import { startRtmpServer } from "./rtmpServer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -96,6 +98,16 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
+// Serve HLS segments from RTMP streams (if directory exists)
+const hlsDir = path.join(__dirname, "../media/live");
+if (fs.existsSync(hlsDir)) {
+  app.use("/hls", express.static(hlsDir, {
+    setHeaders(res) {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+    },
+  }));
+}
+
 // ✅ Serve frontend in production with CDN-friendly caching
 const frontendDist = path.resolve(__dirname, "..", "frontend", "dist");
 const oneYear = 365 * 24 * 60 * 60;
@@ -145,4 +157,5 @@ initSocket(server);
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  startRtmpServer();
 });

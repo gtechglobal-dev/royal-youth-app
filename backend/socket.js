@@ -1,8 +1,20 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import User from "./models/user.js";
 import Message from "./models/Message.js";
 import Conversation from "./models/Conversation.js";
+import { onStreamActive, onStreamDone } from "./rtmpServer.js";
+
+function getRtmpUrl() {
+  if (process.env.RTMP_URL) return process.env.RTMP_URL;
+  const renderUrl = process.env.RENDER_EXTERNAL_URL;
+  if (renderUrl) {
+    const host = renderUrl.replace(/^https?:\/\//, "");
+    return `rtmp://${host}:1935/live`;
+  }
+  return "rtmp://your-server.com/live";
+}
 
 let io;
 
@@ -35,6 +47,26 @@ export const initSocket = (server) => {
       },
       credentials: true,
     },
+  });
+
+  onStreamActive((streamKey) => {
+    for (const [, session] of activeSessions) {
+      if (session.streamKey === streamKey) {
+        session.streamActive = true;
+        io.to(session.sessionId).emit("rtmp-stream-active", { sessionId: session.sessionId });
+        break;
+      }
+    }
+  });
+
+  onStreamDone((streamKey) => {
+    for (const [, session] of activeSessions) {
+      if (session.streamKey === streamKey) {
+        session.streamActive = false;
+        io.to(session.sessionId).emit("rtmp-stream-ended", { sessionId: session.sessionId });
+        break;
+      }
+    }
   });
 
   io.use((socket, next) => {
@@ -74,6 +106,10 @@ export const initSocket = (server) => {
 
     socket.on("start-live", async (data, callback) => {
       const sessionId = `live:${socket.userId}:${Date.now()}`;
+      const source = data.source || "browser";
+      const streamKey = source === "rtmp" ? sessionId : null;
+      const rtmpUrl = source === "rtmp" ? getRtmpUrl() : null;
+      const hlsUrl = streamKey ? `/hls/${streamKey}/index.m3u8` : null;
       const user = await User.findById(socket.userId).select("firstname surname").lean();
       const displayName = user ? `${user.firstname} ${user.surname}` : "Host";
       const session = {
@@ -83,6 +119,11 @@ export const initSocket = (server) => {
         description: data.description || "",
         category: data.category || "General",
         type: data.type || "video",
+        source,
+        streamKey,
+        rtmpUrl,
+        hlsUrl,
+        streamActive: false,
         startedAt: Date.now(),
         participants: [{ userId: socket.userId, displayName, role: "host", muted: false, joinedAt: Date.now() }],
         raisedHands: [],
@@ -107,7 +148,7 @@ export const initSocket = (server) => {
         }
       } catch {}
 
-      if (callback) callback({ success: true, sessionId });
+      if (callback) callback({ success: true, sessionId, streamKey, rtmpUrl, hlsUrl, source });
     });
 
     socket.on("end-live", (data, callback) => {
@@ -256,6 +297,20 @@ export const initSocket = (server) => {
         raisedHands: s.raisedHands.length,
       }));
       if (callback) callback(sessions);
+    });
+
+    socket.on("get-rtmp-info", ({ sessionId }, callback) => {
+      const session = activeSessions.get(sessionId);
+      if (!session || session.source !== "rtmp") {
+        if (callback) callback(null);
+        return;
+      }
+      if (callback) callback({
+        streamKey: session.streamKey,
+        rtmpUrl: session.rtmpUrl,
+        hlsUrl: session.hlsUrl,
+        streamActive: session.streamActive,
+      });
     });
 
     socket.on("call-user", (data) => {

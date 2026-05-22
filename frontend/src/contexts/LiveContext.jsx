@@ -12,6 +12,7 @@ export function LiveProvider({ children }) {
   const [participants, setParticipants] = useState([]);
   const [raisedHands, setRaisedHands] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [streamActive, setStreamActive] = useState(false);
   const myStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const liveRoomRef = useRef(null);
@@ -70,12 +71,29 @@ export function LiveProvider({ children }) {
 
     socket.on("live-ended", ({ sessionId }) => {
       setActiveSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
-      if (liveRoomRef.current?.sessionId === sessionId && !liveRoomRef.current?.isBroadcaster) {
+      if (liveRoomRef.current?.sessionId === sessionId) {
         cleanupPeerConnections();
         setLiveRoom(null);
         setParticipants([]);
         setRaisedHands([]);
+        setStreamActive(false);
       }
+    });
+
+    socket.on("rtmp-stream-active", ({ sessionId }) => {
+      if (liveRoomRef.current?.sessionId === sessionId) {
+        setStreamActive(true);
+        setLiveRoom((prev) => prev ? { ...prev, streamActive: true } : prev);
+      }
+      setActiveSessions((prev) => prev.map((s) => s.sessionId === sessionId ? { ...s, streamActive: true } : s));
+    });
+
+    socket.on("rtmp-stream-ended", ({ sessionId }) => {
+      if (liveRoomRef.current?.sessionId === sessionId) {
+        setStreamActive(false);
+        setLiveRoom((prev) => prev ? { ...prev, streamActive: false } : prev);
+      }
+      setActiveSessions((prev) => prev.map((s) => s.sessionId === sessionId ? { ...s, streamActive: false } : s));
     });
 
     socket.on("viewer-joined", async ({ userId }) => {
@@ -279,7 +297,7 @@ export function LiveProvider({ children }) {
   }
 
   function unregisterListeners(socket) {
-    const events = ["live-started", "live-ended", "viewer-joined", "viewer-left", "signal", "live-notification", "viewer-count", "incoming-call", "call-answered", "ice-candidate", "call-ended", "call-declined", "participants-update", "mic-granted", "mic-revoked", "muted-by-host", "unmuted-by-host", "speaker-signal"];
+    const events = ["live-started", "live-ended", "viewer-joined", "viewer-left", "signal", "live-notification", "viewer-count", "incoming-call", "call-answered", "ice-candidate", "call-ended", "call-declined", "participants-update", "mic-granted", "mic-revoked", "muted-by-host", "unmuted-by-host", "speaker-signal", "rtmp-stream-active", "rtmp-stream-ended"];
     events.forEach((e) => socket.off(e));
   }
 
@@ -352,20 +370,21 @@ export function LiveProvider({ children }) {
 
   const startLive = useCallback(async (data) => {
     const socket = await waitForSocket(15000);
-    const stream = await navigator.mediaDevices.getUserMedia({
+    const isRtmp = data.source === "rtmp";
+    const stream = isRtmp ? null : await navigator.mediaDevices.getUserMedia({
       video: data.type === "video",
       audio: true,
     });
-    myStreamRef.current = stream;
+    if (stream) myStreamRef.current = stream;
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        stream.getTracks().forEach((t) => t.stop());
-        myStreamRef.current = null;
+        if (stream) { stream.getTracks().forEach((t) => t.stop()); myStreamRef.current = null; }
         reject(new Error("Timed out starting live broadcast"));
       }, 10000);
       socket.emit("start-live", data, (res) => {
         clearTimeout(timeout);
         if (res?.success) {
+          setStreamActive(false);
           setLiveRoom({
             sessionId: res.sessionId,
             isBroadcaster: true,
@@ -373,6 +392,11 @@ export function LiveProvider({ children }) {
             description: data.description,
             category: data.category,
             type: data.type,
+            source: res.source || "browser",
+            streamKey: res.streamKey,
+            rtmpUrl: res.rtmpUrl,
+            hlsUrl: res.hlsUrl,
+            streamActive: false,
             startedAt: Date.now(),
             stream,
             viewerCount: 0,
@@ -380,8 +404,7 @@ export function LiveProvider({ children }) {
           });
           resolve(res);
         } else {
-          stream.getTracks().forEach((t) => t.stop());
-          myStreamRef.current = null;
+          if (stream) { stream.getTracks().forEach((t) => t.stop()); myStreamRef.current = null; }
           reject(new Error(res?.message || "Failed to start live"));
         }
       });
@@ -394,13 +417,18 @@ export function LiveProvider({ children }) {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const displayName = user.firstname && user.surname ? `${user.firstname} ${user.surname}` : `User-${(user._id || "").slice(-4)}`;
     socket.emit("join-live", { sessionId: session.sessionId, displayName });
-    myStreamRef.current = new MediaStream();
+    setStreamActive(!!session.streamActive);
+    const isRtmp = session.source === "rtmp";
+    myStreamRef.current = isRtmp ? null : new MediaStream();
     setLiveRoom({
       sessionId: session.sessionId,
       isBroadcaster: false,
       broadcasterId: session.broadcasterId,
       title: session.title,
       type: session.type,
+      source: session.source || "browser",
+      hlsUrl: session.hlsUrl,
+      streamActive: !!session.streamActive,
       stream: myStreamRef.current,
       viewerCount: 0,
       speakerStreams: {},
@@ -423,6 +451,7 @@ export function LiveProvider({ children }) {
     setLiveRoom(null);
     setParticipants([]);
     setRaisedHands([]);
+    setStreamActive(false);
   }, [cleanupPeerConnections]);
 
   const sendMessage = useCallback((text) => {
@@ -559,6 +588,7 @@ export function LiveProvider({ children }) {
         revokeMic,
         muteParticipant,
         unmuteParticipant,
+        streamActive,
       }}
     >
       {children}
