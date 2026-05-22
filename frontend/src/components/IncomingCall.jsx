@@ -1,7 +1,16 @@
+import { useEffect } from "react";
 import { useLive } from "../contexts/LiveContext";
+import { playRingtone, stopRingtone } from "../utils/ringtone";
 
 export default function IncomingCall() {
   const { callState, acceptCall, declineCall } = useLive();
+
+  useEffect(() => {
+    if (callState.status === "ringing") {
+      playRingtone();
+    }
+    return () => stopRingtone();
+  }, [callState.status]);
 
   if (callState.status !== "ringing") return null;
 

@@ -865,10 +865,7 @@ function MemberDashboard() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Hub</span>
             </button>
-            <button onClick={() => switchTab("inspiration")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "inspiration" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-              <span className="text-[9px] sm:text-[10px] font-medium">Inspire</span>
-            </button>
+
             <button onClick={() => switchTab("leaderboard")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "leaderboard" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Leaderboard</span>

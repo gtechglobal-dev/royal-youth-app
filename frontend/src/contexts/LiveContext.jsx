@@ -23,6 +23,7 @@ export function LiveProvider({ children }) {
   const speakerPCRef = useRef(null);
   const callStartTimeRef = useRef(null);
   const callMissedTimeoutRef = useRef(null);
+  const callPendingOfferRef = useRef(null);
 
   useEffect(() => {
     liveRoomRef.current = liveRoom;
@@ -158,30 +159,15 @@ export function LiveProvider({ children }) {
       setLiveRoom((prev) => (prev ? { ...prev, viewerCount: count } : prev));
     });
 
-    socket.on("incoming-call", async ({ from, signal, type }) => {
-      const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
-      callPCRef.current = pc;
-      pc.onicecandidate = (e) => {
-        if (e.candidate) socket.emit("ice-candidate", { to: from, candidate: e.candidate });
-      };
-      pc.ontrack = (e) => {
-        const remoteStream = new MediaStream();
-        e.streams[0].getTracks().forEach((t) => remoteStream.addTrack(t));
-        setCallState((prev) => ({ ...prev, remoteStream }));
-      };
-      await pc.setRemoteDescription(new RTCSessionDescription(signal));
-      const stream = await navigator.mediaDevices.getUserMedia({ video: type === "video", audio: true });
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      socket.emit("answer-call", { to: from, signal: answer });
+    socket.on("incoming-call", ({ from, signal, type }) => {
+      callPendingOfferRef.current = { from, signal, type };
       setCallState({
         status: "ringing",
         from,
         type,
-        stream,
+        stream: null,
         remoteStream: null,
-        pc,
+        pc: null,
       });
     });
 
@@ -283,6 +269,7 @@ export function LiveProvider({ children }) {
   }
 
   function cleanupCall() {
+    callPendingOfferRef.current = null;
     const pc = callPCRef.current;
     if (pc) { pc.close(); callPCRef.current = null; }
     if (callMissedTimeoutRef.current) {
@@ -435,6 +422,15 @@ export function LiveProvider({ children }) {
     });
   }, []);
 
+  const fetchAndJoinLive = useCallback(async (sessionId) => {
+    const socket = getSocket();
+    if (!socket) return;
+    socket.emit("get-session-info", { sessionId }, (session) => {
+      if (!session) return;
+      joinLive(session);
+    });
+  }, [joinLive]);
+
   const handleLeaveLive = useCallback(() => {
     const socket = getSocket();
     const room = liveRoomRef.current;
@@ -496,13 +492,38 @@ export function LiveProvider({ children }) {
     setCallState({ status: "calling", to: userId, type, stream, remoteStream: null, pc });
   }, []);
 
-  const acceptCall = useCallback(() => {
-    callStartTimeRef.current = Date.now();
-    if (callMissedTimeoutRef.current) {
-      clearTimeout(callMissedTimeoutRef.current);
-      callMissedTimeoutRef.current = null;
+  const acceptCall = useCallback(async () => {
+    const socket = getSocket();
+    const pending = callPendingOfferRef.current;
+    if (!socket || !pending) return;
+    try {
+      const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+      callPCRef.current = pc;
+      pc.onicecandidate = (e) => {
+        if (e.candidate) socket.emit("ice-candidate", { to: pending.from, candidate: e.candidate });
+      };
+      pc.ontrack = (e) => {
+        const remoteStream = new MediaStream();
+        e.streams[0].getTracks().forEach((t) => remoteStream.addTrack(t));
+        setCallState((prev) => ({ ...prev, remoteStream }));
+      };
+      await pc.setRemoteDescription(new RTCSessionDescription(pending.signal));
+      const stream = await navigator.mediaDevices.getUserMedia({ video: pending.type === "video", audio: true });
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      socket.emit("answer-call", { to: pending.from, signal: answer });
+      callStartTimeRef.current = Date.now();
+      if (callMissedTimeoutRef.current) {
+        clearTimeout(callMissedTimeoutRef.current);
+        callMissedTimeoutRef.current = null;
+      }
+      callPendingOfferRef.current = null;
+      setCallState((prev) => ({ ...prev, status: "connected", stream, pc }));
+    } catch (err) {
+      console.error("acceptCall error:", err);
+      cleanupCall();
     }
-    setCallState((prev) => ({ ...prev, status: "connected" }));
   }, []);
 
   const declineCall = useCallback(() => {
@@ -519,6 +540,15 @@ export function LiveProvider({ children }) {
     if (s && (state.to || state.from)) s.emit("end-call", { to: state.to || state.from, callType: state.type, duration });
     cleanupCall();
   }, [callState]);
+
+  const toggleCallMute = useCallback(() => {
+    setCallState((prev) => {
+      if (!prev.stream) return prev;
+      const enabled = !prev.stream.getAudioTracks().every((t) => !t.enabled);
+      prev.stream.getAudioTracks().forEach((t) => { t.enabled = !enabled; });
+      return { ...prev, micMuted: enabled };
+    });
+  }, []);
 
   const raiseHand = useCallback(() => {
     const socket = getSocket();
@@ -569,6 +599,7 @@ export function LiveProvider({ children }) {
         peerConnectionsRef,
         startLive,
         joinLive,
+        fetchAndJoinLive,
         handleLeaveLive,
         sendMessage,
         sendReaction,
@@ -589,6 +620,7 @@ export function LiveProvider({ children }) {
         muteParticipant,
         unmuteParticipant,
         streamActive,
+        toggleCallMute,
       }}
     >
       {children}

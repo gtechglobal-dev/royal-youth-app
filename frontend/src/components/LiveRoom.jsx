@@ -36,7 +36,15 @@ export default function LiveRoom() {
   const isRtmp = room?.source === "rtmp";
 
   const hlsRef = useRef(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const currentUserId = JSON.parse(localStorage.getItem("user") || "{}")._id;
+
+  const shareLink = () => {
+    const url = `${window.location.origin}/live/${room?.sessionId}`;
+    navigator.clipboard.writeText(url);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
   const myName = JSON.parse(localStorage.getItem("user") || "{}").firstname || "You";
 
   useEffect(() => {
@@ -269,6 +277,10 @@ export default function LiveRoom() {
                 <span className="text-[10px]">{isRecording ? "Stop Rec" : "Record"}</span>
               </button>
             )}
+            <button onClick={shareLink} className="flex flex-col items-center gap-0.5 text-white/60 hover:text-white transition">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+              <span className="text-[10px]">{linkCopied ? "Copied!" : "Share"}</span>
+            </button>
             <button onClick={() => setShowChat(!showChat)} className={`flex flex-col items-center gap-0.5 transition ${showChat ? "text-purple-400" : "text-white/60 hover:text-white"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
               <span className="text-[10px]">Chat</span>
@@ -474,6 +486,9 @@ export default function LiveRoom() {
               </button>
             </>
           )}
+          <button onClick={shareLink} className="p-1.5 text-white/60 hover:text-white" title="Share link">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+          </button>
           <button onClick={() => setShowChat(!showChat)} className={`p-1.5 transition ml-auto ${showChat ? "text-purple-400" : "text-white/60 hover:text-white"}`} title="Chat">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
           </button>

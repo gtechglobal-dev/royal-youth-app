@@ -24,6 +24,7 @@ const EditProfile = lazy(() => import("./pages/EditProfile"));
 const CommunityFeed = lazy(() => import("./pages/CommunityFeed"));
 const DirectMessages = lazy(() => import("./pages/DirectMessages"));
 const SinglePost = lazy(() => import("./pages/SinglePost"));
+const LiveRoomPage = lazy(() => import("./pages/LiveRoomPage"));
 
 function App() {
   useEffect(() => {
@@ -51,6 +52,7 @@ function App() {
             <Route path="/community" element={<CommunityFeed />} />
             <Route path="/messages" element={<DirectMessages />} />
             <Route path="/post/:id" element={<SinglePost />} />
+            <Route path="/live/:sessionId" element={<LiveRoomPage />} />
           </Routes>
         </Suspense>
       <Suspense fallback={null}>

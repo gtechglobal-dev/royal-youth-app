@@ -299,6 +299,20 @@ export const initSocket = (server) => {
       if (callback) callback(sessions);
     });
 
+    socket.on("get-session-info", ({ sessionId }, callback) => {
+      const session = activeSessions.get(sessionId);
+      if (!session) { if (callback) callback(null); return; }
+      if (callback) callback({
+        sessionId: session.sessionId,
+        broadcasterId: session.broadcasterId,
+        title: session.title,
+        type: session.type,
+        source: session.source || "browser",
+        hlsUrl: session.hlsUrl,
+        streamActive: !!session.streamActive,
+      });
+    });
+
     socket.on("get-rtmp-info", ({ sessionId }, callback) => {
       const session = activeSessions.get(sessionId);
       if (!session || session.source !== "rtmp") {

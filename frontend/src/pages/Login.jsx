@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import API from "../services/api";
 import Notification from "../components/Notification";
 import { OverlayLoader, PageLoader } from "../components/Loaders";
 
 function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loginData, setLoginData] = useState({ identifier: "", password: "" });
   const [notification, setNotification] = useState({ open: false, type: "", message: "" });
   const [showSuccess, setShowSuccess] = useState(false);
@@ -37,7 +38,8 @@ function Login() {
       setShowSuccess(true);
 
       setTimeout(() => {
-        navigate("/dashboard");
+        const redirect = searchParams.get("redirect") || "/dashboard";
+        navigate(redirect);
       }, 2000);
     } catch (error) {
       setSubmitting(false);
