@@ -1225,12 +1225,11 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                     }
                     setAnnouncementImage(file);
                   }} />
-                  {announcementImage ? announcementImage.name : "+ Add Image"}
+                  {announcementImage ? announcementImage.name : "+ Add Image (Max 200KB)"}
                 </label>
                 {announcementImage && (
                   <button onClick={() => setAnnouncementImage(null)} className="text-xs text-red-500 hover:underline">Remove</button>
                 )}
-                <span className="text-xs text-gray-400">Max 200KB</span>
                 <button
                   onClick={handleCreateAnnouncement}
                   disabled={announcementSending || !announcementText.trim()}
@@ -1281,12 +1280,11 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                                 }
                                 setEditingImage(file);
                               }} />
-                              {editingImage ? editingImage.name : "Change Image"}
+                              {editingImage ? editingImage.name : "Change Image (Max 200KB)"}
                             </label>
                             {editingImage && (
                               <button onClick={() => setEditingImage(null)} className="text-xs text-red-500 hover:underline">Remove</button>
                             )}
-                            <span className="text-xs text-gray-400">Max 200KB</span>
                             <button
                               onClick={handleSaveAnnouncement}
                               disabled={editingSaving || !editingText.trim()}
