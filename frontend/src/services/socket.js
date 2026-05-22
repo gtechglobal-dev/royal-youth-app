@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_API_URL || undefined;
 
 let socket = null;
 
@@ -35,13 +35,21 @@ export const waitForSocket = (timeout = 15000) => {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       s.off("connect", onConnect);
+      s.off("connect_error", onError);
       reject(new Error("Socket connection timed out"));
     }, timeout);
     const onConnect = () => {
       clearTimeout(timer);
+      s.off("connect_error", onError);
       resolve(s);
     };
+    const onError = (err) => {
+      clearTimeout(timer);
+      s.off("connect", onConnect);
+      reject(new Error(`Socket connection failed: ${err.message}`));
+    };
     s.on("connect", onConnect);
+    s.on("connect_error", onError);
   });
 };
 
