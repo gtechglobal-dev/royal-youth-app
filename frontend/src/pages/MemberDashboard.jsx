@@ -70,8 +70,7 @@ function MemberDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { liveRoom } = useLive();
-  const [showGoLive, setShowGoLive] = useState(false);
+  const { liveRoom, showGoLiveModal, setShowGoLiveModal } = useLive();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "community");
   const switchTab = useCallback((tab) => {
@@ -857,6 +856,10 @@ function MemberDashboard() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Community</span>
             </button>
+            <button onClick={() => setShowGoLiveModal(true)} className="flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition text-red-500 hover:bg-red-50">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+              <span className="text-[9px] sm:text-[10px] font-medium">Go Live</span>
+            </button>
             <button onClick={() => switchTab("feed")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Feed</span>
@@ -1110,16 +1113,6 @@ function MemberDashboard() {
                   </button>
                 </div>
               )}
-              {showGoLive && <GoLiveModal onClose={() => setShowGoLive(false)} />}
-              {liveRoom && <LiveRoom />}
-              <button
-                onClick={() => setShowGoLive(true)}
-                className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-r from-red-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition flex items-center justify-center"
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
             </>
           )}
 
@@ -1598,6 +1591,9 @@ function MemberDashboard() {
           {renderRightPanel()}
         </aside>
       </div>
+
+      {showGoLiveModal && <GoLiveModal onClose={() => setShowGoLiveModal(false)} />}
+      {liveRoom && <LiveRoom />}
 
       {/* Modals - Offline Payment */}
       {showOfflineModal && (

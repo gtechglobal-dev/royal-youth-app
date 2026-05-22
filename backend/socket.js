@@ -153,6 +153,31 @@ export const initSocket = (server) => {
       }));
       if (callback) callback(sessions);
     });
+
+    socket.on("call-user", (data) => {
+      const { to, signal, type } = data;
+      io.to(`user:${to}`).emit("incoming-call", { from: socket.userId, signal, type });
+    });
+
+    socket.on("answer-call", (data) => {
+      const { to, signal } = data;
+      io.to(`user:${to}`).emit("call-answered", { from: socket.userId, signal });
+    });
+
+    socket.on("ice-candidate", (data) => {
+      const { to, candidate } = data;
+      io.to(`user:${to}`).emit("ice-candidate", { from: socket.userId, candidate });
+    });
+
+    socket.on("end-call", (data) => {
+      const { to } = data;
+      io.to(`user:${to}`).emit("call-ended", { from: socket.userId });
+    });
+
+    socket.on("call-declined", (data) => {
+      const { to } = data;
+      io.to(`user:${to}`).emit("call-declined", { from: socket.userId });
+    });
   });
 
   return io;

@@ -7,6 +7,8 @@ import { connectSocket } from "./services/socket";
 const InstallPrompt = lazy(() => import("./components/InstallPrompt"));
 const PushNotificationManager = lazy(() => import("./components/PushNotificationManager"));
 const LiveNotification = lazy(() => import("./components/LiveNotification"));
+const CallRoom = lazy(() => import("./components/CallRoom"));
+const IncomingCall = lazy(() => import("./components/IncomingCall"));
 
 const LandingPage = lazy(() => import("./pages/landingPage"));
 const Register = lazy(() => import("./pages/Register"));
@@ -55,6 +57,8 @@ function App() {
         <InstallPrompt />
         <PushNotificationManager />
         <LiveNotification />
+        <CallRoom />
+        <IncomingCall />
       </Suspense>
       </LiveProvider>
     </BrowserRouter>

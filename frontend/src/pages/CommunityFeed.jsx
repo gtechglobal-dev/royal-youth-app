@@ -19,8 +19,7 @@ import { connectSocket, getSocket } from "../services/socket";
 
 function CommunityFeed() {
   const navigate = useNavigate();
-  const { liveRoom } = useLive();
-  const [showGoLive, setShowGoLive] = useState(false);
+  const { liveRoom, setShowGoLiveModal, showGoLiveModal } = useLive();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -258,6 +257,11 @@ function CommunityFeed() {
           </Link>
           <h1 className="text-lg font-bold text-purple-700">Community</h1>
           <div className="flex items-center gap-1">
+            <button onClick={() => setShowGoLiveModal(true)} className="p-2 text-red-500 hover:text-red-600 rounded-lg hover:bg-red-50" title="Go Live">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </button>
             <Link to="/messages" className="relative p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-gray-100">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -444,17 +448,8 @@ function CommunityFeed() {
         onCancel={() => setClearAllConfirm(false)}
       />
 
-      {showGoLive && <GoLiveModal onClose={() => setShowGoLive(false)} />}
+      {showGoLiveModal && <GoLiveModal onClose={() => setShowGoLiveModal(false)} />}
       {liveRoom && <LiveRoom />}
-
-      <button
-        onClick={() => setShowGoLive(true)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-r from-red-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition flex items-center justify-center"
-      >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      </button>
     </div>
   );
 }
