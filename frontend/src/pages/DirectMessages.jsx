@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import API from "../services/api";
 import ConversationList from "../components/ConversationList";
 import ChatWindow from "../components/ChatWindow";
+import { PageLoader } from "../components/Loaders";
 
 function DirectMessages() {
   const navigate = useNavigate();
@@ -56,17 +57,13 @@ function DirectMessages() {
   };
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-3 md:px-4 py-2.5 md:py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {!showList && (
               <button onClick={() => setShowList(true)} className="lg:hidden text-gray-500 hover:text-gray-700">
@@ -83,15 +80,15 @@ function DirectMessages() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto px-0 md:px-4">
         {sharedPost && (
-          <div className="m-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="m-2 md:m-4 p-3 md:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm font-semibold text-yellow-800">Sharing a post — select a conversation to send it to:</p>
             <p className="text-xs text-yellow-700 mt-1 truncate">{sharedPost.text}</p>
           </div>
         )}
 
-        <div className="flex h-[calc(100vh-120px)] bg-white m-4 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="flex h-[calc(100vh-120px)] bg-white mx-0 md:mx-4 rounded-none md:rounded-xl shadow-sm border-t md:border border-gray-200 overflow-hidden">
           <div className={`w-full lg:w-80 border-r border-gray-200 ${showList ? "block" : "hidden lg:block"}`}>
             <ConversationList
               currentUserId={user._id}

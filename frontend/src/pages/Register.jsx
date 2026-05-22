@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import Notification from "../components/Notification";
-import { PageLoader } from "../components/Loaders";
+import { PageLoader, Spinner } from "../components/Loaders";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
@@ -202,8 +202,8 @@ function Register() {
       {submitting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
-            <div className="w-16 h-16 mx-auto mb-4">
-              <div className="w-full h-full border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+            <div className="mx-auto mb-4">
+              <Spinner size="lg" color="indigo" />
             </div>
             <p className="text-lg font-bold text-gray-800 mb-2">
               {uploadProgress < 100 ? "Uploading Image..." : "Creating Account..."}

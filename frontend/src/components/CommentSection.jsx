@@ -6,6 +6,7 @@ import { optimizeImage } from "../utils/cloudinary";
 import EmojiPicker from "./EmojiPicker";
 import ConfirmModal from "./ConfirmModal";
 import { displayName } from "../utils/displayName";
+import { Spinner } from "./Loaders";
 
 function CommentSection({ postId, currentUserId, onCommentCountChange }) {
   const [comments, setComments] = useState([]);
@@ -197,10 +198,7 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
                       className="bg-blue-600 text-white px-2 py-1 rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                     >
                       {sendingReply ? (
-                        <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
+                        <Spinner size="sm" />
                       ) : "Send"}
                     </button>
                     <button type="button" onClick={cancelReply} className="text-gray-400 hover:text-gray-600 text-xs">
@@ -256,10 +254,7 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
           className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
         >
           {sending ? (
-            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
+            <Spinner size="sm" />
           ) : (
             "Send"
           )}

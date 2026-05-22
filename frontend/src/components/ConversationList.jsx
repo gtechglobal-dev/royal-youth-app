@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import API from "../services/api";
 import { optimizeImage } from "../utils/cloudinary";
 import { displayName } from "../utils/displayName";
+import { Spinner } from "./Loaders";
 
 function ConversationList({ currentUserId, onSelect, selectedId, onMessageReceived }) {
   const [conversations, setConversations] = useState([]);
@@ -32,7 +33,7 @@ function ConversationList({ currentUserId, onSelect, selectedId, onMessageReceiv
       <div className="flex-1 overflow-y-auto">
         {loading && (
           <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600" />
+            <Spinner size="sm" />
           </div>
         )}
         {!loading && conversations.length === 0 && (

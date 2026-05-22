@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { usePWA } from "../hooks/usePWA";
+import { Spinner } from "./Loaders";
 
 export default function PushNotificationManager() {
   const { notificationPermission, requestNotificationPermission, subscribeToPush, isInstalled } = usePWA();
@@ -37,10 +38,7 @@ export default function PushNotificationManager() {
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
             {subscribing ? (
-              <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
+              <Spinner size="sm" color="blue" />
             ) : (
               <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />

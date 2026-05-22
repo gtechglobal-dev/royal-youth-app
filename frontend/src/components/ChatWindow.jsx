@@ -108,43 +108,43 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-gray-200 flex items-center gap-3 bg-white">
-        <button onClick={onClose} className="lg:hidden text-gray-500 hover:text-gray-700">
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="px-2.5 py-2.5 md:px-4 md:py-3 border-b border-gray-200 flex items-center gap-2 md:gap-3 bg-white">
+        <button onClick={onClose} className="lg:hidden text-gray-500 hover:text-gray-700 shrink-0">
+          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
           {otherUser?.profileImage ? (
             <img src={optimizeImage(otherUser.profileImage, 48)} alt="" className="w-full h-full object-cover" loading="lazy" />
           ) : (
-            <span className="text-purple-600 font-bold text-xs">
+            <span className="text-purple-600 font-bold text-[10px] md:text-xs">
               {otherUser?.firstname?.[0]}{otherUser?.surname?.[0]}
             </span>
           )}
         </div>
-        <div>
-          <p className="font-semibold text-sm">{displayName(otherUser)}</p>
-          <p className="text-gray-400 text-xs">{otherUser?.branch}</p>
+        <div className="min-w-0">
+          <p className="font-semibold text-sm truncate">{displayName(otherUser)}</p>
+          <p className="text-gray-400 text-xs truncate">{otherUser?.branch}</p>
         </div>
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-0.5 md:gap-1">
           <button
             onClick={() => startCall(otherUser._id, "audio")}
             disabled={callState.status !== "idle"}
-            className="p-2 text-gray-500 hover:text-green-600 rounded-lg hover:bg-green-50 disabled:opacity-30 transition"
+            className="p-1.5 md:p-2 text-gray-500 hover:text-green-600 rounded-lg hover:bg-green-50 disabled:opacity-30 transition"
             title="Audio call"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.128-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 5V5z" />
             </svg>
           </button>
           <button
             onClick={() => startCall(otherUser._id, "video")}
             disabled={callState.status !== "idle"}
-            className="p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-purple-50 disabled:opacity-30 transition"
+            className="p-1.5 md:p-2 text-gray-500 hover:text-purple-600 rounded-lg hover:bg-purple-50 disabled:opacity-30 transition"
             title="Video call"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </button>
@@ -196,16 +196,16 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={handleSend} className="p-4 border-t border-gray-200 bg-white">
+      <form onSubmit={handleSend} className="px-2.5 py-2.5 md:px-4 md:py-3 border-t border-gray-200 bg-white">
         {image && (
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-2 flex items-center gap-2 px-1">
             <span className="text-xs text-gray-500">📷 Image attached</span>
             <button type="button" onClick={() => setImage(null)} className="text-red-500 text-xs">Remove</button>
           </div>
         )}
-        <div className="flex gap-2">
-          <label className="cursor-pointer text-gray-500 hover:text-purple-600 flex items-center">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex items-center gap-1.5 md:gap-2">
+          <label className="cursor-pointer text-gray-500 hover:text-purple-600 flex items-center p-1.5 md:p-2 rounded-lg hover:bg-purple-50 shrink-0">
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => setImage(e.target.files[0])} />
@@ -215,12 +215,12 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
             onChange={(e) => setText(e.target.value)}
             placeholder="Type a message..."
             maxLength={2000}
-            className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
           />
           <button
             type="submit"
             disabled={sending || (!text.trim() && !image)}
-            className="bg-purple-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-purple-600 text-white px-3 py-1.5 md:px-5 md:py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           >
             {sending ? "..." : "Send"}
           </button>

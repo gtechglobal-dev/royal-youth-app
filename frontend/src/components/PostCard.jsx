@@ -7,6 +7,7 @@ import { timeAgo } from "../utils/formatTime";
 import siteLogo from "../assets/gdev logo.svg";
 import { optimizeImage } from "../utils/cloudinary";
 import { displayName } from "../utils/displayName";
+import { Spinner } from "./Loaders";
 
 const PLACARD_COLORS = [
   "#000000", "#1a1a2e", "#16213e", "#0f3460", "#533483",
@@ -334,7 +335,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
             </div>
             {loadingLikes ? (
               <div className="flex justify-center py-8">
-                <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                <Spinner size="sm" />
               </div>
             ) : likedUsers.length === 0 ? (
               <p className="text-gray-400 text-sm text-center py-6">No likes yet</p>

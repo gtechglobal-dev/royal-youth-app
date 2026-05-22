@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLive } from "../contexts/LiveContext";
+import { Spinner } from "./Loaders";
 
 export default function GoLiveModal({ onClose }) {
   const { startLive } = useLive();
@@ -116,7 +117,7 @@ export default function GoLiveModal({ onClose }) {
             className="w-full py-3 bg-gradient-to-r from-red-500 to-purple-600 text-white font-bold rounded-xl text-sm hover:opacity-90 disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
             {starting ? (
-              <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" /> Starting...</>
+              <><Spinner size="sm" color="white" /> Starting...</>
             ) : (
               <><span className="w-2 h-2 bg-white rounded-full animate-pulse" /> Go Live</>
             )}

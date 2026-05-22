@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import PostCard from "../components/PostCard";
 import { displayName } from "../utils/displayName";
+import { PageLoader } from "../components/Loaders";
 
 function SinglePost() {
   const { id } = useParams();
@@ -72,11 +73,7 @@ function SinglePost() {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (error) {

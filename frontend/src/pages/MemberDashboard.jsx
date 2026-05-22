@@ -13,6 +13,7 @@ import LiveFeedSection from "../components/LiveFeedSection";
 import GoLiveModal from "../components/GoLiveModal";
 import LiveRoom from "../components/LiveRoom";
 import { useLive } from "../contexts/LiveContext";
+import { PageLoader, Spinner } from "../components/Loaders";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
@@ -602,11 +603,7 @@ function MemberDashboard() {
   const refreshSpecialPayments = async () => { try { const r = await API.get("/payment/special-payments"); setSpecialPayments(r.data || []); } catch (e) { console.error(e); } };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const renderLeftSidebar = () => (
@@ -1155,7 +1152,7 @@ function MemberDashboard() {
                     <h3 className="text-lg font-bold mb-4">Posts</h3>
                     {viewedMemberPostsLoading ? (
                       <div className="flex justify-center py-6">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+                        <Spinner size="md" />
                       </div>
                     ) : viewedMemberPosts.length === 0 ? (
                       <p className="text-gray-400 text-sm text-center py-6">No posts yet</p>
@@ -1397,7 +1394,7 @@ function MemberDashboard() {
               </div>
               {statsLoading ? (
                 <div className="flex justify-center py-16">
-                  <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  <Spinner size="md" />
                 </div>
               ) : monthlyStats.length > 0 ? (
                 <div className="space-y-8">

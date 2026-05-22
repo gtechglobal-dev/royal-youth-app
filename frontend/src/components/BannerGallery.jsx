@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import API from "../services/api";
+import { Spinner } from "./Loaders";
 
 function optimizeCloudinaryUrl(url, width = 1200) {
   if (!url || !url.includes('res.cloudinary.com')) return url;
@@ -88,7 +89,7 @@ function BannerGallery() {
     >
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-50 to-indigo-100">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
+          <Spinner size="lg" color="indigo" />
         </div>
       )}
 

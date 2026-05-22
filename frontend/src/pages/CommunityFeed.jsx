@@ -8,6 +8,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import { displayName, displayNameFull } from "../utils/displayName";
 import LiveFeedSection from "../components/LiveFeedSection";
 import GoLiveModal from "../components/GoLiveModal";
+import { PageLoader, Spinner } from "../components/Loaders";
 import LiveRoom from "../components/LiveRoom";
 import { useLive } from "../contexts/LiveContext";
 
@@ -241,11 +242,7 @@ function CommunityFeed() {
   }, [navigate]);
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
@@ -407,7 +404,7 @@ function CommunityFeed() {
 
         {loading && (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+            <Spinner size="md" />
           </div>
         )}
 

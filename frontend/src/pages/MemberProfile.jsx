@@ -6,6 +6,7 @@ import { optimizeImage } from "../utils/cloudinary";
 import { displayNameFull } from "../utils/displayName";
 
 import { formatDate } from "../utils/formatTime";
+import { Spinner } from "../components/Loaders";
 
 function MemberProfile() {
   const { id } = useParams();
@@ -117,7 +118,7 @@ function MemberProfile() {
         <h3 className="text-xl font-bold mb-4">Posts</h3>
         {postsLoading ? (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+            <Spinner size="md" />
           </div>
         ) : posts.length === 0 ? (
           <p className="text-gray-400 text-sm text-center py-8">No posts yet</p>

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import Notification from "../components/Notification";
 import Logo from "../assets/gdev logo.svg";
-import { OverlayLoader } from "../components/Loaders";
+import { OverlayLoader, Spinner } from "../components/Loaders";
 import { optimizeImage } from "../utils/cloudinary";
 import { displayName, displayNameFull } from "../utils/displayName";
 import siteLogo from "../assets/gdev logo.svg";
@@ -1537,7 +1537,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                           className="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 flex-1"
                         >
                           {loadingAction.id === m._id && loadingAction.type === "approve" ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                            <Spinner size="sm" color="white" />
                           ) : null}
                           Approve
                         </button>
@@ -1547,7 +1547,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
                           className="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 flex-1"
                         >
                           {loadingAction.id === m._id && loadingAction.type === "reject" ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                            <Spinner size="sm" color="white" />
                           ) : null}
                           Reject
                         </button>
