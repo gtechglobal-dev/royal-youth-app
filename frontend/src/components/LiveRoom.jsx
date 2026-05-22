@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLive } from "../contexts/LiveContext";
 import { getSocket } from "../services/socket";
 
-const EMOJIS = ["❤️", "🔥", "🙌", "👏", "😍", "😂", "🙏", "💯", "🎉", "✨"];
+const REACTIONS = ["❤️", "🙏", "👍", "🔥", "😍", "👏"];
 
 export default function LiveRoom() {
   const { liveRoom, handleLeaveLive, sendMessage, sendReaction, myStreamRef, peerConnectionsRef, isRecording, startRecording, stopRecording } = useLive();
@@ -15,8 +15,11 @@ export default function LiveRoom() {
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [elapsed, setElapsed] = useState("0:00");
+  const [showReactions, setShowReactions] = useState(false);
   const chatRef = useRef(null);
   const containerRef = useRef(null);
+  const reactionPickerRef = useRef(null);
+  const longPressTimerRef = useRef(null);
 
   useEffect(() => {
     if (myStreamRef.current && videoRef.current) {
@@ -95,6 +98,33 @@ export default function LiveRoom() {
       setIsFullscreen(false);
     }
   };
+
+  const handleReactionPointerDown = () => {
+    longPressTimerRef.current = setTimeout(() => setShowReactions(true), 500);
+  };
+
+  const handleReactionPointerUp = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleReactionSelect = (emoji) => {
+    sendReaction(emoji);
+    setShowReactions(false);
+  };
+
+  useEffect(() => {
+    if (!showReactions) return;
+    const handleClickOutside = (e) => {
+      if (reactionPickerRef.current && !reactionPickerRef.current.contains(e.target)) {
+        setShowReactions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showReactions]);
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -209,12 +239,33 @@ export default function LiveRoom() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 px-4 py-2 border-t border-gray-700">
-          <button onClick={() => sendReaction(EMOJIS[Math.floor(Math.random() * EMOJIS.length)])} className="p-1.5 text-white/70 hover:text-white">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </button>
+        <div className="flex items-center gap-2 px-4 py-2 border-t border-gray-700 relative">
+          <div ref={reactionPickerRef} className="relative">
+            <button
+              onPointerDown={handleReactionPointerDown}
+              onPointerUp={handleReactionPointerUp}
+              onPointerLeave={handleReactionPointerUp}
+              className="p-1.5 text-white/70 hover:text-white"
+              title="Long press to react"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+            {showReactions && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700">
+                {REACTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => handleReactionSelect(emoji)}
+                    className="text-2xl hover:scale-125 transition-transform"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {isBroadcaster && (
             <>
@@ -245,11 +296,11 @@ export default function LiveRoom() {
               )}
               <button
                 onClick={isRecording ? stopRecording : startRecording}
-                className={`p-1.5 transition ${isRecording ? "text-red-500" : "text-white/70 hover:text-white"}`}
+                className="p-1.5 text-red-500 transition"
                 title={isRecording ? "Stop recording" : "Start recording"}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <circle cx="12" cy="12" r="6" fill={isRecording ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} />
+                  <circle cx="12" cy="12" r="6" fill="currentColor" stroke="currentColor" strokeWidth={2} />
                 </svg>
               </button>
             </>
