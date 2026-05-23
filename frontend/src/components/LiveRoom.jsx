@@ -365,8 +365,8 @@ export default function LiveRoom() {
   return (
     <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
       <div className="w-full max-w-5xl max-h-[90vh] bg-black rounded-2xl overflow-hidden flex flex-col">
-        <div className="relative flex-1 min-h-0">
-          <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s && el.srcObject !== s) { el.srcObject = s; el.play().catch(e => console.warn("[LiveRoom] play:", e)); } } }} autoPlay playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-cover" style={{ minHeight: "200px", border: "2px solid red" }} />
+        <div className="relative flex-1 min-h-0 flex items-center justify-center bg-black">
+          <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s && el.srcObject !== s) { el.srcObject = s; el.play().catch(e => console.warn("[LiveRoom] play:", e)); } } }} autoPlay playsInline muted={isBroadcaster} className="max-w-full max-h-full object-contain" style={{ border: "2px solid red" }} />
           <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 text-xs md:text-sm bg-yellow-300 text-black font-bold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">{videoDebug}</div>
         {!isVideoOn && isBroadcaster && (
           <div className="absolute inset-0 flex items-center justify-center">
