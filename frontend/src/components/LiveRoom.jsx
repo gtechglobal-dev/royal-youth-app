@@ -29,6 +29,8 @@ export default function LiveRoom() {
   const containerRef = useRef(null);
   const reactionPickerRef = useRef(null);
 
+  const [videoDebug, setVideoDebug] = useState("");
+
   const room = liveRoom;
   const isBroadcaster = room?.isBroadcaster;
   const isAudio = room?.type === "audio";
@@ -49,6 +51,9 @@ export default function LiveRoom() {
   useEffect(() => {
     const el = videoRef.current;
     const stream = room?.stream || myStreamRef.current;
+    const tracks = stream?.getVideoTracks();
+    const info = `ref: ${!!myStreamRef.current} room.stream: ${!!room?.stream} el: ${!!el} tracks: ${tracks?.length||0} enabled: ${tracks?.some(t=>t.enabled)} state: ${tracks?.[0]?.readyState}`;
+    setVideoDebug(info);
     if (el && stream) {
       if (el.srcObject !== stream) el.srcObject = stream;
       el.play().catch(() => {});
@@ -357,6 +362,7 @@ export default function LiveRoom() {
       <div className="w-full max-w-5xl max-h-[90vh] bg-black rounded-2xl overflow-hidden flex flex-col">
         <div className="relative flex-1 min-h-0">
           <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s) { el.srcObject = s; el.play().catch(() => {}); } } }} autoPlay playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-contain bg-black" />
+          <div className="absolute bottom-2 left-2 text-[10px] bg-black/70 text-green-400 px-2 py-0.5 rounded font-mono pointer-events-none">{videoDebug}</div>
         {!isVideoOn && isBroadcaster && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 rounded-full bg-purple-600 flex items-center justify-center">
