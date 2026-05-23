@@ -52,20 +52,14 @@ export default function LiveRoom() {
     const el = videoRef.current;
     const stream = room?.stream || myStreamRef.current;
     const tracks = stream?.getVideoTracks();
-    const info = `ref: ${!!myStreamRef.current} room.stream: ${!!room?.stream} el: ${!!el} tracks: ${tracks?.length||0} enabled: ${tracks?.some(t=>t.enabled)} state: ${tracks?.[0]?.readyState}`;
+    const track = tracks?.[0];
+    const settings = track?.getSettings?.();
+    const info = `ref:${!!myStreamRef.current} room.stream:${!!room?.stream} el:${!!el} tracks:${tracks?.length||0} enabled:${track?.enabled} state:${track?.readyState} w:${settings?.width||el?.videoWidth||0}h:${settings?.height||el?.videoHeight||0}`;
     setVideoDebug(info);
     if (el && stream) {
       if (el.srcObject !== stream) el.srcObject = stream;
-      el.play().catch(() => {});
+      el.play().then(() => console.log("[LiveRoom] play OK")).catch((e) => console.warn("[LiveRoom] play FAILED:", e));
     }
-  }, [room?.stream, room?.sessionId]);
-
-  useEffect(() => {
-    const el = videoRef.current;
-    const stream = room?.stream || myStreamRef.current;
-    const tracks = stream?.getVideoTracks();
-    const info = `ref:${!!myStreamRef.current} room.stream:${!!room?.stream} el:${!!el} tracks:${tracks?.length||0} enabled:${tracks?.some(t=>t.enabled)} state:${tracks?.[0]?.readyState}`;
-    console.log("[LiveRoom Debug]", info, "stream:", stream, "tracks:", tracks);
   }, [room?.stream, room?.sessionId]);
 
   useEffect(() => {
