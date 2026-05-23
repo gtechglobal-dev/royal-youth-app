@@ -2669,7 +2669,9 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
           open={confirmState.open}
           title={confirmState.title}
           message={confirmState.message}
-          confirmLabel="Delete"
+          confirmLabel={confirmState.confirmLabel || "Delete"}
+          iconType={confirmState.iconType || "delete"}
+          confirmColor={confirmState.confirmColor || "red"}
           onConfirm={confirmState.onConfirm}
           onCancel={() => setConfirmState({ open: false, title: "", message: "", onConfirm: null, loading: false })}
           loading={confirmState.loading}
