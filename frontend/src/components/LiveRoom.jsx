@@ -56,11 +56,8 @@ export default function LiveRoom() {
     const settings = track?.getSettings?.();
     const info = `ref:${!!myStreamRef.current} room.stream:${!!room?.stream} el:${!!el} tracks:${tracks?.length||0} enabled:${track?.enabled} state:${track?.readyState} w:${settings?.width||el?.videoWidth||0}h:${settings?.height||el?.videoHeight||0}`;
     setVideoDebug(info);
-    if (el && stream) {
-      if (el.srcObject !== stream) {
-        el.srcObject = stream;
-        el.play().then(() => console.log("[LiveRoom] play OK")).catch((e) => console.warn("[LiveRoom] play FAILED:", e));
-      }
+    if (el && stream && el.srcObject !== stream) {
+      el.srcObject = stream;
     }
   }, [room?.stream, room?.sessionId]);
 
@@ -365,7 +362,7 @@ export default function LiveRoom() {
     <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
       <div className="w-full max-w-5xl max-h-[90vh] bg-black rounded-2xl overflow-hidden flex flex-col">
         <div className="relative flex-1 min-h-0">
-          <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s) el.srcObject = s; } }} autoPlay playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-contain bg-black" />
+          <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s && el.srcObject !== s) { el.srcObject = s; el.play().catch(e => console.warn("[LiveRoom] play:", e)); } } }} playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-contain bg-black" />
           <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 text-xs md:text-sm bg-yellow-300 text-black font-bold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">{videoDebug}</div>
         {!isVideoOn && isBroadcaster && (
           <div className="absolute inset-0 flex items-center justify-center">
