@@ -4,6 +4,8 @@ import crypto from "crypto";
 import User from "./models/user.js";
 import Message from "./models/Message.js";
 import Conversation from "./models/Conversation.js";
+import Notification from "./models/Notification.js";
+import { sendPushNotification } from "./controllers/pushController.js";
 import { onStreamActive, onStreamDone } from "./rtmpServer.js";
 
 function getRtmpUrl() {
@@ -134,9 +136,10 @@ export const initSocket = (server) => {
       io.emit("live-started", session);
 
       try {
-        const broadcaster = await User.findById(socket.userId).select("friends");
+        const broadcaster = await User.findById(socket.userId).select("firstname friends");
         if (broadcaster?.friends?.length > 0) {
           const friendIds = broadcaster.friends.map((f) => f.toString());
+          const name = broadcaster.firstname;
           friendIds.forEach((friendId) => {
             io.to(`user:${friendId}`).emit("live-notification", {
               sessionId,
@@ -145,13 +148,27 @@ export const initSocket = (server) => {
               type: data.type,
             });
           });
+          const notifData = friendIds.map((friendId) => ({
+            userId: friendId,
+            fromUserId: socket.userId,
+            type: "live-started",
+            referenceId: sessionId,
+            body: `${name} is live: ${data.title || "Live Broadcast"}`,
+          }));
+          await Notification.insertMany(notifData);
+          friendIds.forEach((friendId) => {
+            io.to(`user:${friendId}`).emit("newNotification", {});
+            sendPushNotification(friendId, "Royal Youth Hub",
+              `${name} went live! ${data.title || "Live Broadcast"}`,
+              `/live/${sessionId}`);
+          });
         }
       } catch {}
 
       if (callback) callback({ success: true, sessionId, streamKey, rtmpUrl, hlsUrl, source });
     });
 
-    socket.on("end-live", (data, callback) => {
+    socket.on("end-live", async (data, callback) => {
       const sessionId = data?.sessionId || socket.liveSessionId;
       if (!sessionId) return;
       const session = activeSessions.get(sessionId);
@@ -161,6 +178,28 @@ export const initSocket = (server) => {
       io.to(sessionId).emit("live-ended", { sessionId });
       io.socketsLeave(sessionId);
       io.emit("live-ended", { sessionId });
+
+      try {
+        const broadcaster = await User.findById(socket.userId).select("firstname friends");
+        if (broadcaster?.friends?.length > 0) {
+          const friendIds = broadcaster.friends.map((f) => f.toString());
+          const name = broadcaster.firstname;
+          const mins = session.startedAt ? Math.floor((Date.now() - session.startedAt) / 60000) : 0;
+          const timeAgo = mins < 1 ? "a few seconds" : mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${mins % 60}m`;
+          const notifData = friendIds.map((friendId) => ({
+            userId: friendId,
+            fromUserId: socket.userId,
+            type: "live-ended",
+            referenceId: sessionId,
+            body: `${name}'s live ended ${timeAgo} ago`,
+          }));
+          await Notification.insertMany(notifData);
+          friendIds.forEach((friendId) => {
+            io.to(`user:${friendId}`).emit("newNotification", {});
+          });
+        }
+      } catch {}
+
       if (callback) callback({ success: true });
     });
 

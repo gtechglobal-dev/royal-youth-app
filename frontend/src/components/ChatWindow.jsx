@@ -3,9 +3,13 @@ import API from "../services/api";
 import { optimizeImage } from "../utils/cloudinary";
 import { displayName } from "../utils/displayName";
 import { useLive } from "../contexts/LiveContext";
+import useEmojiFavorites from "../hooks/useEmojiFavorites";
+
+const EMOJIS = ["😀","😁","😂","🤣","😊","😇","🙂","😉","😌","😍","🥰","😘","😗","😋","😛","😜","🤪","😝","🤑","🤗","🤭","🤫","🤔","🤐","🤨","😐","😑","😶","😏","😒","🙄","😬","🤥","😔","😪","🤤","😴","😷","🤒","🤕","🤢","🤮","🥴","😵","🤯","🤠","🥳","🥺","😢","😭","😤","😠","😡","🤬","👋","🤚","🖐","✋","👌","🤌","🤏","✌️","🤞","🤟","🤘","🤙","👈","👉","👆","👇","👍","👎","✊","👊","🤛","🤜","👏","🙌","👐","🤲","🤝","🙏","✍️","💅","🤳","💪","🦵","🦶","👂","🦻","👃","🧠","🦷","👀","👅","👄","❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕","💞","💓","💗","💖","💘","💝","💟","✨","🌟","⭐","🔥","💯","🎉","🎊","🎈","🎁","🎀","🪄","💎","👑","📿","🧧","🏆","🥇","🥈","🥉","⚽","🏀","🏈","⚾","🎾","🏐","🏉","🎱","🎮","🎯","🎲","♟️","🎸","🎺","🎻","🎹","🥁","🎤","🎧","📱","💻","⌚️","📷","🎥","📸","🔮","💡","🔦","📖","📚","📝","✂️","📍","📌","🔗","🧷","🎭","🎨","🧩","🌈","☀️","🌤","⛅️","🌧","⛈","🌩","❄️","🔥","💨","🌪","🌊","💧","🍏","🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓","🫐","🍈","🍒","🍑","🥭","🍍","🥥","🥝","🍅","🍆","🥑","🥦","🥬","🥒","🌽","🥕","🧄","🧅","🥔","🍠","🫓","🥐","🥖","🫓","🥯","🍞","🥨","🧀","🥚","🍳","🥞","🧇","🥓","🥩","🍗","🍖","🦴","🌭","🍔","🍟","🍕","🥪","🥙","🧆","🌮","🌯","🥗","🥘","🫕","🥫","🍝","🍜","🍲","🍛","🍣","🍱","🥟","🦪","🍤","🍙","🍚","🍘","🥮","🍥","🎂","🍰","🧁","🥧","🍦","🍨","🍧","🍩","🍪","🍫","🍬","🍭","🍮","🍯","☕️","🍵","🧃","🥤","🧊","🍶","🍺","🍻","🥂","🍷","🥃","🍸","🍹","🍾","🥄","🥄","🍴","🥢","🍽","🥣"];
 
 function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
   const { startCall, callState } = useLive();
+  const { trackUse, getFavorites } = useEmojiFavorites();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
@@ -13,8 +17,10 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
   const [sending, setSending] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [showEmojis, setShowEmojis] = useState(false);
   const bottomRef = useRef(null);
   const topRef = useRef(null);
+  const emojiRef = useRef(null);
 
   const sharedSent = useRef(false);
 
@@ -80,6 +86,21 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
 
   const loadMore = () => {
     if (hasMore && !loading) fetchMessages(page + 1);
+  };
+
+  useEffect(() => {
+    if (!showEmojis) return;
+    const handleClickOutside = (e) => {
+      if (emojiRef.current && !emojiRef.current.contains(e.target)) setShowEmojis(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showEmojis]);
+
+  const insertEmoji = (emoji) => {
+    trackUse(emoji);
+    setText((prev) => prev + emoji);
+    setShowEmojis(false);
   };
 
   const handleSend = async (e) => {
@@ -204,6 +225,33 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
           </div>
         )}
         <div className="flex items-center gap-1.5 md:gap-2">
+          <div ref={emojiRef} className="relative">
+            <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="text-gray-500 hover:text-purple-600 flex items-center p-1.5 md:p-2 rounded-lg hover:bg-purple-50 shrink-0">
+              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+            {showEmojis && (
+              <div className="absolute bottom-full left-0 mb-2 w-72 max-h-56 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-xl p-2 z-50">
+                {getFavorites().length > 0 && (
+                  <div className="grid grid-cols-8 gap-0.5 pb-1.5 mb-1.5 border-b border-gray-100">
+                    {getFavorites().map((emoji) => (
+                      <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} className="text-lg hover:bg-gray-100 rounded p-0.5 transition">
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="grid grid-cols-8 gap-0.5">
+                  {EMOJIS.map((emoji) => (
+                    <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} className="text-lg hover:bg-gray-100 rounded p-0.5 transition">
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <label className="cursor-pointer text-gray-500 hover:text-purple-600 flex items-center p-1.5 md:p-2 rounded-lg hover:bg-purple-50 shrink-0">
             <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
