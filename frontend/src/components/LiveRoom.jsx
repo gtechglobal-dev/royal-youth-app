@@ -47,11 +47,13 @@ export default function LiveRoom() {
   const myName = JSON.parse(localStorage.getItem("user") || "{}").firstname || "You";
 
   useEffect(() => {
-    if (myStreamRef.current && videoRef.current) {
-      videoRef.current.srcObject = myStreamRef.current;
-      videoRef.current.play().catch(() => {});
+    const el = videoRef.current;
+    const stream = room?.stream || myStreamRef.current;
+    if (el && stream) {
+      if (el.srcObject !== stream) el.srcObject = stream;
+      el.play().catch(() => {});
     }
-  }, [room]);
+  }, [room?.stream, room?.sessionId]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -354,7 +356,7 @@ export default function LiveRoom() {
     <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
       <div className="w-full max-w-5xl max-h-[90vh] bg-black rounded-2xl overflow-hidden flex flex-col">
         <div className="relative flex-1 min-h-0">
-          <video ref={(el) => { videoRef.current = el; if (el && myStreamRef.current) { el.srcObject = myStreamRef.current; el.play().catch(() => {}); } }} autoPlay playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-contain bg-black" />
+          <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s) { el.srcObject = s; el.play().catch(() => {}); } } }} autoPlay playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-contain bg-black" />
         {!isVideoOn && isBroadcaster && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 rounded-full bg-purple-600 flex items-center justify-center">
