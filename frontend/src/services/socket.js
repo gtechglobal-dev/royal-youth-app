@@ -16,11 +16,20 @@ export const connectSocket = () => {
 
   socket = io(SOCKET_URL, {
     auth: { token },
-    transports: ["websocket", "polling"],
+    transports: ["polling", "websocket"],
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 10000,
+    timeout: 20000,
   });
 
   socket.on("connect_error", (err) => {
     console.error("Socket connection error:", err.message);
+  });
+
+  socket.on("reconnect_attempt", () => {
+    console.log("Socket reconnecting...");
   });
 
   return socket;
