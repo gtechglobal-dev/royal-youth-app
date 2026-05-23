@@ -56,8 +56,12 @@ export default function LiveRoom() {
     const settings = track?.getSettings?.();
     const info = `ref:${!!myStreamRef.current} room.stream:${!!room?.stream} el:${!!el} tracks:${tracks?.length||0} enabled:${track?.enabled} state:${track?.readyState} w:${settings?.width||el?.videoWidth||0}h:${settings?.height||el?.videoHeight||0}`;
     setVideoDebug(info);
-    if (el && stream && el.srcObject !== stream) {
-      el.srcObject = stream;
+    if (el && stream) {
+      if (el.srcObject !== stream) el.srcObject = stream;
+      el.onplaying = () => console.log("[LiveRoom] playing", el.videoWidth, el.videoHeight);
+      el.onloadeddata = () => console.log("[LiveRoom] loadeddata", el.videoWidth, el.videoHeight);
+      el.onerror = () => console.error("[LiveRoom] video error", el.error?.message);
+      console.log("[LiveRoom] readyState:", el.readyState, "paused:", el.paused, "ended:", el.ended);
     }
   }, [room?.stream, room?.sessionId]);
 
