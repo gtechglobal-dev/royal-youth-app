@@ -204,8 +204,9 @@ export default function LiveRoom() {
 
   if (isAudio) {
     return (
-      <div ref={containerRef} className="fixed inset-0 z-50 bg-gradient-to-b from-gray-900 via-purple-900 to-gray-900 flex flex-col">
-        <div className="flex-1 flex flex-col overflow-hidden px-4 pt-6 pb-2">
+      <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+        <div className="w-full max-w-lg max-h-[85vh] bg-gradient-to-b from-gray-900 via-purple-900 to-gray-900 rounded-2xl overflow-hidden flex flex-col">
+          <div className="flex-1 flex flex-col overflow-hidden px-4 pt-6 pb-2 min-h-0">
           <div className="text-center mb-4">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mx-auto mb-2 shadow-lg">
               <span className="text-2xl font-bold text-black">{host.displayName.charAt(0).toUpperCase()}</span>
@@ -306,13 +307,15 @@ export default function LiveRoom() {
           </div>
         ))}
       </div>
+    </div>
     );
   }
 
   if (isRtmp && isBroadcaster) {
     return (
-      <div ref={containerRef} className="fixed inset-0 z-50 bg-black flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+        <div className="w-full max-w-lg max-h-[85vh] bg-black rounded-2xl overflow-hidden flex flex-col">
+          <div className="flex-1 flex flex-col items-center justify-center px-6 text-center min-h-0">
           <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${streamActive ? "bg-green-500" : "bg-yellow-500 animate-pulse"}`}>
             {streamActive ? (
               <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -338,10 +341,11 @@ export default function LiveRoom() {
             <p className="text-gray-500 text-xs mb-4">The stream is now being broadcast to all viewers.</p>
           )}
         </div>
-        <div className="px-4 py-3 border-t border-gray-800 flex justify-center">
+        <div className="px-4 py-3 border-t border-gray-800 flex justify-center flex-shrink-0">
           <button onClick={handleLeaveLive} className="bg-red-600 text-white text-sm font-bold px-6 py-2 rounded-full hover:bg-red-700 transition">End Stream</button>
         </div>
       </div>
+    </div>
     );
   }
 
@@ -397,44 +401,46 @@ export default function LiveRoom() {
         ))}
       </div>
 
-      <div className="bg-gray-900 max-h-[45vh] flex flex-col">
-        {!showChat && !isRtmp && (
-          <div className="px-4 py-2 border-b border-gray-800 overflow-x-auto">
-            <p className="text-[10px] text-gray-500 mb-1.5">Participants ({participants.length})</p>
-            <div className="flex gap-2">
-              {participants.slice(0, 15).map((p) => (
-                <div key={p.userId} className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                    isHost(p) ? "bg-yellow-500 text-black" : isSpeaker(p) ? "bg-green-500 text-white" : "bg-gray-600 text-white"
-                  }`}>
-                    {p.displayName.charAt(0).toUpperCase()}
-                    {raisedHands.find((r) => r.userId === p.userId) && <span className="absolute -top-1 -right-1 text-xs">✋</span>}
+      <div className="bg-gray-900 flex flex-col" style={{ maxHeight: '40vh' }}>
+        <div className="overflow-y-auto min-h-0 flex-shrink">
+          {!showChat && !isRtmp && (
+            <div className="px-4 py-2 border-b border-gray-800 overflow-x-auto">
+              <p className="text-[10px] text-gray-500 mb-1.5">Participants ({participants.length})</p>
+              <div className="flex gap-2">
+                {participants.slice(0, 15).map((p) => (
+                  <div key={p.userId} className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                      isHost(p) ? "bg-yellow-500 text-black" : isSpeaker(p) ? "bg-green-500 text-white" : "bg-gray-600 text-white"
+                    }`}>
+                      {p.displayName.charAt(0).toUpperCase()}
+                      {raisedHands.find((r) => r.userId === p.userId) && <span className="absolute -top-1 -right-1 text-xs">✋</span>}
+                    </div>
+                    <span className="text-[8px] text-gray-400 truncate max-w-[50px]">{p.displayName.split(" ")[0]}</span>
                   </div>
-                  <span className="text-[8px] text-gray-400 truncate max-w-[50px]">{p.displayName.split(" ")[0]}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isBroadcaster && !isRtmp && (
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-800 overflow-x-auto">
+              <span className="text-[10px] text-gray-500 flex-shrink-0">Manage:</span>
+              {participants.filter((p) => !isHost(p)).slice(0, 10).map((p) => (
+                <div key={p.userId} className="flex items-center gap-1 bg-gray-800 rounded-full px-2 py-0.5 flex-shrink-0">
+                  <span className="text-xs text-white truncate max-w-[60px]">{p.displayName.split(" ")[0]}</span>
+                  <button onClick={() => muteParticipant(p.userId)} className="text-xs text-gray-400 hover:text-white">{p.muted ? "🔇" : "🔊"}</button>
+                  {isSpeaker(p) ? (
+                    <button onClick={() => revokeMic(p.userId)} className="text-[10px] text-red-400 hover:text-red-300">✕</button>
+                  ) : (
+                    <button onClick={() => grantMic(p.userId)} className="text-[10px] text-green-400 hover:text-green-300">🎤</button>
+                  )}
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {isBroadcaster && !isRtmp && (
-          <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-800 overflow-x-auto">
-            <span className="text-[10px] text-gray-500 flex-shrink-0">Manage:</span>
-            {participants.filter((p) => !isHost(p)).slice(0, 10).map((p) => (
-              <div key={p.userId} className="flex items-center gap-1 bg-gray-800 rounded-full px-2 py-0.5 flex-shrink-0">
-                <span className="text-xs text-white truncate max-w-[60px]">{p.displayName.split(" ")[0]}</span>
-                <button onClick={() => muteParticipant(p.userId)} className="text-xs text-gray-400 hover:text-white">{p.muted ? "🔇" : "🔊"}</button>
-                {isSpeaker(p) ? (
-                  <button onClick={() => revokeMic(p.userId)} className="text-[10px] text-red-400 hover:text-red-300">✕</button>
-                ) : (
-                  <button onClick={() => grantMic(p.userId)} className="text-[10px] text-green-400 hover:text-green-300">🎤</button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="flex items-center gap-1 px-4 py-2 border-t border-gray-800 relative">
+        <div className="flex items-center gap-1 px-4 py-2 border-t border-gray-800 relative flex-shrink-0">
           {!isBroadcaster && !isRtmp && (
             <button onClick={handleRaiseHand} className={`flex items-center justify-center min-w-[36px] h-9 transition ${myHandRaised ? "text-yellow-400" : "text-white/60 hover:text-white"}`} title="Raise hand">
               <span className="text-lg">{myHandRaised ? "✋" : "🤚"}</span>

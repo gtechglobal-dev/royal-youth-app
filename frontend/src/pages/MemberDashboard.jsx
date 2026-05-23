@@ -1620,8 +1620,8 @@ function MemberDashboard() {
 
       {/* Handbook Modal */}
       {showHandbookModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onClick={() => setShowHandbookModal(false)}>
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowHandbookModal(false)}>
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold mb-4 text-purple-600">Royal Youth Handbook</h3>
             <p className="mb-4 text-gray-600">Please Note the password of this document is <span className="font-bold">royal</span></p>
             <div className="flex gap-3 justify-end">
