@@ -80,7 +80,7 @@ function DirectMessages() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-0 md:px-4">
+      <div className="max-w-4xl mx-auto px-1 md:px-4">
         {sharedPost && (
           <div className="m-2 md:m-4 p-3 md:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm font-semibold text-yellow-800">Sharing a post — select a conversation to send it to:</p>

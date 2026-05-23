@@ -29,7 +29,7 @@ export default function LiveRoom() {
   const containerRef = useRef(null);
   const reactionPickerRef = useRef(null);
 
-  const [videoDebug, setVideoDebug] = useState("");
+    const [videoDebug, setVideoDebug] = useState("loading...");
 
   const room = liveRoom;
   const isBroadcaster = room?.isBroadcaster;
@@ -58,6 +58,14 @@ export default function LiveRoom() {
       if (el.srcObject !== stream) el.srcObject = stream;
       el.play().catch(() => {});
     }
+  }, [room?.stream, room?.sessionId]);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    const stream = room?.stream || myStreamRef.current;
+    const tracks = stream?.getVideoTracks();
+    const info = `ref:${!!myStreamRef.current} room.stream:${!!room?.stream} el:${!!el} tracks:${tracks?.length||0} enabled:${tracks?.some(t=>t.enabled)} state:${tracks?.[0]?.readyState}`;
+    console.log("[LiveRoom Debug]", info, "stream:", stream, "tracks:", tracks);
   }, [room?.stream, room?.sessionId]);
 
   useEffect(() => {
@@ -362,7 +370,7 @@ export default function LiveRoom() {
       <div className="w-full max-w-5xl max-h-[90vh] bg-black rounded-2xl overflow-hidden flex flex-col">
         <div className="relative flex-1 min-h-0">
           <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s) { el.srcObject = s; el.play().catch(() => {}); } } }} autoPlay playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-contain bg-black" />
-          <div className="absolute bottom-2 left-2 text-[10px] bg-black/70 text-green-400 px-2 py-0.5 rounded font-mono pointer-events-none">{videoDebug}</div>
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 text-xs md:text-sm bg-yellow-300 text-black font-bold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">{videoDebug}</div>
         {!isVideoOn && isBroadcaster && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 rounded-full bg-purple-600 flex items-center justify-center">
