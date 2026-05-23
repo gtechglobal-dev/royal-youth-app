@@ -355,17 +355,17 @@ export function LiveProvider({ children }) {
     }
   }, []);
 
-  const startLive = useCallback(async (data) => {
+  const startLive = useCallback(async (data, existingStream) => {
     const socket = await waitForSocket(15000);
     const isRtmp = data.source === "rtmp";
-    const stream = isRtmp ? null : await navigator.mediaDevices.getUserMedia({
+    const stream = existingStream || (isRtmp ? null : await navigator.mediaDevices.getUserMedia({
       video: data.type === "video",
       audio: true,
-    });
+    }));
     if (stream) myStreamRef.current = stream;
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        if (stream) { stream.getTracks().forEach((t) => t.stop()); myStreamRef.current = null; }
+        if (stream && !existingStream) { stream.getTracks().forEach((t) => t.stop()); myStreamRef.current = null; }
         reject(new Error("Timed out starting live broadcast"));
       }, 10000);
       socket.emit("start-live", data, (res) => {
@@ -391,7 +391,7 @@ export function LiveProvider({ children }) {
           });
           resolve(res);
         } else {
-          if (stream) { stream.getTracks().forEach((t) => t.stop()); myStreamRef.current = null; }
+          if (stream && !existingStream) { stream.getTracks().forEach((t) => t.stop()); myStreamRef.current = null; }
           reject(new Error(res?.message || "Failed to start live"));
         }
       });

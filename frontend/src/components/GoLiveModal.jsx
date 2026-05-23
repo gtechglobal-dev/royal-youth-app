@@ -49,13 +49,13 @@ export default function GoLiveModal({ onClose }) {
     if (!title.trim()) { setError("Please enter a title"); return; }
     setStarting(true);
     setError("");
-    stopPreview();
     try {
       const data = mode === "rtmp"
         ? { title: title.trim(), description, category, type: "video", source: "rtmp" }
         : { title: title.trim(), description, category, type };
-      const res = await startLive(data);
+      const res = await startLive(data, previewStreamRef.current);
       if (mode === "rtmp" && res?.streamKey) {
+        stopPreview();
         setStreamInfo({ streamKey: res.streamKey, rtmpUrl: res.rtmpUrl });
       } else {
         onClose();
