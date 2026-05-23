@@ -28,7 +28,6 @@ export default function LiveRoom() {
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   const reactionPickerRef = useRef(null);
-  const longPressTimerRef = useRef(null);
 
   const room = liveRoom;
   const isBroadcaster = room?.isBroadcaster;
@@ -129,17 +128,6 @@ export default function LiveRoom() {
     if (myStreamRef.current) {
       myStreamRef.current.getVideoTracks().forEach((t) => { t.enabled = isVideoOn; });
       setIsVideoOn(!isVideoOn);
-    }
-  };
-
-  const handleReactionPointerDown = () => {
-    longPressTimerRef.current = setTimeout(() => setShowReactions(true), 500);
-  };
-
-  const handleReactionPointerUp = () => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
     }
   };
 
@@ -253,14 +241,14 @@ export default function LiveRoom() {
         <div className="px-4 py-3 border-t border-white/10">
           <div className="flex items-center justify-center gap-3">
             {!isBroadcaster && (
-              <button onClick={handleRaiseHand} className={`flex flex-col items-center gap-0.5 ${myHandRaised ? "text-yellow-400" : "text-white/60 hover:text-white"} transition`}>
-                <span className="text-xl">{myHandRaised ? "✋" : "🤚"}</span>
+              <button onClick={handleRaiseHand} className={`flex flex-col items-center gap-0.5 min-w-[64px] ${myHandRaised ? "text-yellow-400" : "text-white/60 hover:text-white"} transition`}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" /></svg>
                 <span className="text-[10px]">{myHandRaised ? "Lower" : "Hand"}</span>
               </button>
             )}
             <div ref={reactionPickerRef} className="relative">
-              <button onPointerDown={handleReactionPointerDown} onPointerUp={handleReactionPointerUp} onPointerLeave={handleReactionPointerUp} className="flex flex-col items-center gap-0.5 text-white/60 hover:text-white transition">
-                <span className="text-xl">😊</span>
+              <button onClick={() => setShowReactions(!showReactions)} className="flex flex-col items-center gap-0.5 min-w-[64px] text-white/60 hover:text-white transition">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <span className="text-[10px]">React</span>
               </button>
               {showReactions && (
@@ -272,20 +260,20 @@ export default function LiveRoom() {
               )}
             </div>
             {isBroadcaster && (
-              <button onClick={isRecording ? stopRecording : startRecording} className={`flex flex-col items-center gap-0.5 transition ${isRecording ? "text-red-500" : "text-white/60 hover:text-white"}`}>
-                <span className="text-xl">{isRecording ? "⏺️" : "⏹️"}</span>
-                <span className="text-[10px]">{isRecording ? "Stop Rec" : "Record"}</span>
+              <button onClick={isRecording ? stopRecording : startRecording} className={`flex flex-col items-center gap-0.5 min-w-[64px] transition ${isRecording ? "text-red-500" : "text-white/60 hover:text-white"}`}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="currentColor" strokeWidth={2} /></svg>
+                <span className="text-[10px]">{isRecording ? "Stop" : "Record"}</span>
               </button>
             )}
-            <button onClick={shareLink} className="flex flex-col items-center gap-0.5 text-white/60 hover:text-white transition">
+            <button onClick={shareLink} className="flex flex-col items-center gap-0.5 min-w-[64px] text-white/60 hover:text-white transition">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
               <span className="text-[10px]">{linkCopied ? "Copied!" : "Share"}</span>
             </button>
-            <button onClick={() => setShowChat(!showChat)} className={`flex flex-col items-center gap-0.5 transition ${showChat ? "text-purple-400" : "text-white/60 hover:text-white"}`}>
+            <button onClick={() => setShowChat(!showChat)} className={`flex flex-col items-center gap-0.5 min-w-[64px] transition ${showChat ? "text-purple-400" : "text-white/60 hover:text-white"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
               <span className="text-[10px]">Chat</span>
             </button>
-            <button onClick={handleLeaveLive} className="flex flex-col items-center gap-0.5 text-red-400 hover:text-red-300 transition">
+            <button onClick={handleLeaveLive} className="flex flex-col items-center gap-0.5 min-w-[64px] text-red-400 hover:text-red-300 transition">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               <span className="text-[10px]">Leave</span>
             </button>
@@ -445,14 +433,14 @@ export default function LiveRoom() {
           </div>
         )}
 
-        <div className="flex items-center gap-2 px-4 py-2 border-t border-gray-800 relative">
+        <div className="flex items-center gap-1 px-4 py-2 border-t border-gray-800 relative">
           {!isBroadcaster && !isRtmp && (
-            <button onClick={handleRaiseHand} className={`p-1.5 transition ${myHandRaised ? "text-yellow-400" : "text-white/60 hover:text-white"}`} title="Raise hand">
+            <button onClick={handleRaiseHand} className={`flex items-center justify-center min-w-[36px] h-9 transition ${myHandRaised ? "text-yellow-400" : "text-white/60 hover:text-white"}`} title="Raise hand">
               <span className="text-lg">{myHandRaised ? "✋" : "🤚"}</span>
             </button>
           )}
           <div ref={reactionPickerRef} className="relative">
-            <button onPointerDown={handleReactionPointerDown} onPointerUp={handleReactionPointerUp} onPointerLeave={handleReactionPointerUp} className="p-1.5 text-white/60 hover:text-white" title="Long press to react">
+            <button onClick={() => setShowReactions(!showReactions)} className="flex items-center justify-center min-w-[36px] h-9 text-white/60 hover:text-white" title="React">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </button>
             {showReactions && (
@@ -465,7 +453,7 @@ export default function LiveRoom() {
           </div>
           {isBroadcaster && (
             <>
-              <button onClick={toggleMute} className="p-1.5 text-white/60 hover:text-white">
+              <button onClick={toggleMute} className="flex items-center justify-center min-w-[36px] h-9 text-white/60 hover:text-white">
                 {isMuted ? (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
                 ) : (
@@ -473,7 +461,7 @@ export default function LiveRoom() {
                 )}
               </button>
               {room.type === "video" && (
-                <button onClick={toggleVideo} className="p-1.5 text-white/60 hover:text-white">
+                <button onClick={toggleVideo} className="flex items-center justify-center min-w-[36px] h-9 text-white/60 hover:text-white">
                   {isVideoOn ? (
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                   ) : (
@@ -481,12 +469,12 @@ export default function LiveRoom() {
                   )}
                 </button>
               )}
-              <button onClick={isRecording ? stopRecording : startRecording} className={`p-1.5 transition ${isRecording ? "text-red-500" : "text-white/60 hover:text-white"}`} title={isRecording ? "Stop recording" : "Start recording"}>
+              <button onClick={isRecording ? stopRecording : startRecording} className={`flex items-center justify-center min-w-[36px] h-9 transition ${isRecording ? "text-red-500" : "text-white/60 hover:text-white"}`} title={isRecording ? "Stop recording" : "Start recording"}>
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="currentColor" strokeWidth={2} /></svg>
               </button>
             </>
           )}
-          <button onClick={shareLink} className="p-1.5 text-white/60 hover:text-white" title="Share link">
+          <button onClick={shareLink} className="flex items-center justify-center min-w-[36px] h-9 text-white/60 hover:text-white" title="Share link">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
           </button>
           <button onClick={() => setShowChat(!showChat)} className={`p-1.5 transition ml-auto ${showChat ? "text-purple-400" : "text-white/60 hover:text-white"}`} title="Chat">
