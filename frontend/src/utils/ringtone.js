@@ -31,11 +31,9 @@ export function playRingtone() {
 
   function scheduleRing() {
     const now = ctx.currentTime;
-    playTone(440, now, 0.4);
-    playTone(480, now + 0.4, 0.4);
-    playTone(440, now + 0.8, 0.4);
-    playTone(480, now + 1.2, 0.4);
-    timeoutId = setTimeout(scheduleRing, 1600);
+    playTone(440, now, 0.5);
+    playTone(520, now + 0.5, 0.5);
+    timeoutId = setTimeout(scheduleRing, 3000);
   }
 
   if (ctx.state === "suspended") ctx.resume();
