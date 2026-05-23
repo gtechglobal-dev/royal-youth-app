@@ -346,9 +346,10 @@ export default function LiveRoom() {
   }
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-50 bg-black flex flex-col">
-      <div className="relative flex-1 flex flex-col">
-        <video ref={videoRef} autoPlay playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-contain bg-black" />
+    <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+      <div className="w-full max-w-5xl max-h-[90vh] bg-black rounded-2xl overflow-hidden flex flex-col">
+        <div className="relative flex-1 min-h-0">
+          <video ref={videoRef} autoPlay playsInline muted={isBroadcaster} className="absolute inset-0 w-full h-full object-contain bg-black" />
         {!isVideoOn && isBroadcaster && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 rounded-full bg-purple-600 flex items-center justify-center">
@@ -502,6 +503,7 @@ export default function LiveRoom() {
           </>
         )}
       </div>
+    </div>
     </div>
   );
 }

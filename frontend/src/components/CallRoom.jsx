@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useLive } from "../contexts/LiveContext";
 import { playRingtone, stopRingtone } from "../utils/ringtone";
 
@@ -7,6 +7,7 @@ export default function CallRoom() {
   const localRef = useRef(null);
   const remoteRef = useRef(null);
   const audioRef = useRef(null);
+  const [usingBackCamera, setUsingBackCamera] = useState(false);
   const { status, stream, remoteStream, type, micMuted } = callState;
 
   useEffect(() => {
@@ -26,6 +27,20 @@ export default function CallRoom() {
     }
     return () => stopRingtone();
   }, [status]);
+
+  const switchCamera = async () => {
+    if (!stream) return;
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!videoTrack) return;
+    try {
+      await videoTrack.applyConstraints({
+        facingMode: usingBackCamera ? "user" : "environment",
+      });
+      setUsingBackCamera(!usingBackCamera);
+    } catch (err) {
+      console.error("switchCamera error:", err);
+    }
+  };
 
   if (status === "idle" || status === "declined") return null;
 
@@ -85,6 +100,16 @@ export default function CallRoom() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
               )}
+            </button>
+          )}
+          {type === "video" && isConnected && (
+            <button
+              onClick={switchCamera}
+              className="w-14 h-14 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition shadow-lg"
+            >
+              <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
             </button>
           )}
           <button
