@@ -266,13 +266,19 @@ export default function LiveRoom() {
                 <span className="text-[10px]">React</span>
               </button>
               {showReactions && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700">
+                <div className="absolute bottom-full mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700" style={{ left: '50%', transform: 'translateX(-50%)', maxWidth: 'calc(100vw - 32px)' }}>
                   {REACTIONS.map((emoji) => (
                     <button key={emoji} onClick={() => handleReactionSelect(emoji)} className="text-2xl hover:scale-125 transition-transform">{emoji}</button>
                   ))}
                 </div>
               )}
             </div>
+            {isBroadcaster && (
+              <button onClick={toggleMute} className={`flex flex-col items-center gap-0.5 min-w-[64px] transition ${isMuted ? "text-red-500" : "text-white/60 hover:text-white"}`}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">{isMuted ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />}</svg>
+                <span className="text-[10px]">{isMuted ? "Unmute" : "Mute"}</span>
+              </button>
+            )}
             {isBroadcaster && (
               <button onClick={isRecording ? stopRecording : startRecording} className={`flex flex-col items-center gap-0.5 min-w-[64px] transition ${isRecording ? "text-red-500" : "text-white/60 hover:text-white"}`}>
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="currentColor" strokeWidth={2} /></svg>
@@ -366,8 +372,8 @@ export default function LiveRoom() {
     <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
       <div className="w-full max-w-5xl max-h-[90vh] bg-black rounded-2xl overflow-hidden flex flex-col">
         <div className="relative flex-1 min-h-0 flex items-center justify-center bg-black">
-          <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s && el.srcObject !== s) { el.srcObject = s; el.play().catch(e => console.warn("[LiveRoom] play:", e)); } } }} autoPlay playsInline muted={isBroadcaster} className="max-w-full max-h-full object-contain" style={{ border: "2px solid red" }} />
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 text-xs md:text-sm bg-yellow-300 text-black font-bold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">{videoDebug}</div>
+          <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s && el.srcObject !== s) { el.srcObject = s; el.play().catch(e => console.warn("[LiveRoom] play:", e)); } } }} autoPlay playsInline muted={isBroadcaster} className="max-w-full max-h-full object-contain" />
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 text-xs md:text-sm bg-yellow-300 text-black font-bold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none opacity-60">{videoDebug}</div>
         {!isVideoOn && isBroadcaster && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 rounded-full bg-purple-600 flex items-center justify-center">
@@ -465,7 +471,7 @@ export default function LiveRoom() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </button>
             {showReactions && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700">
+              <div className="absolute bottom-full mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700" style={{ left: '50%', transform: 'translateX(-50%)', maxWidth: 'calc(100vw - 32px)' }}>
                 {REACTIONS.map((emoji) => (
                   <button key={emoji} onClick={() => handleReactionSelect(emoji)} className="text-2xl hover:scale-125 transition-transform">{emoji}</button>
                 ))}

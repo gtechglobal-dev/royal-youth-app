@@ -232,7 +232,7 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
               </svg>
             </button>
             {showEmojis && (
-              <div className="absolute bottom-full left-0 mb-2 w-72 max-h-56 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-xl p-2 z-50">
+              <div className="absolute bottom-full left-0 mb-2 w-72 max-w-[calc(100vw-16px)] max-h-56 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-xl p-2 z-50">
                 {getFavorites().length > 0 && (
                   <div className="grid grid-cols-8 gap-0.5 pb-1.5 mb-1.5 border-b border-gray-100">
                     {getFavorites().map((emoji) => (
