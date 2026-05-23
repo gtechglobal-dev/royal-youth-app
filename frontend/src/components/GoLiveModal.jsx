@@ -50,12 +50,13 @@ export default function GoLiveModal({ onClose }) {
     setStarting(true);
     setError("");
     try {
+      stopPreview();
+      await new Promise(r => setTimeout(r, 200));
       const data = mode === "rtmp"
         ? { title: title.trim(), description, category, type: "video", source: "rtmp" }
         : { title: title.trim(), description, category, type };
-      const res = await startLive(data, previewStreamRef.current);
+      const res = await startLive(data, null);
       if (mode === "rtmp" && res?.streamKey) {
-        stopPreview();
         setStreamInfo({ streamKey: res.streamKey, rtmpUrl: res.rtmpUrl });
       } else {
         onClose();
