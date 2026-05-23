@@ -1,21 +1,31 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { useLive } from "../contexts/LiveContext";
 import { playRingtone, stopRingtone } from "../utils/ringtone";
 
 export default function CallRoom() {
   const { callState, endCall, toggleCallMute } = useLive();
-  const localRef = useRef(null);
-  const remoteRef = useRef(null);
+  const mainVideoRef = useRef(null);
+  const pipVideoRef = useRef(null);
   const audioRef = useRef(null);
   const [usingBackCamera, setUsingBackCamera] = useState(false);
+  const [swapped, setSwapped] = useState(false);
+  const [pipPos, setPipPos] = useState({ x: 0, y: 0 });
+  const dragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const pipRef = useRef(null);
+
   const { status, stream, remoteStream, type, micMuted } = callState;
 
-  useEffect(() => {
-    if (localRef.current && stream) localRef.current.srcObject = stream;
-  }, [stream]);
+  const updateVideoRefs = useCallback(() => {
+    const main = mainVideoRef.current;
+    const pip = pipVideoRef.current;
+    if (main) main.srcObject = swapped ? stream : remoteStream;
+    if (pip) pip.srcObject = swapped ? remoteStream : stream;
+  }, [swapped, stream, remoteStream]);
+
+  useEffect(() => { updateVideoRefs(); }, [updateVideoRefs]);
 
   useEffect(() => {
-    if (remoteRef.current && remoteStream) remoteRef.current.srcObject = remoteStream;
     if (audioRef.current && remoteStream) audioRef.current.srcObject = remoteStream;
   }, [remoteStream]);
 
@@ -42,6 +52,59 @@ export default function CallRoom() {
     }
   };
 
+  const handlePipMouseDown = useCallback((e) => {
+    dragging.current = true;
+    const rect = pipRef.current?.getBoundingClientRect();
+    if (rect) {
+      dragOffset.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+    }
+  }, []);
+
+  const handlePipTouchStart = useCallback((e) => {
+    const t = e.touches[0];
+    dragging.current = true;
+    const rect = pipRef.current?.getBoundingClientRect();
+    if (rect) {
+      dragOffset.current = {
+        x: t.clientX - rect.left,
+        y: t.clientY - rect.top,
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!dragging.current) return;
+      setPipPos({
+        x: e.clientX - dragOffset.current.x,
+        y: e.clientY - dragOffset.current.y,
+      });
+    };
+    const handleMouseUp = () => { dragging.current = false; };
+    const handleTouchMove = (e) => {
+      if (!dragging.current) return;
+      const t = e.touches[0];
+      setPipPos({
+        x: t.clientX - dragOffset.current.x,
+        y: t.clientY - dragOffset.current.y,
+      });
+    };
+    const handleTouchEnd = () => { dragging.current = false; };
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("touchmove", handleTouchMove, { passive: true });
+    document.addEventListener("touchend", handleTouchEnd);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
+
   if (status === "idle" || status === "declined") return null;
 
   const isCaller = status === "calling";
@@ -51,8 +114,8 @@ export default function CallRoom() {
   return (
     <div className="fixed inset-0 z-[60] bg-black flex flex-col">
       <div className="relative flex-1 flex items-center justify-center bg-gray-900">
-        {type === "video" && remoteStream ? (
-          <video ref={remoteRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-contain" />
+        {type === "video" && (swapped ? stream : remoteStream) ? (
+          <video ref={mainVideoRef} autoPlay playsInline muted={swapped} className="absolute inset-0 w-full h-full object-contain" />
         ) : (
           <div className="flex flex-col items-center gap-4">
             <div className="w-24 h-24 rounded-full bg-purple-600 flex items-center justify-center">
@@ -64,9 +127,15 @@ export default function CallRoom() {
           </div>
         )}
 
-        {type === "video" && stream && (
-          <div className="absolute top-4 right-4 w-32 h-48 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
-            <video ref={localRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+        {type === "video" && (swapped ? remoteStream : stream) && (
+          <div
+            ref={pipRef}
+            onMouseDown={handlePipMouseDown}
+            onTouchStart={handlePipTouchStart}
+            className="absolute w-32 h-48 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg cursor-grab active:cursor-grabbing select-none"
+            style={{ left: pipPos.x || undefined, right: pipPos.x ? undefined : 16, top: pipPos.y || 16 }}
+          >
+            <video ref={pipVideoRef} autoPlay playsInline muted={!swapped} className="w-full h-full object-cover pointer-events-none" />
           </div>
         )}
 
@@ -83,6 +152,17 @@ export default function CallRoom() {
         </div>
 
         <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-6">
+          {type === "video" && isConnected && (
+            <button
+              onClick={() => setSwapped((s) => !s)}
+              className="w-14 h-14 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition shadow-lg"
+              title="Swap cameras"
+            >
+              <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+            </button>
+          )}
           {(isConnected || isCaller) && (
             <button
               onClick={toggleCallMute}

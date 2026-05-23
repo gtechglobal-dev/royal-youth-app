@@ -301,7 +301,7 @@ export default function LiveRoom() {
               {messages.length === 0 && <p className="text-gray-600 text-xs text-center py-4">No messages yet</p>}
             </div>
             <form onSubmit={handleSend} className="flex items-center gap-2 px-4 py-2 border-t border-white/10">
-              <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Send a message..." className="flex-1 bg-gray-800 text-white text-sm px-3 py-2 rounded-full outline-none placeholder-gray-500" maxLength={200} />
+              <input type="text" id="liveChatInput" name="liveChatInput" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Send a message..." className="flex-1 bg-gray-800 text-white text-sm px-3 py-2 rounded-full outline-none placeholder-gray-500" maxLength={200} />
               <button type="submit" disabled={!chatInput.trim()} className="p-2 text-purple-400 hover:text-purple-300 disabled:opacity-40">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
               </button>
@@ -510,7 +510,7 @@ export default function LiveRoom() {
               {messages.length === 0 && <p className="text-gray-600 text-xs text-center py-4">No messages yet</p>}
             </div>
             <form onSubmit={handleSend} className="flex items-center gap-2 px-4 py-2 border-t border-gray-800">
-              <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Send a message..." className="flex-1 bg-gray-800 text-white text-sm px-3 py-2 rounded-full outline-none placeholder-gray-500" maxLength={200} />
+              <input type="text" id="liveChatInput" name="liveChatInput" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Send a message..." className="flex-1 bg-gray-800 text-white text-sm px-3 py-2 rounded-full outline-none placeholder-gray-500" maxLength={200} />
               <button type="submit" disabled={!chatInput.trim()} className="p-2 text-purple-400 hover:text-purple-300 disabled:opacity-40">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
               </button>

@@ -87,7 +87,7 @@ export default function GoLiveModal({ onClose }) {
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">RTMP URL</label>
               <div className="flex items-center gap-2">
-                <input readOnly value={streamInfo.rtmpUrl} className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 font-mono" />
+                <input id="rtmpUrl" name="rtmpUrl" readOnly value={streamInfo.rtmpUrl} className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 font-mono" />
                 <button onClick={() => copyToClipboard(streamInfo.rtmpUrl, setCopiedUrl)} className="px-3 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 shrink-0">
                   {copiedUrl ? "Copied!" : "Copy"}
                 </button>
@@ -96,7 +96,7 @@ export default function GoLiveModal({ onClose }) {
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Stream Key</label>
               <div className="flex items-center gap-2">
-                <input readOnly value={streamInfo.streamKey} className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 font-mono" />
+                <input id="streamKey" name="streamKey" readOnly value={streamInfo.streamKey} className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 font-mono" />
                 <button onClick={() => copyToClipboard(streamInfo.streamKey, setCopiedKey)} className="px-3 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 shrink-0">
                   {copiedKey ? "Copied!" : "Copy"}
                 </button>
@@ -167,15 +167,15 @@ export default function GoLiveModal({ onClose }) {
         <div className="p-5 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Title</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Give your broadcast a title..." className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" maxLength={100} />
+            <input type="text" id="liveTitle" name="liveTitle" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Give your broadcast a title..." className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" maxLength={100} />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Description (optional)</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's this about?" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none" rows={2} maxLength={300} />
+            <textarea id="liveDescription" name="liveDescription" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's this about?" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none" rows={2} maxLength={300} />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Category</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <select id="liveCategory" name="liveCategory" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
               {categories.map((c) => (<option key={c} value={c}>{c}</option>))}
             </select>
           </div>

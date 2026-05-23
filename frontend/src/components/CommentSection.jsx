@@ -185,6 +185,8 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
                     className="flex gap-1 items-center mt-2 ml-9"
                   >
                     <input
+                      id="replyText"
+                      name="replyText"
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
                       placeholder="Write a reply..."
@@ -242,6 +244,8 @@ function CommentSection({ postId, currentUserId, onCommentCountChange }) {
       <form onSubmit={handleSubmit} className="flex gap-1 items-center w-full">
         <EmojiPicker onEmojiSelect={(emoji) => setText((prev) => prev + emoji)} />
         <input
+          id="commentText"
+          name="commentText"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Write a comment..."

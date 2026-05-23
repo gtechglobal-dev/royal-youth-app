@@ -89,6 +89,8 @@ function CreatePost({ onPostCreated, placeholder = "Share something with the com
     <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 mb-6 w-full">
       <form onSubmit={handleSubmit} className="w-full">
         <textarea
+          id="postText"
+          name="postText"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={placeholder}
