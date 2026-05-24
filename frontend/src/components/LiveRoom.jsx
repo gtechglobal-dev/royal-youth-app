@@ -30,8 +30,6 @@ export default function LiveRoom() {
   const containerRef = useRef(null);
   const reactionPickerRef = useRef(null);
 
-    const [videoDebug, setVideoDebug] = useState("loading...");
-
   const room = liveRoom;
   const isBroadcaster = room?.isBroadcaster;
   const isAudio = room?.type === "audio";
@@ -52,11 +50,6 @@ export default function LiveRoom() {
   useEffect(() => {
     const el = videoRef.current;
     const stream = room?.stream || myStreamRef.current;
-    const tracks = stream?.getVideoTracks();
-    const track = tracks?.[0];
-    const settings = track?.getSettings?.();
-    const info = `ref:${!!myStreamRef.current} room.stream:${!!room?.stream} el:${!!el} tracks:${tracks?.length||0} enabled:${track?.enabled} state:${track?.readyState} w:${settings?.width||el?.videoWidth||0}h:${settings?.height||el?.videoHeight||0}`;
-    setVideoDebug(info);
     if (el && stream) {
       if (el.srcObject !== stream) el.srcObject = stream;
       el.onplaying = () => console.log("[LiveRoom] playing", el.videoWidth, el.videoHeight);
@@ -388,7 +381,6 @@ export default function LiveRoom() {
       <div className={`w-full bg-black overflow-hidden flex flex-col ${isFullscreen ? "h-full relative" : "max-w-5xl max-h-[90vh] rounded-2xl"}`}>
         <div className="relative flex-1 min-h-0 flex items-center justify-center bg-black">
           <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s && el.srcObject !== s) { el.srcObject = s; el.play().catch(e => console.warn("[LiveRoom] play:", e)); } } }} autoPlay playsInline muted={isBroadcaster} className="max-w-full max-h-full object-contain" />
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 text-xs md:text-sm bg-yellow-300 text-black font-bold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none opacity-60">{videoDebug}</div>
         {!isVideoOn && isBroadcaster && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 rounded-full bg-purple-600 flex items-center justify-center">
@@ -521,9 +513,9 @@ export default function LiveRoom() {
           </button>
           <button onClick={toggleFullscreen} className="flex items-center justify-center min-w-[36px] h-9 text-white/60 hover:text-white" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
             {isFullscreen ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6l4-4m0 4l-4-4m8 0l4 4m0-4l-4 4m0 8l4 4m-4 0l4-4m-4 4l-4 4m0-4l4-4" /></svg>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" /></svg>
             ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>
             )}
           </button>
           <button onClick={() => setShowChat(!showChat)} className={`p-1.5 transition ml-auto ${showChat ? "text-purple-400" : "text-white/60 hover:text-white"}`} title="Chat">
