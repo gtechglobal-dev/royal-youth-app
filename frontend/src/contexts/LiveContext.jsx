@@ -24,8 +24,6 @@ export function LiveProvider({ children }) {
   const callStartTimeRef = useRef(null);
   const callMissedTimeoutRef = useRef(null);
   const callPendingOfferRef = useRef(null);
-  const liveStartTimeRef = useRef(null);
-  const [liveEndedNotif, setLiveEndedNotif] = useState(null);
 
   useEffect(() => {
     liveRoomRef.current = liveRoom;
@@ -373,7 +371,6 @@ export function LiveProvider({ children }) {
       socket.emit("start-live", data, (res) => {
         clearTimeout(timeout);
         if (res?.success) {
-          liveStartTimeRef.current = Date.now();
           setStreamActive(false);
           setLiveRoom({
             sessionId: res.sessionId,
@@ -437,17 +434,6 @@ export function LiveProvider({ children }) {
   const handleLeaveLive = useCallback(() => {
     const socket = getSocket();
     const room = liveRoomRef.current;
-    if (room) {
-      const elapsed = liveStartTimeRef.current ? Date.now() - liveStartTimeRef.current : 0;
-      const mins = Math.floor(elapsed / 60000);
-      const hrs = Math.floor(mins / 60);
-      let duration = "";
-      if (hrs > 0) duration = `${hrs}h ${mins % 60}m`;
-      else if (mins > 0) duration = `${mins} min`;
-      else duration = "less than a minute";
-      setLiveEndedNotif(`Your live video ended — ${duration} ago`);
-      liveStartTimeRef.current = null;
-    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
@@ -600,14 +586,6 @@ export function LiveProvider({ children }) {
     if (socket && room) socket.emit("unmute-participant", { sessionId: room.sessionId, userId });
   }, []);
 
-  const dismissLiveEndedNotif = useCallback(() => setLiveEndedNotif(null), []);
-
-  useEffect(() => {
-    if (!liveEndedNotif) return;
-    const t = setTimeout(dismissLiveEndedNotif, 5000);
-    return () => clearTimeout(t);
-  }, [liveEndedNotif, dismissLiveEndedNotif]);
-
   return (
     <LiveContext.Provider
       value={{
@@ -644,16 +622,8 @@ export function LiveProvider({ children }) {
         streamActive,
         toggleCallMute,
       }}>
-      {children}
-      {liveEndedNotif && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-gray-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium animate-slideUp">
-          <span>{liveEndedNotif}</span>
-          <button onClick={dismissLiveEndedNotif} className="text-white/60 hover:text-white shrink-0">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
-      )}
-    </LiveContext.Provider>
+        {children}
+      </LiveContext.Provider>
   );
 }
 

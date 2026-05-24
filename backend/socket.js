@@ -181,21 +181,40 @@ export const initSocket = (server) => {
 
       try {
         const broadcaster = await User.findById(socket.userId).select("firstname friends");
-        if (broadcaster?.friends?.length > 0) {
-          const friendIds = broadcaster.friends.map((f) => f.toString());
-          const name = broadcaster.firstname;
-          const mins = session.startedAt ? Math.floor((Date.now() - session.startedAt) / 60000) : 0;
-          const timeAgo = mins < 1 ? "a few seconds" : mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${mins % 60}m`;
-          const notifData = friendIds.map((friendId) => ({
-            userId: friendId,
+        const name = broadcaster?.firstname || "Someone";
+        const mins = session.startedAt ? Math.floor((Date.now() - session.startedAt) / 60000) : 0;
+        const timeAgo = mins < 1 ? "a few seconds" : mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${mins % 60}m`;
+
+        const notifDocs = [];
+
+        if (broadcaster) {
+          notifDocs.push({
+            userId: socket.userId,
             fromUserId: socket.userId,
             type: "live-ended",
             referenceId: sessionId,
-            body: `${name}'s live ended ${timeAgo} ago`,
-          }));
-          await Notification.insertMany(notifData);
+            body: `Your live video ended — ${timeAgo} ago`,
+          });
+        }
+
+        if (broadcaster?.friends?.length > 0) {
+          const friendIds = broadcaster.friends.map((f) => f.toString());
           friendIds.forEach((friendId) => {
-            io.to(`user:${friendId}`).emit("newNotification", {});
+            notifDocs.push({
+              userId: friendId,
+              fromUserId: socket.userId,
+              type: "live-ended",
+              referenceId: sessionId,
+              body: `${name}'s live ended ${timeAgo} ago`,
+            });
+          });
+        }
+
+        if (notifDocs.length > 0) {
+          await Notification.insertMany(notifDocs);
+          const targetIds = [...new Set(notifDocs.map((n) => n.userId))];
+          targetIds.forEach((uid) => {
+            io.to(`user:${uid}`).emit("newNotification", {});
           });
         }
       } catch {}
