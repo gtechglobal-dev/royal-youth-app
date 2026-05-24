@@ -24,6 +24,7 @@ export default function LiveRoom() {
   const [elapsed, setElapsed] = useState("0:00");
   const [showReactions, setShowReactions] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [myHandRaised, setMyHandRaised] = useState(false);
   const chatRef = useRef(null);
   const containerRef = useRef(null);
@@ -129,6 +130,20 @@ export default function LiveRoom() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showReactions]);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen().catch(err => console.warn("fullscreen:", err));
+    } else {
+      document.exitFullscreen().catch(err => console.warn("exit fullscreen:", err));
+    }
+  };
 
   const toggleMute = () => {
     if (myStreamRef.current) {
@@ -369,8 +384,8 @@ export default function LiveRoom() {
   }
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-      <div className="w-full max-w-5xl max-h-[90vh] bg-black rounded-2xl overflow-hidden flex flex-col">
+    <div ref={containerRef} className={`fixed inset-0 z-50 flex items-center justify-center ${isFullscreen ? "bg-black" : "p-4 bg-black/80"}`}>
+      <div className={`w-full bg-black overflow-hidden flex flex-col ${isFullscreen ? "h-full relative" : "max-w-5xl max-h-[90vh] rounded-2xl"}`}>
         <div className="relative flex-1 min-h-0 flex items-center justify-center bg-black">
           <video ref={(el) => { videoRef.current = el; if (el) { const s = room?.stream || myStreamRef.current; if (s && el.srcObject !== s) { el.srcObject = s; el.play().catch(e => console.warn("[LiveRoom] play:", e)); } } }} autoPlay playsInline muted={isBroadcaster} className="max-w-full max-h-full object-contain" />
           <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 text-xs md:text-sm bg-yellow-300 text-black font-bold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none opacity-60">{videoDebug}</div>
@@ -421,7 +436,7 @@ export default function LiveRoom() {
         ))}
       </div>
 
-      <div className="bg-gray-900 flex flex-col" style={{ maxHeight: '40vh' }}>
+      <div className={`flex flex-col ${isFullscreen ? "absolute bottom-0 left-0 right-0 bg-gray-900/90 backdrop-blur-sm" : "bg-gray-900"}`} style={{ maxHeight: isFullscreen ? '35vh' : '40vh' }}>
         <div className="overflow-y-auto min-h-0 flex-shrink">
           {!showChat && !isRtmp && (
             <div className="px-4 py-2 border-b border-gray-800 overflow-x-auto">
@@ -503,6 +518,13 @@ export default function LiveRoom() {
           )}
           <button onClick={shareLink} className="flex items-center justify-center min-w-[36px] h-9 text-white/60 hover:text-white" title="Share link">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+          </button>
+          <button onClick={toggleFullscreen} className="flex items-center justify-center min-w-[36px] h-9 text-white/60 hover:text-white" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+            {isFullscreen ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6l4-4m0 4l-4-4m8 0l4 4m0-4l-4 4m0 8l4 4m-4 0l4-4m-4 4l-4 4m0-4l4-4" /></svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+            )}
           </button>
           <button onClick={() => setShowChat(!showChat)} className={`p-1.5 transition ml-auto ${showChat ? "text-purple-400" : "text-white/60 hover:text-white"}`} title="Chat">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
