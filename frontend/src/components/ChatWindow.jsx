@@ -148,7 +148,7 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
           <p className="font-semibold text-xs md:text-sm truncate">{displayName(otherUser)}</p>
           <p className="text-gray-400 text-[10px] md:text-xs truncate">{otherUser?.branch}</p>
         </div>
-        <div className="flex items-center gap-0.5 md:gap-1 shrink-0">
+        <div className="flex items-center gap-2 md:gap-3 shrink-0 mr-2 md:mr-3">
           <button
             onClick={() => startCall(otherUser._id, "audio")}
             disabled={callState.status !== "idle"}
@@ -226,8 +226,8 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
         )}
         <div className="flex items-center gap-1 md:gap-2">
           <div ref={emojiRef} className="relative">
-            <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="text-gray-500 hover:text-purple-600 flex items-center p-1 md:p-2 rounded-lg hover:bg-purple-50 shrink-0">
-              <svg className="w-4 h-4 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="text-gray-500 hover:text-purple-600 flex items-center p-1.5 md:p-2 rounded-lg hover:bg-purple-50 shrink-0">
+              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </button>
@@ -252,8 +252,8 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
               </div>
             )}
           </div>
-          <label className="cursor-pointer text-gray-500 hover:text-purple-600 flex items-center p-1 md:p-2 rounded-lg hover:bg-purple-50 shrink-0">
-            <svg className="w-4 h-4 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <label className="cursor-pointer text-gray-500 hover:text-purple-600 flex items-center p-1.5 md:p-2 rounded-lg hover:bg-purple-50 shrink-0">
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => setImage(e.target.files[0])} />
@@ -263,7 +263,7 @@ function ChatWindow({ conversation, currentUserId, sharedPost, onClose }) {
             onChange={(e) => setText(e.target.value)}
             placeholder="Type a message..."
             maxLength={2000}
-            className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 md:px-4 md:py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 md:px-4 md:py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none max-w-[55%] md:max-w-none"
           />
           <button
             type="submit"

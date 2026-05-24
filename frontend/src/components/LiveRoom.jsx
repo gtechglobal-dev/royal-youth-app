@@ -274,7 +274,7 @@ export default function LiveRoom() {
                 <span className="text-[10px]">React</span>
               </button>
               {showReactions && (
-                <div className="absolute bottom-full mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700" style={{ left: '50%', transform: 'translateX(-50%)', maxWidth: 'calc(100vw - 32px)' }}>
+              <div className="absolute bottom-full mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700" style={{ left: '0', maxWidth: 'calc(100vw - 32px)' }}>
                   {REACTIONS.map((emoji) => (
                     <button key={emoji} onClick={() => handleReactionSelect(emoji)} className="text-2xl hover:scale-125 transition-transform">{emoji}</button>
                   ))}
@@ -478,7 +478,7 @@ export default function LiveRoom() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </button>
             {showReactions && (
-              <div className="absolute bottom-full mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700" style={{ left: '50%', transform: 'translateX(-50%)', maxWidth: 'calc(100vw - 32px)' }}>
+                <div className="absolute bottom-full mb-2 flex items-center gap-1 bg-gray-800 rounded-full px-3 py-2 shadow-lg border border-gray-700" style={{ left: '0', maxWidth: 'calc(100vw - 32px)' }}>
                 {REACTIONS.map((emoji) => (
                   <button key={emoji} onClick={() => handleReactionSelect(emoji)} className="text-2xl hover:scale-125 transition-transform">{emoji}</button>
                 ))}
