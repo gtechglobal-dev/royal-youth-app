@@ -167,9 +167,10 @@ function EventsGallery() {
           </div>
         </div>
 
-        <div className="md:w-2/3 flex flex-col">
+        <div className="md:w-2/3">
           <div
-            className="group relative overflow-hidden bg-gray-200 flex-1 w-full min-h-[200px]"
+            className="group relative overflow-hidden bg-gray-200 w-full"
+            style={{ aspectRatio: "8/3" }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -199,7 +200,7 @@ function EventsGallery() {
                 <img
                   src={banner.image.startsWith("http") ? optimizeUrl(banner.image) : `${import.meta.env.VITE_API_URL}${banner.image}`}
                   alt={banner.title}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               </div>
             ))}
