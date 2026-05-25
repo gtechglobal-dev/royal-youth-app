@@ -167,9 +167,9 @@ function EventsGallery() {
           </div>
         </div>
 
-        <div className="md:w-2/3 p-6 md:p-8 flex flex-col">
+        <div className="md:w-2/3 flex flex-col">
           <div
-            className="group relative overflow-hidden rounded-xl bg-gray-200 flex-1 w-full min-h-[200px]"
+            className="group relative overflow-hidden bg-gray-200 flex-1 w-full min-h-[200px]"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}

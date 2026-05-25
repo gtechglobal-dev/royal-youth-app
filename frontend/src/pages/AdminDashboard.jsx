@@ -2213,7 +2213,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
             <h2 className="text-xl font-bold mb-4 text-adminBlue">Upload Banner</h2>
             <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm">
               <p className="font-semibold">Specifications:</p>
-              <p>Size: 1600 x 900px (16:9 recommended)</p>
+              <p>Size: 1600 x 600px (8:3 recommended)</p>
               <p>Formats: JPEG, PNG, WebP</p>
               <p>Max size: 1MB</p>
             </div>
