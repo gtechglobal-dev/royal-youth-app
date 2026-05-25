@@ -114,6 +114,15 @@ function EventsGallery() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (banners.length > 1) {
+      const timer = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % banners.length);
+      }, 30000);
+      return () => clearInterval(timer);
+    }
+  }, [banners.length]);
+
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
   };
@@ -198,18 +207,6 @@ function EventsGallery() {
 
             {banners.length > 1 && (
               <>
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                  {banners.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => { setCurrentIndex(i); }}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        i === currentIndex ? "bg-white w-5" : "bg-white/50"
-                      }`}
-                    />
-                  ))}
-                </div>
-
                 <button
                   onClick={handlePrev}
                   className="absolute top-1/2 -translate-y-1/2 left-2 bg-black/20 backdrop-blur-sm hover:bg-black/40 p-1.5 rounded-full transition-all duration-300 hover:scale-110 opacity-0 group-hover:opacity-100"
