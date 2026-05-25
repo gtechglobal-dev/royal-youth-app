@@ -2218,7 +2218,7 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
               <p>Max size: 1MB</p>
             </div>
             <form onSubmit={handleBannerUpload} className="space-y-4">
-              <input type="text" placeholder="Banner Title" className="border p-2 w-full rounded" value={bannerTitle} onChange={e => setBannerTitle(e.target.value)} required />
+              <input type="text" placeholder="Banner Title (optional)" className="border p-2 w-full rounded" value={bannerTitle} onChange={e => setBannerTitle(e.target.value)} />
               <input type="url" placeholder="Link (optional)" className="border p-2 w-full rounded" value={bannerLink} onChange={e => setBannerLink(e.target.value)} />
               <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setBannerImg(e.target.files[0])} className="border p-2 w-full rounded" required />
               <button type="submit" className="bg-sky-500 hover:bg-sky-600 text-white px-6 py-2 rounded-lg font-semibold transition">Upload</button>
