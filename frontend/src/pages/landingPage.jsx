@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import BannerGallery from "../components/BannerGallery";
 import ContactSection from "../components/ContactSection";
+import API from "../services/api";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import Logo from "../assets/gdev logo.svg";
 import PresidentImage from "../assets/president.jpg";
@@ -94,6 +94,156 @@ function TypeWriter({ className = "" }) {
   );
 }
 
+function EventsGallery() {
+  const [banners, setBanners] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [bannersLoaded, setBannersLoaded] = useState(false);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await API.get("/banners");
+        setBanners(res.data);
+      } catch (error) {
+        console.error("Error fetching banners:", error);
+      } finally {
+        setBannersLoaded(true);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (banners.length > 1) {
+      const timer = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % banners.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [banners.length]);
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % banners.length);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) handleNext();
+      else handlePrev();
+    }
+  };
+
+  function optimizeUrl(url, width = 600) {
+    if (!url || !url.includes('res.cloudinary.com')) return url;
+    return url.replace('/image/upload/', `/image/upload/w_${width},q_auto,f_auto/`);
+  }
+
+  return (
+    <div className="bg-white rounded-3xl overflow-hidden">
+      <div className="flex flex-col md:flex-row">
+        <div className="md:w-1/3 p-8 md:p-10 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50/50 border-b md:border-b-0 md:border-r border-gray-200">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg shadow-indigo-600/20">
+            <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div className="text-3xl md:text-5xl font-normal text-center bg-gradient-to-r from-indigo-600 to-purple-700 bg-clip-text text-transparent leading-none">
+            <div>UPCOMING</div>
+            <div>EVENTS</div>
+          </div>
+        </div>
+
+        <div className="md:w-2/3 p-6 md:p-8 flex flex-col">
+          <div
+            className="group relative overflow-hidden rounded-xl bg-gray-200 flex-1 w-full min-h-[200px]"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {!bannersLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+
+            {bannersLoaded && banners.length === 0 && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-400">
+                <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-sm">No images yet</p>
+              </div>
+            )}
+
+            {banners.map((banner, index) => (
+              <div
+                key={banner._id}
+                className={`absolute inset-0 transition-all duration-700 ${
+                  index === currentIndex ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <img
+                  src={banner.image.startsWith("http") ? optimizeUrl(banner.image) : `${import.meta.env.VITE_API_URL}${banner.image}`}
+                  alt={banner.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+
+            {banners.length > 1 && (
+              <>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {banners.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setCurrentIndex(i); }}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        i === currentIndex ? "bg-white w-5" : "bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={handlePrev}
+                  className="absolute top-1/2 -translate-y-1/2 left-2 bg-black/20 backdrop-blur-sm hover:bg-black/40 p-1.5 rounded-full transition-all duration-300 hover:scale-110 opacity-0 group-hover:opacity-100"
+                >
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <button
+                  onClick={handleNext}
+                  className="absolute top-1/2 -translate-y-1/2 right-2 bg-black/20 backdrop-blur-sm hover:bg-black/40 p-1.5 rounded-full transition-all duration-300 hover:scale-110 opacity-0 group-hover:opacity-100"
+                >
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LandingPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -132,7 +282,7 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 relative">
-      <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(99,102,241,0.15) 1.5px, transparent 1.5px)", backgroundSize: "30px 30px" }} />
+      <div className="fixed inset-0 pointer-events-none -z-10" style={{ backgroundImage: "radial-gradient(circle, rgba(99,102,241,0.15) 1.5px, transparent 1.5px)", backgroundSize: "30px 30px" }} />
       <header className="sticky top-0 z-50 bg-gradient-to-r from-indigo-50/90 via-white/90 to-purple-50/90 backdrop-blur-lg shadow-sm border-b border-indigo-200">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -178,19 +328,21 @@ function LandingPage() {
         </div>
       </header>
 
-      <section className="mx-6 md:mx-20 lg:mx-32 mt-6 md:mt-8 mb-2 overflow-hidden shadow-lg">
-        <BannerGallery />
-
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-0.5 md:py-2 overflow-hidden flex items-center">
-          <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 120s linear infinite" }}>
-            {[...Array(12)].map((_, i) => (
-              <span key={i} className="text-white text-[9px] xs:text-[11px] sm:text-xs md:text-sm lg:text-base font-medium mx-1.5 sm:mx-6 flex-shrink-0">
-                ✨ Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
-              </span>
-            ))}
-          </div>
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-0.5 md:py-2 overflow-hidden flex items-center w-full">
+        <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 120s linear infinite" }}>
+          {[...Array(12)].map((_, i) => (
+            <span key={i} className="text-white text-[9px] xs:text-[11px] sm:text-xs md:text-sm lg:text-base font-medium mx-1.5 sm:mx-6 flex-shrink-0">
+              ✨ Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
+            </span>
+          ))}
         </div>
-      </section>
+      </div>
+
+      <div className="px-4 mt-6 md:mt-8 mb-2">
+        <div className="container mx-auto max-w-5xl">
+          <EventsGallery />
+        </div>
+      </div>
 
       <ScrollSection className="pt-2 pb-8 px-4" delay={100}>
         <div className="container mx-auto max-w-5xl">
