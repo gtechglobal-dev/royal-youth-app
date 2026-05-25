@@ -114,15 +114,6 @@ function EventsGallery() {
     })();
   }, []);
 
-  useEffect(() => {
-    if (banners.length > 1) {
-      const timer = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % banners.length);
-      }, 5000);
-      return () => clearInterval(timer);
-    }
-  }, [banners.length]);
-
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
   };
@@ -153,7 +144,7 @@ function EventsGallery() {
   }
 
   return (
-    <div className="bg-white rounded-3xl overflow-hidden">
+    <div className="bg-white rounded-t-3xl overflow-hidden">
       <div className="flex flex-col md:flex-row">
         <div className="md:w-1/3 p-8 md:p-10 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50/50 border-b md:border-b-0 md:border-r border-gray-200">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg shadow-indigo-600/20">
