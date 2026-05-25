@@ -275,7 +275,9 @@ function LandingPage() {
 
   if (loading) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex flex-col items-center justify-center gap-4">
-      <img src={Logo} alt="RY" className="w-20 h-20 md:w-24 md:h-24 animate-pulse" />
+      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white shadow-lg flex items-center justify-center">
+        <img src={Logo} alt="RY" className="w-full h-full object-contain animate-pulse p-1.5" />
+      </div>
       <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">Royal Youth Hub</h3>
     </div>
   );
