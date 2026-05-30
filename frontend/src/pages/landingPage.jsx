@@ -147,7 +147,7 @@ function EventsGallery() {
     }
   };
 
-  function optimizeUrl(url, width = 600) {
+  function optimizeUrl(url, width = 1200) {
     if (!url || !url.includes('res.cloudinary.com')) return url;
     return url.replace('/image/upload/', `/image/upload/w_${width},q_auto,f_auto/`);
   }
