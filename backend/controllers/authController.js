@@ -354,7 +354,7 @@ export const updateDues = async (req, res) => {
     member.set(`${duesField}.${month}.amount`, amount);
     member.set(`${duesField}.${month}.date`, status === "Paid" ? new Date() : null);
 
-    await member.save();
+    await member.save({ validateBeforeSave: false });
 
     if (status === "Paid") {
       const fromId = await resolveUserId(req.user?._id || "admin");
