@@ -343,14 +343,16 @@ export const updateDues = async (req, res) => {
       return res.status(404).json({ message: "Member not found" });
     }
 
-    member[duesField][month].status = status;
-    member[duesField][month].amount = amount;
-    
-    if (status === "Paid") {
-      member[duesField][month].date = new Date();
-    } else {
-      member[duesField][month].date = null;
+    if (!member[duesField]) {
+      member[duesField] = {};
     }
+    if (!member[duesField][month]) {
+      member[duesField][month] = {};
+    }
+
+    member.set(`${duesField}.${month}.status`, status);
+    member.set(`${duesField}.${month}.amount`, amount);
+    member.set(`${duesField}.${month}.date`, status === "Paid" ? new Date() : null);
 
     await member.save();
 

@@ -709,23 +709,26 @@ const [balance, setBalance] = useState({ totalDues: 0, totalIncome: 0, totalExpe
       await API.put(`/auth/dues/${memberId}`, { month, status, amount, year });
       const duesField = year === "2027" ? "dues2027" : "dues";
       
-      if (status === "Paid" && amount > 0) {
-        const member = members.find(m => m._id === memberId);
-        await API.post("/finance/income", {
-          purpose: `${year} Dues - ${month} (${displayNameFull(member)})`,
-          amount: amount,
-          date: new Date().toISOString().split('T')[0],
-          memberId: memberId
-        });
-      }
-      
       setMembers(members.map(m => 
         m._id === memberId 
           ? { ...m, [duesField]: { ...m[duesField], [month]: { status, amount, date: status === "Paid" ? new Date() : null } } }
           : m
       ));
+
+      if (status === "Paid" && amount > 0) {
+        const member = members.find(m => m._id === memberId);
+        API.post("/finance/income", {
+          purpose: `${year} Dues - ${month} (${displayNameFull(member)})`,
+          amount: amount,
+          date: new Date().toISOString().split('T')[0],
+          memberId: memberId
+        }).catch(() => {});
+      }
+
+      setNotification({ open: true, type: "success", message: `${month} ${year} dues marked as ${status}` });
     } catch (error) {
       console.error(error);
+      setNotification({ open: true, type: "error", message: "Failed to update dues. Check console for details." });
     }
   };
 
