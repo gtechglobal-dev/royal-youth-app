@@ -142,30 +142,18 @@ export const getAllAttendance = async (req, res) => {
 
 export const getUserAttendance = async (req, res) => {
   try {
-    console.log("Fetching attendance for user:", req.user._id, "type:", typeof req.user._id, "isAdmin:", req.user.role === "admin");
-    
-    // Admin doesn't have attendance records
     if (req.user.role === "admin" || req.user._id === "admin") {
-      console.log("Admin user - returning empty attendance");
       return res.json([]);
     }
-    
-    // Debug: Check the user's status
+
     const User = await import("../models/user.js").then(m => m.default);
-    const userData = await User.findById(req.user._id).select("firstname surname membershipStatus registrationStatus");
-    console.log("User data:", userData);
-    
-    const attendance = await Attendance.find({ user: req.user._id });
-    
-    console.log("Found", attendance.length, "attendance records");
-    if (attendance.length > 0) {
-      console.log("First record:", attendance[0]._id, "meeting:", attendance[0].meetingTitle, "status:", attendance[0].status);
-    } else {
-      // Check if there are any attendance records for this user
-      const allForUser = await Attendance.find({ user: req.user._id });
-      console.log("Total attendance records for user (any status):", allForUser.length);
-    }
-    
+    const userData = await User.findById(req.user._id).select("createdAt");
+
+    const attendance = await Attendance.find({
+      user: req.user._id,
+      createdAt: { $gte: userData.createdAt }
+    });
+
     res.json(attendance);
   } catch (error) {
     console.error("Error fetching attendance:", error);
