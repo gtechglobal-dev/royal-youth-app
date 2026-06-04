@@ -173,6 +173,35 @@ export const getUserAttendance = async (req, res) => {
   }
 };
 
+// UPDATE MEETING
+export const updateMeeting = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { meetingTitle, meetingDate } = req.body;
+
+    const meeting = await Attendance.findById(id);
+    if (!meeting) {
+      return res.status(404).json({ error: "Meeting not found" });
+    }
+
+    const oldTitle = meeting.meetingTitle;
+    const oldDate = meeting.meetingDate;
+
+    meeting.meetingTitle = meetingTitle;
+    meeting.meetingDate = meetingDate;
+    await meeting.save();
+
+    await Attendance.updateMany(
+      { meetingTitle: oldTitle, meetingDate: oldDate, isMeeting: false },
+      { $set: { meetingTitle, meetingDate } }
+    );
+
+    res.json({ message: "Meeting updated", meeting });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // DELETE MEETING
 export const deleteMeeting = async (req, res) => {
   try {

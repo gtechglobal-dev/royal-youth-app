@@ -6,6 +6,7 @@ import {
   getAllAttendance,
   createMeeting,
   getAllMeetings,
+  updateMeeting,
   deleteMeeting,
 } from "../controllers/attendanceController.js";
 
@@ -14,6 +15,8 @@ const router = express.Router();
 router.post("/meeting", protect, createMeeting);
 
 router.get("/meetings", protect, getAllMeetings);
+
+router.put("/meeting/:id", protect, updateMeeting);
 
 router.delete("/meeting/:id", protect, deleteMeeting);
 
