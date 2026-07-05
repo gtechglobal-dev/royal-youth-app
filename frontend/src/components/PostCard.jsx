@@ -244,7 +244,7 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
             }}
           >
             <div className="absolute inset-0 opacity-90" style={{ backgroundColor: post.placardColor || "#000000" }} />
-            <p className="text-white text-xs sm:text-sm md:text-base font-bold leading-relaxed whitespace-pre-wrap relative z-10 max-w-xs sm:max-w-sm">{postText}</p>
+            <p className="text-white text-sm sm:text-base md:text-lg font-bold leading-relaxed whitespace-pre-wrap relative z-10 max-w-xs sm:max-w-sm">{postText}</p>
           </div>
         )}
       </div>
