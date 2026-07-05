@@ -73,7 +73,7 @@ function MemberDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { liveRoom, showGoLiveModal, setShowGoLiveModal } = useLive();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "community");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "feed");
   const switchTab = useCallback((tab) => {
     setActiveTab(tab);
     if (persistableTabs.includes(tab)) {
@@ -624,13 +624,13 @@ function MemberDashboard() {
 
       {/* Navigation */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2">
-        <button onClick={() => { switchTab("community"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
-          Community
-        </button>
         <button onClick={() => { switchTab("feed"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
           Feed
+        </button>
+        <button onClick={() => { switchTab("community"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
+          Community
         </button>
         <button onClick={() => { switchTab("hub-connect"); setShowMobileNav(false); }} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition ${activeTab === "hub-connect" ? "bg-purple-100 text-purple-700" : "text-gray-600 hover:bg-gray-50"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
@@ -849,6 +849,10 @@ function MemberDashboard() {
         <main className="flex-1 min-w-0">
           {/* Quick Navigation - permanent */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1.5 sm:p-2 mb-4 flex items-center justify-between gap-0.5 sm:gap-1">
+            <button onClick={() => switchTab("feed")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+              <span className="text-[9px] sm:text-[10px] font-medium">Feed</span>
+            </button>
             <button onClick={() => switchTab("community")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "community" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Community</span>
@@ -856,10 +860,6 @@ function MemberDashboard() {
             <button onClick={() => setShowGoLiveModal(true)} className="flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition text-red-500 hover:bg-red-50">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
               <span className="text-[9px] sm:text-[10px] font-medium">Go Live</span>
-            </button>
-            <button onClick={() => switchTab("feed")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "feed" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
-              <span className="text-[9px] sm:text-[10px] font-medium">Feed</span>
             </button>
             <button onClick={() => switchTab("hub-connect")} className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg flex-1 transition ${activeTab === "hub-connect" ? "bg-purple-100 text-purple-700" : "text-gray-500 hover:bg-gray-100"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
@@ -885,6 +885,73 @@ function MemberDashboard() {
                       <PostCard post={post} currentUserId={user._id} />
                     </div>
                   ))}
+                </div>
+              )}
+              {/* Suggested Royalties */}
+              {suggested.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                  <h3 className="text-sm font-bold text-gray-700 mb-3">Meet Royalties of the Hub</h3>
+                  <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
+                      {shuffledSuggested.map((s) => (
+                        <div key={s._id} onClick={() => handleViewMember(s._id)} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition cursor-pointer">
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
+                            <div className="w-full h-full rounded-full bg-white p-[2px]">
+                              <div className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
+                                {s.profileImage ? (
+                                  <img src={optimizeImage(s.profileImage, 80)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-xs">
+                                    {s.firstname?.[0]}{s.surname?.[0]}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center">
+                            {displayName(s)}
+                          </span>
+                        {s.branch && (
+                          <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.branch}</span>
+                        )}
+                        <span className={`text-[10px] font-medium ${
+                          s.role === "youth_president" ? "text-yellow-600" :
+                          s.role === "admin" ? "text-purple-600" : "text-gray-400"
+                        }`}>{s.role === "youth_president" ? "Youth President" : s.role === "admin" ? "Admin" : "Member"}</span>
+                        {s.friendStatus === "none" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleSendRequest(s._id); }}
+                            className="mt-1 w-full text-[11px] bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
+                          >
+                            Add Royalty
+                          </button>
+                        )}
+                        {s.friendStatus === "pending_sent" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleCancelRequest(s._id); }}
+                            className="mt-1 w-full text-[11px] bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-orange-200 transition"
+                          >
+                            Pending
+                          </button>
+                        )}
+                        {s.friendStatus === "pending_received" && (
+                          <div className="mt-1 flex gap-1.5 w-full">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleAcceptRequest(s.requestId); }}
+                              className="flex-1 text-[10px] bg-purple-600 text-white px-2 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
+                            >
+                              Accept Royalty
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRejectRequest(s.requestId); }}
+                              className="flex-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-1.5 rounded-lg font-semibold hover:bg-gray-300 transition"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               <CreatePost onPostCreated={handlePostCreated} placeholder="Share something with your friends..." />
@@ -979,73 +1046,6 @@ function MemberDashboard() {
                 </div>
               )}
               <CreatePost onPostCreated={handleCommunityPostCreated} />
-              {/* Suggested Royalties */}
-              {suggested.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Meet Royalties of the Hub</h3>
-                  <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
-                      {shuffledSuggested.map((s) => (
-                        <div key={s._id} onClick={() => handleViewMember(s._id)} className="flex flex-col items-center gap-1.5 min-w-[150px] p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-purple-50 transition cursor-pointer">
-                          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px]">
-                            <div className="w-full h-full rounded-full bg-white p-[2px]">
-                              <div className="block w-full h-full rounded-full bg-purple-100 overflow-hidden">
-                                {s.profileImage ? (
-                                  <img src={optimizeImage(s.profileImage, 80)} alt="" className="w-full h-full object-cover" loading="lazy" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-purple-600 font-bold text-xs">
-                                    {s.firstname?.[0]}{s.surname?.[0]}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold text-gray-700 truncate max-w-[150px] text-center">
-                            {displayName(s)}
-                          </span>
-                        {s.branch && (
-                          <span className="text-[10px] text-purple-500 truncate max-w-[150px] text-center">{s.branch}</span>
-                        )}
-                        <span className={`text-[10px] font-medium ${
-                          s.role === "youth_president" ? "text-yellow-600" :
-                          s.role === "admin" ? "text-purple-600" : "text-gray-400"
-                        }`}>{s.role === "youth_president" ? "Youth President" : s.role === "admin" ? "Admin" : "Member"}</span>
-                        {s.friendStatus === "none" && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleSendRequest(s._id); }}
-                            className="mt-1 w-full text-[11px] bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
-                          >
-                            Add Royalty
-                          </button>
-                        )}
-                        {s.friendStatus === "pending_sent" && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleCancelRequest(s._id); }}
-                            className="mt-1 w-full text-[11px] bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-orange-200 transition"
-                          >
-                            Pending
-                          </button>
-                        )}
-                        {s.friendStatus === "pending_received" && (
-                          <div className="mt-1 flex gap-1.5 w-full">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleAcceptRequest(s.requestId); }}
-                              className="flex-1 text-[10px] bg-purple-600 text-white px-2 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition"
-                            >
-                              Accept Royalty
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleRejectRequest(s.requestId); }}
-                              className="flex-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-1.5 rounded-lg font-semibold hover:bg-gray-300 transition"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
               {friendLoading && suggested.length === 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mt-4">
                   <div className="h-4 w-36 bg-gray-200 rounded mb-3 animate-pulse" />
