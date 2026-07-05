@@ -227,18 +227,20 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
                 onClick={() => window.open(post.imageUrl, "_blank")}
               />
             </>
+          ) : postText && postText.length > 280 ? (
+            <p className="mt-4 text-sm text-gray-800 whitespace-pre-wrap">{postText}</p>
           ) : (
             <div
-              className="mt-4 rounded-xl px-8 py-14 text-center flex items-center justify-center relative overflow-hidden w-full min-h-[160px]"
+              className="mt-4 rounded-xl px-6 py-10 text-center flex items-center justify-center relative overflow-hidden w-full min-h-[130px]"
               style={{
                 backgroundColor: post.placardColor || "#000000",
                 backgroundImage: `url("${siteLogo}")`,
                 backgroundRepeat: "repeat",
-                backgroundSize: "36px",
+                backgroundSize: "28px",
               }}
             >
               <div className="absolute inset-0 opacity-90" style={{ backgroundColor: post.placardColor || "#000000" }} />
-              <p className="text-white text-base font-bold leading-relaxed whitespace-pre-wrap relative z-10 max-w-2xl">{postText}</p>
+              <p className="text-white text-xs sm:text-sm md:text-base font-bold leading-relaxed whitespace-pre-wrap relative z-10 max-w-xs sm:max-w-sm">{postText}</p>
             </div>
           )}
           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100">
