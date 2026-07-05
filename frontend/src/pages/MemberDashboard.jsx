@@ -329,6 +329,14 @@ function MemberDashboard() {
 
     const handleAnnouncementEvent = () => { fetchPinnedPosts(); };
 
+    const handleAnnouncementUnpinned = (post) => {
+      setPinnedPosts((prev) => prev.filter((p) => p._id !== post._id));
+      setPosts((prev) => {
+        if (prev.some((p) => p._id === post._id)) return prev;
+        return [post, ...prev];
+      });
+    };
+
     const handleNewNotification = () => { fetchNotifications(); };
 
     const handleFriendUpdate = () => { fetchFriendData(); };
@@ -338,7 +346,7 @@ function MemberDashboard() {
     socket.on("newAnnouncement", handleAnnouncementEvent);
     socket.on("announcementUpdated", handleAnnouncementEvent);
     socket.on("announcementDeleted", handleAnnouncementEvent);
-    socket.on("announcementUnpinned", handleAnnouncementEvent);
+    socket.on("announcementUnpinned", handleAnnouncementUnpinned);
     socket.on("newNotification", handleNewNotification);
     socket.on("friendRequestUpdate", handleFriendUpdate);
 
@@ -346,7 +354,7 @@ function MemberDashboard() {
       socket.off("newAnnouncement", handleAnnouncementEvent);
       socket.off("announcementUpdated", handleAnnouncementEvent);
       socket.off("announcementDeleted", handleAnnouncementEvent);
-      socket.off("announcementUnpinned", handleAnnouncementEvent);
+      socket.off("announcementUnpinned", handleAnnouncementUnpinned);
       socket.off("newNotification", handleNewNotification);
       socket.off("friendRequestUpdate", handleFriendUpdate);
     };
