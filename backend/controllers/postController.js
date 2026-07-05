@@ -3,7 +3,7 @@ import Notification from "../models/Notification.js";
 import User from "../models/user.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
 import { getIO } from "../socket.js";
-import { sendPushNotification } from "./pushController.js";
+import { sendPushNotification, sendPushToAllUsers } from "./pushController.js";
 import { getFollowedFeedPosts } from "./feedController.js";
 
 const resolveUserId = async (id) => {
@@ -520,6 +520,39 @@ export const createAnnouncement = async (req, res) => {
      const populated = await Post.findById(post._id).populate("userId", "nickname firstname surname profileImage branch role");
      try { getIO().emit("newAnnouncement", populated.toObject()); } catch (e) {}
      try { getIO().emit("newPost", populated.toObject()); } catch (e) {}
+
+     try {
+       const activeUsers = await User.find({
+         isDeleted: false,
+         registrationStatus: "Approved",
+         membershipStatus: "Active Member",
+       }).select("_id");
+       if (activeUsers.length > 0) {
+         const notifs = activeUsers.map((u) => ({
+           userId: u._id,
+           fromUserId: author._id,
+           type: "reminder",
+           referenceId: post._id.toString(),
+           body: text.trim().length > 100 ? text.trim().slice(0, 100) + "…" : text.trim(),
+           ...(imageUrl && { image: imageUrl }),
+         }));
+         await Notification.insertMany(notifs);
+       }
+     } catch (e) {
+       console.error("Create announcement notifications error:", e);
+     }
+
+     try {
+       await sendPushToAllUsers(
+         "Admin Announcement",
+         "Admin just sent an important update, login to view",
+         "/dashboard",
+         imageUrl || undefined
+       );
+     } catch (e) {
+       console.error("Create announcement push error:", e);
+     }
+
      res.status(201).json(populated);
   } catch (err) {
     console.error("Create announcement error:", err);

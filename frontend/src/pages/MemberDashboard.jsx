@@ -305,16 +305,20 @@ function MemberDashboard() {
       const handleNewPost = (post) => {
         const isFriend = friends.some((f) => f._id === post.userId?._id);
         const isAnnouncement = post.isPinned && post.pinnedAt;
-        if (isFriend || isAnnouncement) {
+        if (isFriend) {
           setPosts((prev) => {
             if (prev.some((p) => p._id === post._id)) return prev;
             return [post, ...prev];
           });
         }
-        setCommunityPosts((prev) => {
-          if (prev.some((p) => p._id === post._id)) return prev;
-          return [post, ...prev];
-        });
+        if (isAnnouncement) {
+          fetchPinnedPosts();
+        } else {
+          setCommunityPosts((prev) => {
+            if (prev.some((p) => p._id === post._id)) return prev;
+            return [post, ...prev];
+          });
+        }
       };
 
      const handlePostDeleted = ({ postId }) => {
@@ -1059,20 +1063,6 @@ function MemberDashboard() {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-              {pinnedPosts.length > 0 && (
-                <div className="space-y-3 mt-4">
-                  {pinnedPosts.map((post) => (
-                    <div key={post._id} className="border-2 border-yellow-300 rounded-xl overflow-hidden">
-                      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 px-4 py-2 flex items-center gap-2 border-b border-yellow-200">
-                        <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v10l-5-3-5 3V5z" /></svg>
-                        <span className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Pinned Announcement</span>
-                        <span className="text-[10px] text-yellow-500 ml-auto">{new Date(post.pinnedAt).toLocaleString()}</span>
-                      </div>
-                      <PostCard post={post} currentUserId={user._id} />
-                    </div>
-                  ))}
                 </div>
               )}
               {communityLoading ? (
