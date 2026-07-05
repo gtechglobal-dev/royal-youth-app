@@ -52,7 +52,8 @@ const corsOptions = {
       process.env.FRONTEND_URL_PROD,
       "http://localhost:5173",
       "https://royalyouths.onrender.com",
-      "https://royal-youth-app.gtechglobal-dev.workers.dev"
+      "https://royal-youth-app.gtechglobal-dev.workers.dev",
+      "https://royalyouthhub.gtechglobal.dev"
     ].filter(Boolean);
     
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
