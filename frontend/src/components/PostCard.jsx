@@ -135,8 +135,8 @@ function PostCard({ post, currentUserId, onDelete, onShare }) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 sm:p-4 mb-4">
-      <div className="flex items-start gap-2 sm:gap-3">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1 sm:p-4 mb-4">
+      <div className="flex items-start gap-1 sm:gap-3">
         <Link to={`/member/${post.userId?._id}`}>
           <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
             {post.userId?.profileImage ? (
