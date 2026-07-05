@@ -11,6 +11,7 @@ import { timeAgo, formatDate } from "../utils/formatTime";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import LiveFeedSection from "../components/LiveFeedSection";
 import GoLiveModal from "../components/GoLiveModal";
+import FriendRequestModal from "../components/FriendRequestModal";
 import LiveRoom from "../components/LiveRoom";
 import { useLive } from "../contexts/LiveContext";
 import { PageLoader, Spinner } from "../components/Loaders";
@@ -113,6 +114,7 @@ function MemberDashboard() {
   // Friends
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
+  const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
   const [suggested, setSuggested] = useState([]);
   const shuffledSuggested = useMemo(() => [...suggested].sort(() => Math.random() - 0.5), [suggested]);
   const [friendLoading, setFriendLoading] = useState(true);
@@ -396,6 +398,7 @@ function MemberDashboard() {
       setFriendRequests(reqRes.data);
       setSuggested(sugRes.data);
       setFriends(friendsRes.data);
+      if (reqRes.data.length > 0) setShowFriendRequestModal(true);
     } catch (err) { console.error("Friend data error:", err); }
     finally { setFriendLoading(false); }
   };
@@ -1674,6 +1677,12 @@ function MemberDashboard() {
           </div>
         </div>
       )}
+      <FriendRequestModal
+        open={showFriendRequestModal}
+        requests={friendRequests}
+        onClose={() => setShowFriendRequestModal(false)}
+        onUpdate={fetchFriendData}
+      />
       <ConfirmModal
         open={clearAllConfirm}
         title="Clear All Notifications"
