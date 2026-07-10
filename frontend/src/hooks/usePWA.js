@@ -50,12 +50,22 @@ export function usePWA() {
   const subscribeToPush = useCallback(async () => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
     const registration = await navigator.serviceWorker.ready;
-    let subscription = await registration.pushManager.getSubscription();
-    if (subscription) return subscription;
 
     const res = await API.get("/push/vapid-public-key");
     const vapidPublicKey = res.data.publicKey;
     const convertedKey = urlBase64ToUint8Array(vapidPublicKey);
+
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (subscription) {
+      try {
+        await API.post("/push/subscribe", subscription.toJSON());
+        return subscription;
+      } catch (_) {
+        await subscription.unsubscribe().catch(() => {});
+        subscription = null;
+      }
+    }
 
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { usePWA } from "../hooks/usePWA";
 import { Spinner } from "./Loaders";
+import API from "../services/api";
 
 export default function PushNotificationManager() {
   const { notificationPermission, requestNotificationPermission, subscribeToPush, isInstalled } = usePWA();
@@ -15,14 +16,14 @@ export default function PushNotificationManager() {
     if (!isLoggedIn || !isInstalled) return;
     if (notificationPermission === "granted" && !autoSubscribed.current) {
       autoSubscribed.current = true;
-      setSubscribing(true);
-      subscribeToPush()
-        .then((sub) => {
-          setSubscribed(!!sub);
-          if (!sub) setError("Push not supported");
+      API.get("/push/check")
+        .then((res) => {
+          if (!res.data.subscribed) {
+            return subscribeToPush();
+          }
         })
-        .catch((err) => setError(err?.response?.data?.message || "Subscription failed"))
-        .finally(() => setSubscribing(false));
+        .then((sub) => { if (sub) setSubscribed(true); })
+        .catch(() => {});
     }
   }, [isLoggedIn, isInstalled, notificationPermission, subscribeToPush]);
 

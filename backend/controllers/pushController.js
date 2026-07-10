@@ -11,7 +11,9 @@ if (fallbackKeys) {
     fallbackKeys.publicKey,
     fallbackKeys.privateKey
   );
-  console.warn("VAPID keys not set in env. Generated fresh keys. Existing subscriptions will be invalidated on restart.");
+  console.error("⚠️ CRITICAL: VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY env vars are NOT set!");
+  console.error("⚠️ Generated ephemeral keys — ALL existing push subscriptions are INVALID.");
+  console.error("⚠️ Set VAPID keys in your Render environment to fix push notifications.");
 } else {
   webpush.setVapidDetails(
     "mailto:royalyouthsc4c5@gmail.com",
@@ -26,6 +28,15 @@ export const getVapidPublicKey = (req, res) => {
     return res.status(500).json({ message: "VAPID public key not configured" });
   }
   res.json({ publicKey: key });
+};
+
+export const checkSubscription = async (req, res) => {
+  try {
+    const sub = await PushSubscription.findOne({ userId: req.user._id });
+    res.json({ subscribed: !!sub });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export const subscribe = async (req, res) => {

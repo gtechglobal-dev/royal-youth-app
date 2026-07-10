@@ -367,7 +367,7 @@ export const updateDues = async (req, res) => {
         body: `Your dues for ${month} have been marked as paid`,
       });
       try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(targetId, "Royal Youth Hub", `Your ${month} dues have been marked as paid`, "/dashboard", notif._id.toString()); } catch (e) {}
+      try { await sendPushNotification(targetId, "Royal Youth Hub", `Your ${month} dues have been marked as paid`, "/dashboard", notif._id.toString()); } catch (e) {}
     }
 
     res.status(200).json(member);

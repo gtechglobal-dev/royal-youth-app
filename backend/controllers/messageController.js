@@ -128,7 +128,7 @@ export const sendMessage = async (req, res) => {
         referenceId: conversation._id.toString(),
       });
       try { getIO().to(`user:${receiverId}`).emit("newNotification", {}); } catch (e) {}
-      try { sendPushNotification(receiverId, "Royal Youth Hub", `${req.user.firstname || "Someone"} sent you a message`, "/messages", notif._id.toString()); } catch (e) {}
+      try { await sendPushNotification(receiverId, "Royal Youth Hub", `${req.user.firstname || "Someone"} sent you a message`, "/messages", notif._id.toString()); } catch (e) {}
     }
 
     res.status(201).json(populated);

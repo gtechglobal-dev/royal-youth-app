@@ -341,7 +341,7 @@ export const addSpecialDonation = async (req, res) => {
       body: `Your donation of ₦${amount} for "${purpose}" has been recorded. Thank you! Your profile has been updated accordingly.`,
     });
     try { getIO().to(`user:${targetId}`).emit("newNotification", {}); } catch (e) {}
-    try { sendPushNotification(targetId, purpose, `Your donation of ₦${amount} has been recorded. Thank you! Your profile has been updated accordingly.`, "/dashboard", notif._id.toString()); } catch (e) {}
+    try { await sendPushNotification(targetId, purpose, `Your donation of ₦${amount} has been recorded. Thank you! Your profile has been updated accordingly.`, "/dashboard", notif._id.toString()); } catch (e) {}
     
     res.status(201).json(income);
   } catch (error) {

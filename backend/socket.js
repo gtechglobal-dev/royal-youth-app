@@ -157,12 +157,12 @@ export const initSocket = (server) => {
             body: `${name} is live: ${data.title || "Live Broadcast"}`,
           }));
           await Notification.insertMany(notifData);
-          friendIds.forEach((friendId) => {
+          for (const friendId of friendIds) {
             io.to(`user:${friendId}`).emit("newNotification", {});
-            sendPushNotification(friendId, "Royal Youth Hub",
+            try { await sendPushNotification(friendId, "Royal Youth Hub",
               `${name} went live! ${data.title || "Live Broadcast"}`,
-              `/live/${sessionId}`);
-          });
+              `/live/${sessionId}`); } catch (e) {}
+          }
         }
       } catch {}
 
