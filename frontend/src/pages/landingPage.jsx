@@ -274,58 +274,60 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 relative">
       <div className="fixed inset-0 pointer-events-none -z-10" style={{ backgroundImage: "radial-gradient(circle, rgba(99,102,241,0.15) 1.5px, transparent 1.5px)", backgroundSize: "30px 30px" }} />
-      <header className="sticky top-0 z-50 bg-gradient-to-r from-indigo-50/90 via-white/90 to-purple-50/90 backdrop-blur-lg shadow-sm border-b border-indigo-200">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <img src={Logo} alt="RY" className="w-10 h-10 md:w-12 md:h-12 transition-transform group-hover:scale-105" />
-                <div className="absolute -inset-1 bg-indigo-600 rounded-full opacity-0 group-hover:opacity-20 blur transition-opacity" />
-              </div>
-              <div>
-                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">
-                  Royal Youth Hub
-                </h1>
-                <p className="text-indigo-400 text-xs md:text-sm font-medium">Impact Your World</p>
-              </div>
-            </Link>
-            <div className="flex items-center gap-2 md:gap-3">
-              {isLoggedIn && (
-                <>
-                  <button
-                    onClick={() => navigate("/dashboard")}
-                    className="bg-indigo-600 text-white px-2.5 py-1.5 md:px-5 rounded-xl font-semibold hover:bg-indigo-700 transition-all text-xs md:text-base shadow-lg shadow-indigo-600/25"
-                  >
-                    Dashboard
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1.5 md:px-5 rounded-xl font-semibold transition-all text-xs md:text-base shadow-lg shadow-amber-500/25"
-                  >
-                    Logout
-                  </button>
-                </>
-              )}
+      <div className="sticky top-0 z-50">
+        <header className="bg-gradient-to-r from-indigo-50/90 via-white/90 to-purple-50/90 backdrop-blur-lg shadow-sm border-b border-indigo-200">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              <Link to="/" className="flex items-center gap-3 group">
+                <div className="relative">
+                  <img src={Logo} alt="RY" className="w-10 h-10 md:w-12 md:h-12 transition-transform group-hover:scale-105" />
+                  <div className="absolute -inset-1 bg-indigo-600 rounded-full opacity-0 group-hover:opacity-20 blur transition-opacity" />
+                </div>
+                <div>
+                  <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">
+                    Royal Youth Hub
+                  </h1>
+                  <p className="text-indigo-400 text-xs md:text-sm font-medium">Impact Your World</p>
+                </div>
+              </Link>
+              <div className="flex items-center gap-2 md:gap-3">
+                {isLoggedIn && (
+                  <>
+                    <button
+                      onClick={() => navigate("/dashboard")}
+                      className="bg-indigo-600 text-white px-2.5 py-1.5 md:px-5 rounded-xl font-semibold hover:bg-indigo-700 transition-all text-xs md:text-base shadow-lg shadow-indigo-600/25"
+                    >
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1.5 md:px-5 rounded-xl font-semibold transition-all text-xs md:text-base shadow-lg shadow-amber-500/25"
+                    >
+                      Logout
+                    </button>
+                  </>
+                )}
 
-              {!isLoggedIn && (
-                <Link to="/admin-login">
-                  <button className="border-2 border-indigo-200 text-indigo-600 px-4 py-2 md:px-6 rounded-xl font-semibold hover:bg-indigo-50 hover:border-indigo-300 transition-all text-sm md:text-base">
-                    Admin
-                  </button>
-                </Link>
-              )}
+                {!isLoggedIn && (
+                  <Link to="/admin-login">
+                    <button className="border-2 border-indigo-200 text-indigo-600 px-4 py-2 md:px-6 rounded-xl font-semibold hover:bg-indigo-50 hover:border-indigo-300 transition-all text-sm md:text-base">
+                      Admin
+                    </button>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-0.5 md:py-2 overflow-hidden flex items-center w-full">
-        <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 120s linear infinite" }}>
-          {[...Array(12)].map((_, i) => (
-            <span key={i} className="text-white text-[9px] xs:text-[11px] sm:text-xs md:text-sm lg:text-base font-medium mx-1.5 sm:mx-6 flex-shrink-0">
-              ✨ Welcome to Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
-            </span>
-          ))}
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-0.5 md:py-2 overflow-hidden flex items-center w-full">
+          <div className="inline-flex whitespace-nowrap" style={{ animation: "marquee 120s linear infinite" }}>
+            {[...Array(12)].map((_, i) => (
+              <span key={i} className="text-white text-[9px] xs:text-[11px] sm:text-xs md:text-sm lg:text-base font-medium mx-1.5 sm:mx-6 flex-shrink-0">
+                ✨ Welcome to Royal Youth Hub — Where God refines you for greatness, purpose, and impact. Stay connected, keep serving, and let your light shine ✨
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
