@@ -39,7 +39,7 @@ export const initSocket = (server) => {
           process.env.FRONTEND_URL,
           process.env.FRONTEND_URL_PROD,
           "http://localhost:5173",
-          "https://royalyouths.onrender.com",
+          "https://royal-youths.onrender.com",
           "https://royalyouthhub.gtechglobal.dev",
         ].filter(Boolean);
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {

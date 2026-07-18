@@ -1,9 +1,18 @@
 import { useState } from "react";
 import { usePWA } from "../hooks/usePWA";
 
+const DISMISS_KEY = "ryh_install_dismissed";
+
 export default function InstallPrompt() {
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWA();
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    try { return localStorage.getItem(DISMISS_KEY) === "1"; } catch { return false; }
+  });
+
+  const dismiss = () => {
+    try { localStorage.setItem(DISMISS_KEY, "1"); } catch {}
+    setDismissed(true);
+  };
 
   if (!canInstall || isInstalled || dismissed) return null;
 
@@ -22,11 +31,11 @@ export default function InstallPrompt() {
               <p className="text-xs text-gray-500 mt-0.5">
                 Tap the Share button <span className="inline-block">⎙</span> then "Add to Home Screen"
               </p>
-              <button onClick={() => setDismissed(true)} className="mt-3 text-purple-600 text-xs font-semibold hover:text-purple-700">
+              <button onClick={() => dismiss()} className="mt-3 text-purple-600 text-xs font-semibold hover:text-purple-700">
                 Got it
               </button>
             </div>
-            <button onClick={() => setDismissed(true)} className="text-gray-300 hover:text-gray-500">
+            <button onClick={() => dismiss()} className="text-gray-300 hover:text-gray-500">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -57,7 +66,7 @@ export default function InstallPrompt() {
                 Install
               </button>
               <button
-                onClick={() => setDismissed(true)}
+                onClick={() => dismiss()}
                 className="text-gray-400 text-xs hover:text-gray-600"
               >
                 Not now
@@ -65,7 +74,7 @@ export default function InstallPrompt() {
             </div>
           </div>
           <button
-            onClick={() => setDismissed(true)}
+            onClick={() => dismiss()}
             className="text-gray-300 hover:text-gray-500"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

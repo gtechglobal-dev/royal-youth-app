@@ -1,9 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import API from "../services/api";
 
+function checkStandalone() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: fullscreen)").matches ||
+    (navigator.standalone === true)
+  );
+}
+
 export function usePWA() {
   const [installPrompt, setInstallPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => checkStandalone());
   const [notificationPermission, setNotificationPermission] = useState(
     typeof Notification !== "undefined" ? Notification.permission : "denied"
   );
@@ -12,13 +20,17 @@ export function usePWA() {
     && !window.MSStream;
 
   useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    if (checkStandalone()) {
       setIsInstalled(true);
+      return;
     }
-    window.addEventListener("appinstalled", () => setIsInstalled(true));
+
+    const onInstalled = () => setIsInstalled(true);
+    window.addEventListener("appinstalled", onInstalled);
 
     const handler = (e) => {
       e.preventDefault();
+      if (checkStandalone()) return;
       setInstallPrompt(e);
     };
     if (!isIOS) {
@@ -29,7 +41,7 @@ export function usePWA() {
       if (!isIOS) {
         window.removeEventListener("beforeinstallprompt", handler);
       }
-      window.removeEventListener("appinstalled", () => {});
+      window.removeEventListener("appinstalled", onInstalled);
     };
   }, [isIOS]);
 
@@ -51,10 +63,6 @@ export function usePWA() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
     const registration = await navigator.serviceWorker.ready;
 
-    const res = await API.get("/push/vapid-public-key");
-    const vapidPublicKey = res.data.publicKey;
-    const convertedKey = urlBase64ToUint8Array(vapidPublicKey);
-
     let subscription = await registration.pushManager.getSubscription();
 
     if (subscription) {
@@ -66,6 +74,9 @@ export function usePWA() {
         subscription = null;
       }
     }
+
+    const res = await API.get("/push/vapid-public-key");
+    const convertedKey = urlBase64ToUint8Array(res.data.publicKey);
 
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,

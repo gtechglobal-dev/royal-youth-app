@@ -18,9 +18,11 @@ export default function PushNotificationManager() {
       autoSubscribed.current = true;
       API.get("/push/check")
         .then((res) => {
-          if (!res.data.subscribed) {
-            return subscribeToPush();
+          if (res.data.subscribed) {
+            setSubscribed(true);
+            return;
           }
+          return subscribeToPush();
         })
         .then((sub) => { if (sub) setSubscribed(true); })
         .catch(() => {});

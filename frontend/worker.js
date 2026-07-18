@@ -1,4 +1,4 @@
-const RENDER_BACKEND = 'https://royalyouths.onrender.com';
+const RENDER_BACKEND = 'https://royal-youths.onrender.com';
 
 export default {
   async fetch(request, env, ctx) {
